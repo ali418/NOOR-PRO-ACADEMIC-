@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التسجيل في الكورس - مركز نور برو الأكاديمي</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/arabic.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Navigation Styles */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin-bottom: 20px;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .nav-logo a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-logo i {
+            margin-left: 10px;
+            font-size: 1.8rem;
+        }
+
+        .nav-auth, .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-login, .btn-register, .btn-logout {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-login:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-register {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-register:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background: #c82333;
+        }
+
+        .user-welcome {
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-left: 15px;
+        }
+
+        .enrollment-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .enrollment-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .enrollment-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .enrollment-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .enrollment-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .course-details {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .course-details h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .course-info {
+            margin-bottom: 25px;
+        }
+
+        .course-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-right: 4px solid var(--primary-color);
+        }
+
+        .course-info-item i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-left: 15px;
+            width: 25px;
+        }
+
+        .course-info-item strong {
+            color: #333;
+            margin-left: 10px;
+        }
+
+        .course-features {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .course-features h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .course-features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .course-features li {
+            margin-bottom: 8px;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .course-features li::before {
+            content: "✓";
+            position: absolute;
+            right: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .enrollment-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .enrollment-form h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .step.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .step::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: -25px;
+            width: 20px;
+            height: 2px;
+            background: #e9ecef;
+            transform: translateY(-50%);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step.completed::after {
+            background: #28a745;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary-color);
+            background: #e8f4fd;
+        }
+
+        .payment-method i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .payment-method h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .payment-method p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .payment-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .payment-details.active {
+            display: block;
+        }
+
+        .payment-info {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .payment-info h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .account-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .account-info strong {
+            color: #333;
+        }
+
+        .copy-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .file-upload {
+            border: 2px dashed #e9ecef;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: #f8f9fa;
+        }
+
+        .file-upload.dragover {
+            border-color: var(--primary-color);
+            background: #e8f4fd;
+        }
+
+        .file-upload i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .uploaded-file {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .uploaded-file.show {
+            display: block;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .success-message {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-message i {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .success-message h2 {
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .enrollment-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .enrollment-header h1 {
+                font-size: 2rem;
+            }
+            
+            .payment-methods {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar" id="enrollmentNavbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>نور أكاديمي</span>
+                </a>
+            </div>
+            <div class="nav-auth" id="navAuth">
+                <button class="btn-login" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>تسجيل الدخول</span>
+                </button>
+                <button class="btn-register" id="registerBtn">
+                    <i class="fas fa-user-plus"></i>
+                    <span>التسجيل</span>
+                </button>
+            </div>
+            <div class="nav-user" id="navUser" style="display: none;">
+                <span class="user-welcome" id="userWelcome">مرحباً، </span>
+                <button class="btn-logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>تسجيل الخروج</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="enrollment-container">
+        <!-- Header -->
+        <div class="enrollment-header">
+            <h1><i class="fas fa-graduation-cap"></i> التسجيل في الكورس</h1>
+            <p>اكمل عملية التسجيل واختر طريقة الدفع المناسبة لك</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="enrollment-content">
+            <!-- Course Details -->
+            <div class="course-details">
+                <h2><i class="fas fa-book"></i> تفاصيل الكورس</h2>
+                
+                <div class="course-info" id="courseInfo">
+                    <!-- سيتم ملء تفاصيل الكورس هنا بواسطة JavaScript -->
+                </div>
+
+                <div class="course-features">
+                    <h3><i class="fas fa-star"></i> مميزات الكورس</h3>
+                    <ul id="courseFeatures">
+                        <!-- سيتم ملء المميزات هنا بواسطة JavaScript -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Enrollment Form -->
+            <div class="enrollment-form">
+                <h2><i class="fas fa-user-plus"></i> نموذج التسجيل</h2>
+                
+                <!-- Step Indicator -->
+                <div class="step-indicator">
+                    <div class="step active" data-step="1">1</div>
+                    <div class="step" data-step="2">2</div>
+                    <div class="step" data-step="3">3</div>
+                    <div class="step" data-step="4">4</div>
+                </div>
+
+                <form id="enrollmentForm">
+                    <!-- Step 1: Personal Information -->
+                    <div class="form-step active" data-step="1">
+                        <h3><i class="fas fa-user"></i> المعلومات الشخصية</h3>
+                        
+                        <div class="form-group">
+                            <label for="fullName">الاسم الكامل *</label>
+                            <input type="text" id="fullName" name="fullName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">البريد الإلكتروني *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">رقم الهاتف *</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">كلمة المرور *</label>
+                            <input type="password" id="password" name="password" required minlength="6">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">تأكيد كلمة المرور *</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
+                        </div>
+                        
+                        <div class="form-group">
+                            <p style="text-align: center; margin-top: 20px;">
+                                هل لديك حساب بالفعل؟ 
+                                <a href="login.html" style="color: #007bff; text-decoration: none;">تسجيل الدخول</a>
+                            </p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="age">العمر</label>
+                            <input type="number" id="age" name="age" min="16" max="80">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="education">المستوى التعليمي</label>
+                            <select id="education" name="education">
+                                <option value="">اختر المستوى التعليمي</option>
+                                <option value="secondary">ثانوي</option>
+                                <option value="diploma">دبلوم</option>
+                                <option value="bachelor">بكالوريوس</option>
+                                <option value="master">ماجستير</option>
+                                <option value="phd">دكتوراه</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Course Selection Confirmation -->
+                    <div class="form-step" data-step="2">
+                        <h3><i class="fas fa-check-circle"></i> تأكيد اختيار الكورس</h3>
+                        
+                        <div id="courseConfirmation">
+                            <!-- سيتم ملء تأكيد الكورس هنا -->
+                        </div>
+
+                        <div class="form-group">
+                            <label for="motivation">لماذا تريد الانضمام لهذا الكورس؟</label>
+                            <textarea id="motivation" name="motivation" rows="4" placeholder="اكتب دوافعك للانضمام للكورس..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="experience">خبرتك السابقة في هذا المجال</label>
+                            <select id="experience" name="experience">
+                                <option value="beginner">مبتدئ</option>
+                                <option value="intermediate">متوسط</option>
+                                <option value="advanced">متقدم</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Payment Method -->
+                    <div class="form-step" data-step="3">
+                        <h3><i class="fas fa-credit-card"></i> طريقة الدفع</h3>
+                        
+                        <div class="payment-methods">
+                            <div class="payment-method" data-method="mobile-money">
+                                <i class="fas fa-mobile-alt"></i>
+                                <h4>موبايل موني</h4>
+                                <p>الدفع عبر موبايل موني</p>
+                            </div>
+
+                            <div class="payment-method" data-method="areeba">
+                                <i class="fas fa-credit-card"></i>
+                                <h4>أرتيال</h4>
+                                <p>الدفع عبر أرتيال</p>
+                            </div>
+
+                            <div class="payment-method" data-method="amteen">
+                                <i class="fas fa-wallet"></i>
+                                <h4>أمتين</h4>
+                                <p>الدفع عبر أمتين</p>
+                            </div>
+
+                            <div class="payment-method" data-method="bank">
+                                <i class="fas fa-university"></i>
+                                <h4>بنك الخرطوم</h4>
+                                <p>التحويل البنكي</p>
+                            </div>
+                        </div>
+
+                        <!-- Payment Details -->
+                        <div class="payment-details" id="mobileMoneyDetails">
+                            <div class="payment-info">
+                                <h4>معلومات الدفع - موبايل موني</h4>
+                                <div class="account-info">
+                                    <span>رقم الحساب: <strong>0123456789</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('0123456789')">نسخ</button>
+                                </div>
+                                <div class="account-info">
+                                    <span>اسم الحساب: <strong>مركز نور برو الأكاديمي</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('مركز نور برو الأكاديمي')">نسخ</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-details" id="areebaDetails">
+                            <div class="payment-info">
+                                <h4>معلومات الدفع - أرتيال</h4>
+                                <div class="account-info">
+                                    <span>رقم الحساب: <strong>9876543210</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('9876543210')">نسخ</button>
+                                </div>
+                                <div class="account-info">
+                                    <span>اسم الحساب: <strong>مركز نور برو الأكاديمي</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('مركز نور برو الأكاديمي')">نسخ</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-details" id="amteenDetails">
+                            <div class="payment-info">
+                                <h4>معلومات الدفع - أمتين</h4>
+                                <div class="account-info">
+                                    <span>رقم الحساب: <strong>5555666677</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('5555666677')">نسخ</button>
+                                </div>
+                                <div class="account-info">
+                                    <span>اسم الحساب: <strong>مركز نور برو الأكاديمي</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('مركز نور برو الأكاديمي')">نسخ</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-details" id="bankDetails">
+                            <div class="payment-info">
+                                <h4>معلومات الدفع - بنك الخرطوم</h4>
+                                <div class="account-info">
+                                    <span>رقم الحساب: <strong>1234567890123</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('1234567890123')">نسخ</button>
+                                </div>
+                                <div class="account-info">
+                                    <span>اسم الحساب: <strong>مركز نور برو الأكاديمي</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('مركز نور برو الأكاديمي')">نسخ</button>
+                                </div>
+                                <div class="account-info">
+                                    <span>فرع البنك: <strong>الخرطوم - شارع الجامعة</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('الخرطوم - شارع الجامعة')">نسخ</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Receipt Upload -->
+                    <div class="form-step" data-step="4">
+                        <h3><i class="fas fa-receipt"></i> رفع إيصال الدفع</h3>
+                        
+                        <p style="text-align: center; color: #666; margin-bottom: 25px;">
+                            بعد إتمام عملية الدفع، يرجى رفع صورة واضحة لإيصال الدفع
+                        </p>
+
+                        <div class="file-upload" onclick="document.getElementById('receiptFile').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h4>اضغط هنا لرفع إيصال الدفع</h4>
+                            <p>أو اسحب الملف هنا</p>
+                            <small>الصيغ المدعومة: JPG, PNG, PDF (حد أقصى 5 ميجا)</small>
+                            <input type="file" id="receiptFile" name="receiptFile" accept=".jpg,.jpeg,.png,.pdf" required>
+                        </div>
+
+                        <div class="uploaded-file" id="uploadedFile">
+                            <i class="fas fa-check-circle"></i>
+                            <span>تم رفع الملف بنجاح: </span>
+                            <strong id="fileName"></strong>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="paymentAmount">مبلغ الدفع</label>
+                            <input type="number" id="paymentAmount" name="paymentAmount" placeholder="أدخل المبلغ المدفوع" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transactionId">رقم العملية (اختياري)</label>
+                            <input type="text" id="transactionId" name="transactionId" placeholder="رقم العملية أو المرجع">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">ملاحظات إضافية</label>
+                            <textarea id="notes" name="notes" rows="3" placeholder="أي ملاحظات أو تفاصيل إضافية..."></textarea>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Navigation Buttons -->
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;">السابق</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">التالي</button>
+                    <button type="button" class="btn btn-primary" id="submitBtn" onclick="submitEnrollment()" style="display: none;">إرسال الطلب</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i>
+            <h2>تم إرسال طلبك بنجاح!</h2>
+            <p>شكراً لك على التسجيل. طلبك الآن قيد المراجعة وسنتواصل معك قريباً.</p>
+            <p><strong>رقم الطلب:</strong> <span id="requestNumber"></span></p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">العودة للصفحة الرئيسية</button>
+        </div>
+    </div>
+
+    <script src="js/enrollment.js"></script>
+</body>
+</html>

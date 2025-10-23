@@ -1,0 +1,370 @@
+/* Arabic RTL Styles */
+[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] body {
+    font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navigation RTL */
+[dir="rtl"] .nav-container {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .logo {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .nav-menu {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .auth-buttons {
+    flex-direction: row-reverse;
+}
+
+/* Language Toggle RTL */
+[dir="rtl"] .language-toggle {
+    right: auto;
+    left: 20px;
+}
+
+[dir="rtl"] .lang-btn {
+    flex-direction: row-reverse;
+}
+
+/* Hero Section RTL */
+[dir="rtl"] .hero-content {
+    text-align: right;
+}
+
+[dir="rtl"] .hero-buttons {
+    justify-content: flex-end;
+}
+
+/* Features RTL */
+[dir="rtl"] .feature-card {
+    text-align: right;
+}
+
+/* Courses RTL */
+[dir="rtl"] .course-meta {
+    justify-content: flex-end;
+}
+
+/* Footer RTL */
+[dir="rtl"] .footer-logo {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .contact-info p {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+[dir="rtl"] .social-links {
+    justify-content: flex-end;
+}
+
+/* Form RTL */
+[dir="rtl"] .form-group {
+    text-align: right;
+}
+
+/* Arabic Typography */
+.arabic-text {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 400;
+    line-height: 1.8;
+}
+
+.arabic-heading {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+/* English Mode Styles */
+[dir="ltr"] {
+    direction: ltr;
+    text-align: left;
+}
+
+[dir="ltr"] body {
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navigation LTR */
+[dir="ltr"] .nav-container {
+    flex-direction: row;
+}
+
+[dir="ltr"] .logo {
+    flex-direction: row;
+}
+
+[dir="ltr"] .nav-menu {
+    flex-direction: row;
+}
+
+[dir="ltr"] .auth-buttons {
+    flex-direction: row;
+}
+
+/* Language Toggle LTR */
+[dir="ltr"] .language-toggle {
+    left: auto;
+    right: 20px;
+}
+
+[dir="ltr"] .lang-btn {
+    flex-direction: row;
+}
+
+/* Hero Section LTR */
+[dir="ltr"] .hero-content {
+    text-align: left;
+}
+
+[dir="ltr"] .hero-buttons {
+    justify-content: flex-start;
+}
+
+/* Features LTR */
+[dir="ltr"] .feature-card {
+    text-align: center;
+}
+
+/* Courses LTR */
+[dir="ltr"] .course-meta {
+    justify-content: flex-start;
+}
+
+/* Footer LTR */
+[dir="ltr"] .footer-logo {
+    flex-direction: row;
+}
+
+[dir="ltr"] .contact-info p {
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+[dir="ltr"] .social-links {
+    justify-content: flex-start;
+}
+
+/* Form LTR */
+[dir="ltr"] .form-group {
+    text-align: left;
+}
+
+/* English Typography */
+.english-text {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.english-heading {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Language Transition Animation */
+.lang-transition {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Arabic Number Styles */
+.arabic-numbers {
+    font-feature-settings: "lnum" 1;
+}
+
+/* Responsive Arabic Adjustments */
+@media (max-width: 768px) {
+    [dir="rtl"] .hero-text h1 {
+        font-size: 2.2rem;
+        line-height: 1.3;
+    }
+    
+    [dir="rtl"] .nav-menu {
+        text-align: right;
+    }
+    
+    [dir="rtl"] .hamburger {
+        order: -1;
+    }
+}
+
+@media (max-width: 480px) {
+    [dir="rtl"] .hero-text h1 {
+        font-size: 1.8rem;
+    }
+    
+    [dir="rtl"] .hero-text p {
+        font-size: 1rem;
+    }
+}
+
+/* Custom Arabic Scrollbar */
+[dir="rtl"] ::-webkit-scrollbar {
+    width: 8px;
+}
+
+[dir="rtl"] ::-webkit-scrollbar-track {
+    background: var(--gray-100);
+}
+
+[dir="rtl"] ::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+[dir="rtl"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* Arabic Text Selection */
+[dir="rtl"] ::selection {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+/* Arabic Placeholder Styles */
+[dir="rtl"] input::placeholder {
+    text-align: right;
+    font-family: 'Cairo', sans-serif;
+}
+
+[dir="ltr"] input::placeholder {
+    text-align: left;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Language Specific Animations */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+[dir="rtl"] .slide-in {
+    animation: slideInRight 0.6s ease-out;
+}
+
+[dir="ltr"] .slide-in {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+/* Arabic Button Styles */
+[dir="rtl"] .btn-primary,
+[dir="rtl"] .btn-secondary,
+[dir="rtl"] .btn-login,
+[dir="rtl"] .btn-register {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 600;
+}
+
+[dir="ltr"] .btn-primary,
+[dir="ltr"] .btn-secondary,
+[dir="ltr"] .btn-login,
+[dir="ltr"] .btn-register {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600;
+}
+
+/* Arabic Modal Adjustments */
+[dir="rtl"] .modal-content {
+    text-align: right;
+}
+
+[dir="rtl"] .close {
+    right: auto;
+    left: 1rem;
+}
+
+/* Arabic Stats Section */
+[dir="rtl"] .stat-number {
+    font-family: 'Cairo', sans-serif;
+}
+
+[dir="ltr"] .stat-number {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Arabic Course Cards */
+[dir="rtl"] .course-content {
+    text-align: right;
+}
+
+[dir="rtl"] .course-meta {
+    flex-direction: row-reverse;
+}
+
+/* Arabic Feature Cards */
+[dir="rtl"] .feature-card {
+    text-align: center;
+}
+
+/* Language Toggle Icon Rotation */
+[dir="rtl"] .lang-btn i {
+    transform: scaleX(-1);
+}
+
+/* Arabic Navigation Hover Effects */
+[dir="rtl"] .nav-menu a::after {
+    right: 0;
+    left: auto;
+}
+
+/* Arabic Footer Adjustments */
+[dir="rtl"] .footer-section {
+    text-align: right;
+}
+
+[dir="rtl"] .footer-bottom {
+    text-align: center;
+}
+
+/* Arabic Form Validation */
+[dir="rtl"] .form-group.error input {
+    border-color: var(--danger-color);
+}
+
+[dir="rtl"] .form-group.success input {
+    border-color: var(--success-color);
+}
+
+/* Arabic Loading Spinner */
+[dir="rtl"] .loading {
+    animation-direction: reverse;
+}
+
+/* Arabic Utility Classes */
+[dir="rtl"] .text-right { text-align: right; }
+[dir="rtl"] .text-left { text-align: left; }
+[dir="rtl"] .text-center { text-align: center; }
+
+[dir="ltr"] .text-left { text-align: left; }
+[dir="ltr"] .text-right { text-align: right; }
+[dir="ltr"] .text-center { text-align: center; }

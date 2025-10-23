@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Debug</title>
+</head>
+<body>
+    <h1>Debug Test</h1>
+    <button onclick="testLocalStorage()">Test localStorage</button>
+    <button onclick="testFunctions()">Test Functions</button>
+    <div id="results"></div>
+    
+    <script>
+        function testLocalStorage() {
+            const enrollments = localStorage.getItem("noorProEnrollments");
+            document.getElementById("results").innerHTML = "<h3>localStorage Data:</h3><pre>" + (enrollments || "No data found") + "</pre>";
+        }
+        
+        function testFunctions() {
+            let result = "<h3>Function Tests:</h3>";
+            result += "showApprovalModal exists: " + (typeof window.showApprovalModal === "function") + "<br>";
+            result += "rejectEnrollment exists: " + (typeof window.rejectEnrollment === "function") + "<br>";
+            result += "viewEnrollmentDetails exists: " + (typeof window.viewEnrollmentDetails === "function") + "<br>";
+            result += "confirmApproval exists: " + (typeof window.confirmApproval === "function") + "<br>";
+            document.getElementById("results").innerHTML = result;
+        }
+    </script>
+</body>
+</html>

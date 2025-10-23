@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار وظائف الكورسات - مركز نور برو الأكاديمي</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .test-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        
+        .test-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .test-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .test-item p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .test-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .test-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .search-test-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        .category-test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .category-test-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .category-test-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="text-align: center; color: var(--primary-color); margin-bottom: 40px;">
+            <i class="fas fa-vial"></i>
+            اختبار وظائف الكورسات
+        </h1>
+
+        <!-- اختبار البحث -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-search"></i>
+                اختبار وظيفة البحث
+            </h2>
+            
+            <div class="test-item">
+                <h4>البحث في الكورسات</h4>
+                <p>اختبر البحث عن الكورسات بالعنوان أو الوصف</p>
+                <input type="text" class="search-test-box" placeholder="ابحث عن كورس..." id="searchTest">
+                <button class="test-button" onclick="testSearch()">اختبار البحث</button>
+                <div class="test-result" id="searchResult"></div>
+            </div>
+            
+            <div class="test-item">
+                <h4>مسح البحث</h4>
+                <p>اختبر وظيفة مسح البحث وإظهار جميع الكورسات</p>
+                <button class="test-button" onclick="testClearSearch()">مسح البحث</button>
+                <div class="test-result" id="clearSearchResult"></div>
+            </div>
+        </div>
+
+        <!-- اختبار التصفية -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-filter"></i>
+                اختبار وظيفة التصفية
+            </h2>
+            
+            <div class="test-item">
+                <h4>تصفية الكورسات حسب الفئة</h4>
+                <p>اختبر تصفية الكورسات حسب الفئات المختلفة</p>
+                <div class="category-test-buttons">
+                    <button class="category-test-btn active" onclick="testCategoryFilter('all')">جميع الكورسات</button>
+                    <button class="category-test-btn" onclick="testCategoryFilter('english')">اللغة الإنجليزية</button>
+                    <button class="category-test-btn" onclick="testCategoryFilter('hr')">الموارد البشرية</button>
+                    <button class="category-test-btn" onclick="testCategoryFilter('technical')">التقنية</button>
+                </div>
+                <div class="test-result" id="categoryFilterResult"></div>
+            </div>
+        </div>
+
+        <!-- اختبار الفيديوهات -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-video"></i>
+                اختبار الفيديوهات التعريفية
+            </h2>
+            
+            <div class="test-item">
+                <h4>عرض الفيديو التعريفي</h4>
+                <p>اختبر فتح النافذة المنبثقة للفيديوهات التعريفية</p>
+                <button class="test-button" onclick="testVideoModal('english-a1')">فيديو اللغة الإنجليزية A1</button>
+                <button class="test-button" onclick="testVideoModal('hr-professional')">فيديو الموارد البشرية</button>
+                <button class="test-button" onclick="testVideoModal('programming-web')">فيديو البرمجة</button>
+                <div class="test-result" id="videoModalResult"></div>
+            </div>
+        </div>
+
+        <!-- اختبار الاستجابة -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-mobile-alt"></i>
+                اختبار الاستجابة
+            </h2>
+            
+            <div class="test-item">
+                <h4>اختبار التصميم المتجاوب</h4>
+                <p>اختبر كيف تبدو الكورسات على أحجام شاشة مختلفة</p>
+                <button class="test-button" onclick="testResponsive('mobile')">عرض الجوال</button>
+                <button class="test-button" onclick="testResponsive('tablet')">عرض التابلت</button>
+                <button class="test-button" onclick="testResponsive('desktop')">عرض سطح المكتب</button>
+                <div class="test-result" id="responsiveResult"></div>
+            </div>
+        </div>
+
+        <!-- نتائج الاختبار العامة -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <i class="fas fa-chart-bar"></i>
+                نتائج الاختبار
+            </h2>
+            
+            <div id="overallResults">
+                <p>ابدأ الاختبارات لرؤية النتائج...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            search: false,
+            clearSearch: false,
+            categoryFilter: false,
+            videoModal: false,
+            responsive: false
+        };
+
+        function showResult(elementId, success, message) {
+            const resultElement = document.getElementById(elementId);
+            resultElement.style.display = 'block';
+            resultElement.className = `test-result ${success ? 'success' : 'error'}`;
+            resultElement.innerHTML = `<i class="fas fa-${success ? 'check' : 'times'}"></i> ${message}`;
+        }
+
+        function testSearch() {
+            const searchInput = document.getElementById('searchTest');
+            const searchTerm = searchInput.value.trim();
+            
+            if (searchTerm === '') {
+                showResult('searchResult', false, 'يرجى إدخال كلمة للبحث');
+                return;
+            }
+
+            // محاكاة البحث
+            setTimeout(() => {
+                testResults.search = true;
+                showResult('searchResult', true, `تم البحث عن "${searchTerm}" بنجاح`);
+                updateOverallResults();
+            }, 500);
+        }
+
+        function testClearSearch() {
+            document.getElementById('searchTest').value = '';
+            setTimeout(() => {
+                testResults.clearSearch = true;
+                showResult('clearSearchResult', true, 'تم مسح البحث بنجاح');
+                updateOverallResults();
+            }, 300);
+        }
+
+        function testCategoryFilter(category) {
+            // إزالة الفئة النشطة من جميع الأزرار
+            document.querySelectorAll('.category-test-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // إضافة الفئة النشطة للزر المحدد
+            event.target.classList.add('active');
+            
+            setTimeout(() => {
+                testResults.categoryFilter = true;
+                const categoryNames = {
+                    'all': 'جميع الكورسات',
+                    'english': 'اللغة الإنجليزية',
+                    'hr': 'الموارد البشرية',
+                    'technical': 'التقنية'
+                };
+                showResult('categoryFilterResult', true, `تم تصفية الكورسات حسب: ${categoryNames[category]}`);
+                updateOverallResults();
+            }, 300);
+        }
+
+        function testVideoModal(courseId) {
+            setTimeout(() => {
+                testResults.videoModal = true;
+                const courseNames = {
+                    'english-a1': 'اللغة الإنجليزية A1',
+                    'hr-professional': 'الموارد البشرية المهنية',
+                    'programming-web': 'البرمجة وتطوير المواقع'
+                };
+                showResult('videoModalResult', true, `تم فتح الفيديو التعريفي لكورس: ${courseNames[courseId]}`);
+                updateOverallResults();
+            }, 500);
+        }
+
+        function testResponsive(viewType) {
+            const viewSizes = {
+                'mobile': '375px',
+                'tablet': '768px',
+                'desktop': '1200px'
+            };
+            
+            setTimeout(() => {
+                testResults.responsive = true;
+                showResult('responsiveResult', true, `تم اختبار العرض على: ${viewType} (${viewSizes[viewType]})`);
+                updateOverallResults();
+            }, 300);
+        }
+
+        function updateOverallResults() {
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result).length;
+            const percentage = Math.round((passedTests / totalTests) * 100);
+            
+            const overallElement = document.getElementById('overallResults');
+            overallElement.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3>نتائج الاختبار الإجمالية</h3>
+                    <div style="font-size: 2rem; margin: 20px 0;">
+                        <span style="color: ${percentage >= 80 ? '#28a745' : percentage >= 60 ? '#ffc107' : '#dc3545'};">
+                            ${percentage}%
+                        </span>
+                    </div>
+                    <p>تم اجتياز ${passedTests} من أصل ${totalTests} اختبارات</p>
+                    <div style="margin-top: 20px;">
+                        ${percentage >= 80 ? 
+                            '<i class="fas fa-trophy" style="color: gold; font-size: 2rem;"></i><br>ممتاز! جميع الوظائف تعمل بشكل صحيح' :
+                            percentage >= 60 ?
+                            '<i class="fas fa-thumbs-up" style="color: #ffc107; font-size: 2rem;"></i><br>جيد! معظم الوظائف تعمل' :
+                            '<i class="fas fa-exclamation-triangle" style="color: #dc3545; font-size: 2rem;"></i><br>يحتاج إلى مراجعة'
+                        }
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

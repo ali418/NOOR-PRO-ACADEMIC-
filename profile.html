@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البروفايل - نور أكاديمي</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/arabic.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <div class="logo-wrapper">
+                        <img src="logo/nor-01.jpg" alt="Noor Academy" class="logo-img">
+                        <div class="logo-glow"></div>
+                    </div>
+                    <div class="logo-text">
+                        <h1>نور أكاديمي</h1>
+                        <p>التميز في التعليم</p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="profile-section">
+                        <div class="profile-dropdown">
+                            <button class="profile-btn">
+                                <i class="fas fa-user-circle"></i>
+                                <span class="profile-name">الطالب</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="profile-menu">
+                                <a href="profile.html" class="profile-menu-item">
+                                    <i class="fas fa-user"></i>
+                                    <span>عرض البروفايل</span>
+                                </a>
+                                <a href="#" class="profile-menu-item" id="my-courses">
+                                    <i class="fas fa-book"></i>
+                                    <span>كورساتي</span>
+                                </a>
+                                <a href="#" class="profile-menu-item" id="settings">
+                                    <i class="fas fa-cog"></i>
+                                    <span>الإعدادات</span>
+                                </a>
+                                <div class="profile-menu-divider"></div>
+                                <a href="index.html" class="profile-menu-item" id="logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>تسجيل الخروج</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Profile Content -->
+    <main class="profile-main">
+        <div class="container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <img src="https://via.placeholder.com/120" alt="صورة الطالب" id="profile-image">
+                    <button class="change-avatar-btn">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <div class="profile-info">
+                    <h1 id="student-name">اسم الطالب</h1>
+                    <p id="student-email">student@example.com</p>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="enrolled-courses">0</span>
+                            <span class="stat-label">الكورسات المسجلة</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="completed-courses">0</span>
+                            <span class="stat-label">الكورسات المكتملة</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="pending-courses">0</span>
+                            <span class="stat-label">في انتظار الموافقة</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Content Tabs -->
+            <div class="profile-tabs">
+                <button class="tab-btn active" data-tab="personal-info">
+                    <i class="fas fa-user"></i>
+                    <span>المعلومات الشخصية</span>
+                </button>
+                <button class="tab-btn" data-tab="my-courses">
+                    <i class="fas fa-book"></i>
+                    <span>كورساتي</span>
+                </button>
+                <button class="tab-btn" data-tab="certificates">
+                    <i class="fas fa-certificate"></i>
+                    <span>الشهادات</span>
+                </button>
+                <button class="tab-btn" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>الإعدادات</span>
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Personal Info Tab -->
+                <div class="tab-pane active" id="personal-info">
+                    <div class="info-card">
+                        <h3>المعلومات الأساسية</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>الاسم الكامل</label>
+                                <input type="text" id="full-name" readonly>
+                            </div>
+                            <div class="info-item">
+                                <label>البريد الإلكتروني</label>
+                                <input type="email" id="email" readonly>
+                            </div>
+                            <div class="info-item">
+                                <label>رقم الهاتف</label>
+                                <input type="tel" id="phone" readonly>
+                            </div>
+                            <div class="info-item">
+                                <label>تاريخ الميلاد</label>
+                                <input type="date" id="birth-date" readonly>
+                            </div>
+                            <div class="info-item">
+                                <label>المدينة</label>
+                                <input type="text" id="city" readonly>
+                            </div>
+                            <div class="info-item">
+                                <label>المستوى التعليمي</label>
+                                <select id="education-level" disabled>
+                                    <option value="">اختر المستوى</option>
+                                    <option value="high-school">ثانوي</option>
+                                    <option value="bachelor">بكالوريوس</option>
+                                    <option value="master">ماجستير</option>
+                                    <option value="phd">دكتوراه</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-edit" id="edit-info-btn">
+                            <i class="fas fa-edit"></i>
+                            <span>تعديل المعلومات</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- My Courses Tab -->
+                <div class="tab-pane" id="my-courses">
+                    <div class="courses-section">
+                        <h3>كورساتي</h3>
+                        <div class="courses-filter">
+                            <button class="filter-btn active" data-filter="all">الكل</button>
+                            <button class="filter-btn" data-filter="approved">مقبولة</button>
+                            <button class="filter-btn" data-filter="pending">في الانتظار</button>
+                            <button class="filter-btn" data-filter="completed">مكتملة</button>
+                        </div>
+                        <div class="courses-grid" id="student-courses">
+                            <!-- Courses will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certificates Tab -->
+                <div class="tab-pane" id="certificates">
+                    <div class="certificates-section">
+                        <h3>الشهادات</h3>
+                        <div class="certificates-grid" id="student-certificates">
+                            <!-- Certificates will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div class="tab-pane" id="settings">
+                    <div class="settings-section">
+                        <h3>إعدادات الحساب</h3>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label>تغيير كلمة المرور</label>
+                                <button class="btn-secondary" id="change-password-btn">
+                                    <i class="fas fa-key"></i>
+                                    <span>تغيير كلمة المرور</span>
+                                </button>
+                            </div>
+                            <div class="setting-item">
+                                <label>الإشعارات</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notifications-toggle" checked>
+                                    <label for="notifications-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <label>اللغة</label>
+                                <select id="language-select">
+                                    <option value="ar">العربية</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/profile.js"></script>
+</body>
+</html>

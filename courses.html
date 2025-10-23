@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المقررات - نور أكاديمي</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/arabic.css">
+    <link rel="stylesheet" href="css/courses.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Admin Access Control - Must be in head to prevent content flash -->
+    <script>
+        // Check if admin is logged in before page loads
+        if (localStorage.getItem('adminLoggedIn') !== 'true') {
+            // Redirect immediately without showing content
+            window.location.replace('admin.html');
+        }
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-background"></div>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <div class="logo-wrapper">
+                        <div class="logo-glow"></div>
+                        <img src="logo/nor-01.jpg" alt="Noor Academy Logo" class="logo-img">
+                    </div>
+                    <div class="logo-text">
+                        <h1 data-ar="نور أكاديمي" data-en="Noor Academy">نور أكاديمي</h1>
+                        <p data-ar="التميز في التعليم" data-en="Excellence in Education">التميز في التعليم</p>
+                    </div>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link" data-ar="الرئيسية" data-en="Home">
+                            <i class="fas fa-home"></i>
+                            <span>الرئيسية</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="students.html" class="nav-link" data-ar="الطلاب" data-en="Students">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>الطلاب</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="courses.html" class="nav-link active" data-ar="المقررات" data-en="Courses">
+                            <i class="fas fa-book"></i>
+                            <span>المقررات</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="teachers.html" class="nav-link" data-ar="المدرسون" data-en="Teachers">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span>المدرسون</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="reports.html" class="nav-link" data-ar="التقارير" data-en="Reports">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>التقارير</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1 data-ar="إدارة المقررات والدروس" data-en="Courses & Lessons Management">إدارة المقررات والدروس</h1>
+                    <p data-ar="إدارة شاملة للمقررات الدراسية والدروس التعليمية" data-en="Comprehensive management of academic courses and educational lessons">إدارة شاملة للمقررات الدراسية والدروس التعليمية</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" id="importCoursesBtn">
+                        <i class="fas fa-upload"></i>
+                        <span data-ar="استيراد" data-en="Import">استيراد</span>
+                    </button>
+                    <button class="btn btn-secondary" id="exportCoursesBtn">
+                        <i class="fas fa-download"></i>
+                        <span data-ar="تصدير" data-en="Export">تصدير</span>
+                    </button>
+                    <button class="btn btn-primary" id="addCourseBtn">
+                        <i class="fas fa-plus"></i>
+                        <span data-ar="إضافة مقرر" data-en="Add Course">إضافة مقرر</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">156</div>
+                        <div class="stat-label" data-ar="إجمالي المقررات" data-en="Total Courses">إجمالي المقررات</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">89</div>
+                        <div class="stat-label" data-ar="المقررات النشطة" data-en="Active Courses">المقررات النشطة</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">1,247</div>
+                        <div class="stat-label" data-ar="إجمالي الدروس" data-en="Total Lessons">إجمالي الدروس</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">3,456</div>
+                        <div class="stat-label" data-ar="الطلاب المسجلين" data-en="Enrolled Students">الطلاب المسجلين</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses Management -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 data-ar="المقررات الدراسية" data-en="Academic Courses">المقررات الدراسية</h2>
+                    <div class="section-actions">
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-view="grid" title="عرض الشبكة">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button class="view-btn" data-view="list" title="عرض القائمة">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-icon" id="refreshCourses" title="تحديث">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-section">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="courseSearch" data-placeholder-ar="البحث في المقررات..." data-placeholder-en="Search courses..." placeholder="البحث في المقررات...">
+                    </div>
+                    <div class="filter-group">
+                        <select id="categoryFilter">
+                            <option value="" data-ar="جميع التصنيفات" data-en="All Categories">جميع التصنيفات</option>
+                            <option value="english" data-ar="اللغة الإنجليزية" data-en="English Language">اللغة الإنجليزية</option>
+                            <option value="hr" data-ar="الموارد البشرية" data-en="Human Resources">الموارد البشرية</option>
+                            <option value="technical" data-ar="التقنية" data-en="Technical">التقنية</option>
+                            <option value="business" data-ar="إدارة الأعمال" data-en="Business Management">إدارة الأعمال</option>
+                            <option value="marketing" data-ar="التسويق" data-en="Marketing">التسويق</option>
+                            <option value="finance" data-ar="المالية" data-en="Finance">المالية</option>
+                        </select>
+                        <select id="levelFilter">
+                            <option value="" data-ar="جميع المستويات" data-en="All Levels">جميع المستويات</option>
+                            <option value="beginner" data-ar="مبتدئ (A1)" data-en="Beginner (A1)">مبتدئ (A1)</option>
+                            <option value="elementary" data-ar="تأسيسي (A2)" data-en="Elementary (A2)">تأسيسي (A2)</option>
+                            <option value="intermediate" data-ar="متوسط (B1)" data-en="Intermediate (B1)">متوسط (B1)</option>
+                            <option value="advanced" data-ar="متقدم (B2)" data-en="Advanced (B2)">متقدم (B2)</option>
+                            <option value="professional" data-ar="مهني" data-en="Professional">مهني</option>
+                            <option value="diploma" data-ar="دبلوم" data-en="Diploma">دبلوم</option>
+                        </select>
+                        <select id="statusFilter">
+                            <option value="" data-ar="جميع الحالات" data-en="All Status">جميع الحالات</option>
+                            <option value="active" data-ar="نشط" data-en="Active">نشط</option>
+                            <option value="draft" data-ar="مسودة" data-en="Draft">مسودة</option>
+                            <option value="archived" data-ar="مؤرشف" data-en="Archived">مؤرشف</option>
+                        </select>
+                        <select id="sortBy">
+                            <option value="name" data-ar="الاسم" data-en="Name">الاسم</option>
+                            <option value="date" data-ar="التاريخ" data-en="Date">التاريخ</option>
+                            <option value="students" data-ar="عدد الطلاب" data-en="Students Count">عدد الطلاب</option>
+                            <option value="lessons" data-ar="عدد الدروس" data-en="Lessons Count">عدد الدروس</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Courses Grid -->
+                <div class="courses-container" id="coursesContainer">
+                    <div class="courses-grid" id="coursesGrid">
+                        <!-- Courses will be populated here -->
+                    </div>
+                    
+                    <!-- Courses List (hidden by default) -->
+                    <div class="courses-list" id="coursesList" style="display: none;">
+                        <div class="table-container">
+                            <table class="courses-table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <input type="checkbox" id="selectAllCourses">
+                                        </th>
+                                        <th data-ar="المقرر" data-en="Course">المقرر</th>
+                                        <th data-ar="التصنيف" data-en="Category">التصنيف</th>
+                                        <th data-ar="المستوى" data-en="Level">المستوى</th>
+                                        <th data-ar="الدروس" data-en="Lessons">الدروس</th>
+                                        <th data-ar="الطلاب" data-en="Students">الطلاب</th>
+                                        <th data-ar="الحالة" data-en="Status">الحالة</th>
+                                        <th data-ar="تاريخ الإنشاء" data-en="Created">تاريخ الإنشاء</th>
+                                        <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coursesTableBody">
+                                    <!-- Courses data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        <span data-ar="عرض 1-12 من 156 مقرر" data-en="Showing 1-12 of 156 courses">عرض 1-12 من 156 مقرر</span>
+                    </div>
+                    <div class="pagination">
+                        <button class="pagination-btn" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="pagination-btn active">1</button>
+                        <button class="pagination-btn">2</button>
+                        <button class="pagination-btn">3</button>
+                        <span class="pagination-dots">...</span>
+                        <button class="pagination-btn">13</button>
+                        <button class="pagination-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Course Modal -->
+    <div id="addCourseModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 data-ar="إضافة مقرر جديد" data-en="Add New Course">إضافة مقرر جديد</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form class="course-form" id="addCourseForm">
+                <div class="form-tabs">
+                    <button type="button" class="tab-btn active" data-tab="basic">
+                        <i class="fas fa-info-circle"></i>
+                        <span data-ar="المعلومات الأساسية" data-en="Basic Info">المعلومات الأساسية</span>
+                    </button>
+                    <button type="button" class="tab-btn" data-tab="content">
+                        <i class="fas fa-book-open"></i>
+                        <span data-ar="المحتوى" data-en="Content">المحتوى</span>
+                    </button>
+                    <button type="button" class="tab-btn" data-tab="settings">
+                        <i class="fas fa-cog"></i>
+                        <span data-ar="الإعدادات" data-en="Settings">الإعدادات</span>
+                    </button>
+                </div>
+
+                <div class="tab-content active" id="basicTab">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label data-ar="اسم المقرر" data-en="Course Name">اسم المقرر</label>
+                            <input type="text" name="courseName" required data-placeholder-ar="أدخل اسم المقرر" data-placeholder-en="Enter course name" placeholder="أدخل اسم المقرر">
+                        </div>
+                        <div class="form-group">
+                            <label data-ar="التصنيف" data-en="Category">التصنيف</label>
+                            <select name="category" required>
+                                <option value="">اختر التصنيف</option>
+                                <option value="english">اللغة الإنجليزية</option>
+                                <option value="hr">الموارد البشرية</option>
+                                <option value="technical">التقنية</option>
+                                <option value="business">إدارة الأعمال</option>
+                                <option value="marketing">التسويق</option>
+                                <option value="finance">المالية</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-ar="المستوى التعليمي" data-en="Education Level">المستوى التعليمي</label>
+                            <select name="level" required>
+                                <option value="">اختر المستوى</option>
+                                <option value="beginner">مبتدئ (A1)</option>
+                                <option value="elementary">تأسيسي (A2)</option>
+                                <option value="intermediate">متوسط (B1)</option>
+                                <option value="advanced">متقدم (B2)</option>
+                                <option value="professional">مهني</option>
+                                <option value="diploma">دبلوم</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label data-ar="وصف المقرر" data-en="Course Description">وصف المقرر</label>
+                            <textarea name="description" rows="4" data-placeholder-ar="أدخل وصف المقرر" data-placeholder-en="Enter course description" placeholder="أدخل وصف المقرر"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label data-ar="المدة (بالساعات)" data-en="Duration (Hours)">المدة (بالساعات)</label>
+                            <input type="number" name="duration" min="1" data-placeholder-ar="عدد الساعات" data-placeholder-en="Number of hours" placeholder="عدد الساعات">
+                        </div>
+                        <div class="form-group">
+                            <label data-ar="السعر" data-en="Price">السعر</label>
+                            <input type="number" name="price" min="0" step="0.01" data-placeholder-ar="السعر بالريال" data-placeholder-en="Price in SAR" placeholder="السعر بالريال">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="contentTab">
+                    <div class="lessons-section">
+                        <div class="section-header">
+                            <h3 data-ar="دروس المقرر" data-en="Course Lessons">دروس المقرر</h3>
+                            <button type="button" class="btn btn-secondary" id="addLessonBtn">
+                                <i class="fas fa-plus"></i>
+                                <span data-ar="إضافة درس" data-en="Add Lesson">إضافة درس</span>
+                            </button>
+                        </div>
+                        <div class="lessons-list" id="lessonsList">
+                            <!-- Lessons will be added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="settingsTab">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label data-ar="حالة المقرر" data-en="Course Status">حالة المقرر</label>
+                            <select name="status">
+                                <option value="draft">مسودة</option>
+                                <option value="active">نشط</option>
+                                <option value="archived">مؤرشف</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-ar="الحد الأقصى للطلاب" data-en="Max Students">الحد الأقصى للطلاب</label>
+                            <input type="number" name="maxStudents" min="1" data-placeholder-ar="عدد الطلاب" data-placeholder-en="Number of students" placeholder="عدد الطلاب">
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="allowEnrollment">
+                                    <span class="checkmark"></span>
+                                    <span data-ar="السماح بالتسجيل" data-en="Allow Enrollment">السماح بالتسجيل</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="requireApproval">
+                                    <span class="checkmark"></span>
+                                    <span data-ar="يتطلب موافقة للتسجيل" data-en="Requires Approval">يتطلب موافقة للتسجيل</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCourseModal')">
+                        <span data-ar="إلغاء" data-en="Cancel">إلغاء</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span data-ar="حفظ المقرر" data-en="Save Course">حفظ المقرر</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Course Details Modal -->
+    <div id="courseDetailsModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 data-ar="تفاصيل المقرر" data-en="Course Details">تفاصيل المقرر</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="course-details" id="courseDetailsContent">
+                <!-- Course details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Lesson Modal -->
+    <div id="addLessonModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-ar="إضافة درس جديد" data-en="Add New Lesson">إضافة درس جديد</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form class="lesson-form" id="addLessonForm">
+                <div class="form-group">
+                    <label data-ar="عنوان الدرس" data-en="Lesson Title">عنوان الدرس</label>
+                    <input type="text" name="lessonTitle" required data-placeholder-ar="أدخل عنوان الدرس" data-placeholder-en="Enter lesson title" placeholder="أدخل عنوان الدرس">
+                </div>
+                <div class="form-group">
+                    <label data-ar="نوع الدرس" data-en="Lesson Type">نوع الدرس</label>
+                    <select name="lessonType" required>
+                        <option value="">اختر نوع الدرس</option>
+                        <option value="video">فيديو</option>
+                        <option value="text">نص</option>
+                        <option value="quiz">اختبار</option>
+                        <option value="assignment">واجب</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-ar="المدة (بالدقائق)" data-en="Duration (Minutes)">المدة (بالدقائق)</label>
+                    <input type="number" name="lessonDuration" min="1" data-placeholder-ar="المدة بالدقائق" data-placeholder-en="Duration in minutes" placeholder="المدة بالدقائق">
+                </div>
+                <div class="form-group">
+                    <label data-ar="وصف الدرس" data-en="Lesson Description">وصف الدرس</label>
+                    <textarea name="lessonDescription" rows="3" data-placeholder-ar="أدخل وصف الدرس" data-placeholder-en="Enter lesson description" placeholder="أدخل وصف الدرس"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addLessonModal')">
+                        <span data-ar="إلغاء" data-en="Cancel">إلغاء</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        <span data-ar="إضافة الدرس" data-en="Add Lesson">إضافة الدرس</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/courses.js"></script>
+</body>
+</html>

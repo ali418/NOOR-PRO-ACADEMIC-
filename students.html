@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الطلاب - نور أكاديمي</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/arabic.css">
+    <link rel="stylesheet" href="css/students.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Admin Access Control - Must be in head to prevent content flash -->
+    <script>
+        // Check if admin is logged in before page loads
+        if (localStorage.getItem('adminLoggedIn') !== 'true') {
+            // Redirect immediately without showing content
+            window.location.replace('admin.html');
+        }
+    </script>
+</head>
+<body class="arabic-text">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-background"></div>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <div class="logo-wrapper">
+                        <div class="logo-glow"></div>
+                        <img src="logo/nor-01.jpg" alt="Noor Academy Logo" class="logo-img">
+                    </div>
+                    <div class="logo-text">
+                        <h1 data-ar="نور أكاديمي" data-en="Noor Academy">نور أكاديمي</h1>
+                        <p data-ar="التميز في التعليم" data-en="Excellence in Education">التميز في التعليم</p>
+                    </div>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link" data-ar="الرئيسية" data-en="Home">
+                            <i class="fas fa-home"></i>
+                            <span>الرئيسية</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="students.html" class="nav-link active" data-ar="الطلاب" data-en="Students">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>الطلاب</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="courses.html" class="nav-link" data-ar="المقررات" data-en="Courses">
+                            <i class="fas fa-book"></i>
+                            <span>المقررات</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="teachers.html" class="nav-link" data-ar="المدرسون" data-en="Teachers">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span>المدرسون</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="reports.html" class="nav-link" data-ar="التقارير" data-en="Reports">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>التقارير</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <div class="page-title">
+                    <h1 data-ar="إدارة الطلاب" data-en="Student Management">إدارة الطلاب</h1>
+                    <p data-ar="إدارة شاملة لبيانات الطلاب والتسجيل والمتابعة الأكاديمية" data-en="Comprehensive management of student data, registration, and academic tracking">إدارة شاملة لبيانات الطلاب والتسجيل والمتابعة الأكاديمية</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn-primary" id="addStudentBtn">
+                        <i class="fas fa-plus"></i>
+                        <span data-ar="إضافة طالب جديد" data-en="Add New Student">إضافة طالب جديد</span>
+                    </button>
+                    <button class="btn-secondary" id="importStudentsBtn">
+                        <i class="fas fa-upload"></i>
+                        <span data-ar="استيراد طلاب" data-en="Import Students">استيراد طلاب</span>
+                    </button>
+                    <button class="btn-secondary" id="exportStudentsBtn">
+                        <i class="fas fa-download"></i>
+                        <span data-ar="تصدير البيانات" data-en="Export Data">تصدير البيانات</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-section">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">1,247</h3>
+                            <p class="stat-label" data-ar="إجمالي الطلاب" data-en="Total Students">إجمالي الطلاب</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon active">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">1,156</h3>
+                            <p class="stat-label" data-ar="طلاب نشطون" data-en="Active Students">طلاب نشطون</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon new">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">91</h3>
+                            <p class="stat-label" data-ar="طلاب جدد هذا الشهر" data-en="New This Month">طلاب جدد هذا الشهر</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon graduated">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">342</h3>
+                            <p class="stat-label" data-ar="خريجون" data-en="Graduates">خريجون</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="filters-section">
+            <div class="container">
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="studentSearch" placeholder="البحث عن طالب..." data-placeholder-ar="البحث عن طالب..." data-placeholder-en="Search for student...">
+                    </div>
+                    <div class="filter-group">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="" data-ar="جميع الحالات" data-en="All Status">جميع الحالات</option>
+                            <option value="active" data-ar="نشط" data-en="Active">نشط</option>
+                            <option value="inactive" data-ar="غير نشط" data-en="Inactive">غير نشط</option>
+                            <option value="graduated" data-ar="خريج" data-en="Graduated">خريج</option>
+                            <option value="suspended" data-ar="موقوف" data-en="Suspended">موقوف</option>
+                        </select>
+                        <select id="gradeFilter" class="filter-select">
+                            <option value="" data-ar="جميع المراحل" data-en="All Grades">جميع المراحل</option>
+                            <option value="elementary" data-ar="ابتدائي" data-en="Elementary">ابتدائي</option>
+                            <option value="middle" data-ar="متوسط" data-en="Middle School">متوسط</option>
+                            <option value="high" data-ar="ثانوي" data-en="High School">ثانوي</option>
+                            <option value="university" data-ar="جامعي" data-en="University">جامعي</option>
+                        </select>
+                        <select id="sortBy" class="filter-select">
+                            <option value="name" data-ar="ترتيب بالاسم" data-en="Sort by Name">ترتيب بالاسم</option>
+                            <option value="date" data-ar="ترتيب بالتاريخ" data-en="Sort by Date">ترتيب بالتاريخ</option>
+                            <option value="grade" data-ar="ترتيب بالدرجة" data-en="Sort by Grade">ترتيب بالدرجة</option>
+                        </select>
+                    </div>
+                    <button class="btn-icon filter-toggle" id="advancedFilters">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Table -->
+        <div class="table-section">
+            <div class="container">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 data-ar="قائمة الطلاب" data-en="Students List">قائمة الطلاب</h3>
+                        <div class="table-actions">
+                            <button class="btn-icon" id="refreshTable">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="btn-icon" id="tableSettings">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="students-table" id="studentsTable">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="selectAll">
+                                    </th>
+                                    <th data-ar="الصورة" data-en="Photo">الصورة</th>
+                                    <th data-ar="الاسم" data-en="Name">الاسم</th>
+                                    <th data-ar="رقم الطالب" data-en="Student ID">رقم الطالب</th>
+                                    <th data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</th>
+                                    <th data-ar="الهاتف" data-en="Phone">الهاتف</th>
+                                    <th data-ar="المرحلة" data-en="Grade">المرحلة</th>
+                                    <th data-ar="الحالة" data-en="Status">الحالة</th>
+                                    <th data-ar="تاريخ التسجيل" data-en="Registration Date">تاريخ التسجيل</th>
+                                    <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <!-- Students data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span data-ar="عرض 1-10 من 247 طالب" data-en="Showing 1-10 of 247 students">عرض 1-10 من 247 طالب</span>
+                        </div>
+                        <div class="pagination">
+                            <button class="pagination-btn" disabled>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button class="pagination-btn active">1</button>
+                            <button class="pagination-btn">2</button>
+                            <button class="pagination-btn">3</button>
+                            <span class="pagination-dots">...</span>
+                            <button class="pagination-btn">25</button>
+                            <button class="pagination-btn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 data-ar="إضافة طالب جديد" data-en="Add New Student">إضافة طالب جديد</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form class="student-form" id="addStudentForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label data-ar="الاسم الأول" data-en="First Name">الاسم الأول</label>
+                        <input type="text" name="firstName" required data-placeholder-ar="أدخل الاسم الأول" data-placeholder-en="Enter first name" placeholder="أدخل الاسم الأول">
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="الاسم الأخير" data-en="Last Name">الاسم الأخير</label>
+                        <input type="text" name="lastName" required data-placeholder-ar="أدخل الاسم الأخير" data-placeholder-en="Enter last name" placeholder="أدخل الاسم الأخير">
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</label>
+                        <input type="email" name="email" required data-placeholder-ar="أدخل البريد الإلكتروني" data-placeholder-en="Enter email" placeholder="أدخل البريد الإلكتروني">
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="رقم الهاتف" data-en="Phone Number">رقم الهاتف</label>
+                        <input type="tel" name="phone" required data-placeholder-ar="أدخل رقم الهاتف" data-placeholder-en="Enter phone number" placeholder="أدخل رقم الهاتف">
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="تاريخ الميلاد" data-en="Date of Birth">تاريخ الميلاد</label>
+                        <input type="date" name="birthDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="الجنس" data-en="Gender">الجنس</label>
+                        <select name="gender" required>
+                            <option value="" data-ar="اختر الجنس" data-en="Select Gender">اختر الجنس</option>
+                            <option value="male" data-ar="ذكر" data-en="Male">ذكر</option>
+                            <option value="female" data-ar="أنثى" data-en="Female">أنثى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="المرحلة التعليمية" data-en="Grade Level">المرحلة التعليمية</label>
+                        <select name="gradeLevel" required>
+                            <option value="" data-ar="اختر المرحلة" data-en="Select Grade">اختر المرحلة</option>
+                            <option value="elementary" data-ar="ابتدائي" data-en="Elementary">ابتدائي</option>
+                            <option value="middle" data-ar="متوسط" data-en="Middle School">متوسط</option>
+                            <option value="high" data-ar="ثانوي" data-en="High School">ثانوي</option>
+                            <option value="university" data-ar="جامعي" data-en="University">جامعي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="العنوان" data-en="Address">العنوان</label>
+                        <input type="text" name="address" data-placeholder-ar="أدخل العنوان" data-placeholder-en="Enter address" placeholder="أدخل العنوان">
+                    </div>
+                    <div class="form-group full-width">
+                        <label data-ar="ملاحظات" data-en="Notes">ملاحظات</label>
+                        <textarea name="notes" rows="3" data-placeholder-ar="أدخل أي ملاحظات إضافية" data-placeholder-en="Enter any additional notes" placeholder="أدخل أي ملاحظات إضافية"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span data-ar="حفظ الطالب" data-en="Save Student">حفظ الطالب</span>
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeModal('addStudentModal')">
+                        <span data-ar="إلغاء" data-en="Cancel">إلغاء</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student Details Modal -->
+    <div id="studentDetailsModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 data-ar="تفاصيل الطالب" data-en="Student Details">تفاصيل الطالب</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="student-details" id="studentDetailsContent">
+                <!-- Student details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/students.js"></script>
+</body>
+</html>
