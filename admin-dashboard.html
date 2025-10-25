@@ -575,12 +575,8 @@
 
         // Load dashboard statistics
         function loadDashboardStats() {
-            // Simulate loading statistics (في التطبيق الحقيقي، ستأتي هذه البيانات من API)
-            setTimeout(() => {
-                document.getElementById('totalStudents').textContent = '156';
-                document.getElementById('totalCourses').textContent = '24';
-                document.getElementById('activeUsers').textContent = '89';
-            }, 500);
+            // سيتم تحديث الإحصائيات من خلال admin-dashboard.js
+            // تم إزالة القيم الثابتة لتأتي من قاعدة البيانات
         }
 
         // Show coming soon message
@@ -607,21 +603,9 @@
             });
         });
 
-        // Add loading animation for stats
+        // الأرقام سيتم تحديثها ديناميكياً من admin-dashboard.js
         function animateStats() {
-            const statNumbers = document.querySelectorAll('.stat-number');
-            statNumbers.forEach(stat => {
-                const finalValue = stat.textContent;
-                stat.textContent = '0';
-                
-                if (finalValue.includes('%')) {
-                    const numValue = parseInt(finalValue);
-                    animateNumber(stat, 0, numValue, '%');
-                } else {
-                    const numValue = parseInt(finalValue);
-                    animateNumber(stat, 0, numValue, '');
-                }
-            });
+            // تم إزالة الأرقام الثابتة - سيتم تحديثها من قاعدة البيانات
         }
 
         function animateNumber(element, start, end, suffix) {

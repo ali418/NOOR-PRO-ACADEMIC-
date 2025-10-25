@@ -8,9 +8,62 @@ class AdminDashboard {
 
     async init() {
         await this.loadEnrollments();
+        await this.loadDashboardStats(); // إضافة تحميل الإحصائيات
         this.bindEvents();
         this.updateStats();
         this.displayEnrollments();
+    }
+
+    async loadDashboardStats() {
+        try {
+            const response = await fetch('api/stats.php');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.updateDashboardStats(result.data);
+                    console.log('Dashboard stats loaded from database:', result.data);
+                } else {
+                    throw new Error(result.error || 'Failed to load stats');
+                }
+            } else {
+                throw new Error('Failed to fetch stats from API');
+            }
+        } catch (error) {
+            console.log('API not available for stats, using default values:', error.message);
+            // في حالة عدم توفر API، عرض قيم افتراضية (صفر)
+            this.updateDashboardStats({
+                totalStudents: 0,
+                totalCourses: 0,
+                activeUsers: 0,
+                systemStatus: 0
+            });
+        }
+    }
+
+    updateDashboardStats(stats) {
+        // تحديث الأرقام في الكروت
+        const totalStudentsElement = document.getElementById('totalStudents');
+        const totalCoursesElement = document.getElementById('totalCourses');
+        const activeUsersElement = document.getElementById('activeUsers');
+        const systemStatusElement = document.getElementById('systemStatus');
+
+        if (totalStudentsElement) {
+            totalStudentsElement.textContent = stats.totalStudents || 0;
+        }
+        
+        if (totalCoursesElement) {
+            totalCoursesElement.textContent = stats.totalCourses || 0;
+        }
+        
+        if (activeUsersElement) {
+            activeUsersElement.textContent = stats.activeUsers || 0;
+        }
+        
+        if (systemStatusElement) {
+            systemStatusElement.textContent = stats.systemStatus ? `${stats.systemStatus}%` : '0%';
+        }
+
+        console.log('Dashboard stats updated:', stats);
     }
 
     async loadEnrollments() {
@@ -644,3 +697,56 @@ window.onclick = function(event) {
         }
     });
 }
+
+
+    async loadDashboardStats() {
+        try {
+            const response = await fetch('api/stats.php');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.updateDashboardStats(result.data);
+                    console.log('Dashboard stats loaded from database:', result.data);
+                } else {
+                    throw new Error(result.error || 'Failed to load stats');
+                }
+            } else {
+                throw new Error('Failed to fetch stats from API');
+            }
+        } catch (error) {
+            console.log('API not available for stats, using default values:', error.message);
+            // في حالة عدم توفر API، عرض قيم افتراضية (صفر)
+            this.updateDashboardStats({
+                totalStudents: 0,
+                totalCourses: 0,
+                activeUsers: 0,
+                systemStatus: 0
+            });
+        }
+    }
+
+    updateDashboardStats(stats) {
+        // تحديث الأرقام في الكروت
+        const totalStudentsElement = document.getElementById('totalStudents');
+        const totalCoursesElement = document.getElementById('totalCourses');
+        const activeUsersElement = document.getElementById('activeUsers');
+        const systemStatusElement = document.getElementById('systemStatus');
+
+        if (totalStudentsElement) {
+            totalStudentsElement.textContent = stats.totalStudents || 0;
+        }
+        
+        if (totalCoursesElement) {
+            totalCoursesElement.textContent = stats.totalCourses || 0;
+        }
+        
+        if (activeUsersElement) {
+            activeUsersElement.textContent = stats.activeUsers || 0;
+        }
+        
+        if (systemStatusElement) {
+            systemStatusElement.textContent = stats.systemStatus ? `${stats.systemStatus}%` : '0%';
+        }
+
+        console.log('Dashboard stats updated:', stats);
+    }

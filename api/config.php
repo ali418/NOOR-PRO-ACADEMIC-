@@ -1,9 +1,20 @@
 <?php
-// إعدادات قاعدة البيانات
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'noor_academy');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+// إعدادات قاعدة البيانات - تكوين Railway
+$db_url = getenv('DATABASE_URL');
+if ($db_url) {
+    // استخدام متغيرات البيئة من Railway
+    define('DB_HOST', getenv('MYSQLHOST') ?: 'containers-us-west-41.railway.app');
+    define('DB_NAME', getenv('MYSQLDATABASE') ?: 'railway');
+    define('DB_USER', getenv('MYSQLUSER') ?: 'root');
+    define('DB_PASS', getenv('MYSQLPASSWORD') ?: 'your_password_here');
+    define('DB_PORT', getenv('MYSQLPORT') ?: '5432');
+} else {
+    // إعدادات محلية
+    define('DB_HOST', 'localhost');
+    define('DB_NAME', 'noor_academy');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+}
 
 // إعداد الترميز
 header('Content-Type: application/json; charset=utf-8');
@@ -27,8 +38,9 @@ class Database {
         $this->conn = null;
         
         try {
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8", 
-                                $this->username, $this->password);
+            $port = defined('DB_PORT') ? DB_PORT : '3306';
+            $dsn = "mysql:host=" . $this->host . ";port=" . $port . ";dbname=" . $this->db_name . ";charset=utf8";
+            $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch(PDOException $exception) {
             echo json_encode([
