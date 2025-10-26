@@ -77,8 +77,8 @@ function addCourse($db, $input) {
             sendResponse(false, 'رمز المقرر موجود مسبقاً');
         }
         
-        $query = "INSERT INTO courses (course_code, course_name, description, credits, duration_weeks, instructor_name, max_students) 
-                  VALUES (:course_code, :course_name, :description, :credits, :duration_weeks, :instructor_name, :max_students)";
+        $query = "INSERT INTO courses (course_code, course_name, description, credits, duration_weeks, instructor_name, max_students, youtube_link) 
+                  VALUES (:course_code, :course_name, :description, :credits, :duration_weeks, :instructor_name, :max_students, :youtube_link)";
         
         $stmt = $db->prepare($query);
         $stmt->bindParam(':course_code', $input['course_code']);
@@ -88,6 +88,7 @@ function addCourse($db, $input) {
         $stmt->bindParam(':duration_weeks', $input['duration_weeks'] ?? 16);
         $stmt->bindParam(':instructor_name', $input['instructor_name'] ?? null);
         $stmt->bindParam(':max_students', $input['max_students'] ?? 30);
+        $stmt->bindParam(':youtube_link', $input['youtube_link'] ?? null);
         
         if ($stmt->execute()) {
             $course_id = $db->lastInsertId();
@@ -132,7 +133,8 @@ function updateCourse($db, $input) {
                   duration_weeks = :duration_weeks,
                   instructor_name = :instructor_name,
                   max_students = :max_students,
-                  status = :status
+                  status = :status,
+                  youtube_link = :youtube_link
                   WHERE id = :id";
         
         $stmt = $db->prepare($query);
@@ -144,6 +146,7 @@ function updateCourse($db, $input) {
         $stmt->bindParam(':instructor_name', $input['instructor_name'] ?? null);
         $stmt->bindParam(':max_students', $input['max_students'] ?? 30);
         $stmt->bindParam(':status', $input['status'] ?? 'active');
+        $stmt->bindParam(':youtube_link', $input['youtube_link'] ?? null);
         
         if ($stmt->execute()) {
             sendResponse(true, 'تم تحديث بيانات المقرر بنجاح');

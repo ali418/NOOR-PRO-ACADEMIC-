@@ -8,7 +8,7 @@ class AdminDashboard {
 
     async init() {
         await this.loadEnrollments();
-        await this.loadDashboardStats(); // إضافة تحميل الإحصائيات
+        await this.loadDashboardStats();
         this.bindEvents();
         this.updateStats();
         this.displayEnrollments();
@@ -30,7 +30,6 @@ class AdminDashboard {
             }
         } catch (error) {
             console.log('API not available for stats, using default values:', error.message);
-            // في حالة عدم توفر API، عرض قيم افتراضية (صفر)
             this.updateDashboardStats({
                 totalStudents: 0,
                 totalCourses: 0,
@@ -41,7 +40,6 @@ class AdminDashboard {
     }
 
     updateDashboardStats(stats) {
-        // تحديث الأرقام في الكروت
         const totalStudentsElement = document.getElementById('totalStudents');
         const totalCoursesElement = document.getElementById('totalCourses');
         const activeUsersElement = document.getElementById('activeUsers');
@@ -68,7 +66,6 @@ class AdminDashboard {
 
     async loadEnrollments() {
         try {
-            // محاولة تحميل البيانات من API
             const response = await fetch('api/enrollments.php');
             if (response.ok) {
                 const data = await response.json();
@@ -80,11 +77,9 @@ class AdminDashboard {
         } catch (error) {
             console.log('API not available, checking localStorage:', error.message);
             
-            // في حالة عدم توفر API، تحميل من localStorage
             const stored = localStorage.getItem('noorProEnrollments');
             if (stored) {
                 const enrollmentData = JSON.parse(stored);
-                // Convert enrollment data to admin dashboard format
                 this.enrollments = enrollmentData.map((enrollment, index) => ({
                     id: `REQ-${String(index + 1).padStart(3, '0')}`,
                     studentName: enrollment.fullName,
@@ -108,13 +103,7 @@ class AdminDashboard {
         }
     }
 
-    addSampleData() {
-        // تم إزالة البيانات التجريبية - سيتم تحميل البيانات من قاعدة البيانات
-        console.log('Sample data removed - data will be loaded from database');
-    }
-
     bindEvents() {
-        // Search functionality
         const searchInput = document.getElementById('searchInput');
         const courseFilter = document.getElementById('courseFilter');
 
@@ -127,16 +116,25 @@ class AdminDashboard {
         }
     }
 
+    filterEnrollments() {
+        this.displayEnrollments();
+    }
+
     updateStats() {
         const pending = this.enrollments.filter(e => e.status === 'pending').length;
         const approved = this.enrollments.filter(e => e.status === 'approved').length;
         const rejected = this.enrollments.filter(e => e.status === 'rejected').length;
         const total = this.enrollments.length;
 
-        document.getElementById('pendingCount').textContent = pending;
-        document.getElementById('approvedCount').textContent = approved;
-        document.getElementById('rejectedCount').textContent = rejected;
-        document.getElementById('totalCount').textContent = total;
+        const pendingElement = document.getElementById('pendingCount');
+        const approvedElement = document.getElementById('approvedCount');
+        const rejectedElement = document.getElementById('rejectedCount');
+        const totalElement = document.getElementById('totalCount');
+
+        if (pendingElement) pendingElement.textContent = pending;
+        if (approvedElement) approvedElement.textContent = approved;
+        if (rejectedElement) rejectedElement.textContent = rejected;
+        if (totalElement) totalElement.textContent = total;
     }
 
     displayEnrollments(filter = 'all') {
@@ -146,7 +144,6 @@ class AdminDashboard {
             filteredEnrollments = this.enrollments.filter(e => e.status === filter);
         }
 
-        // Apply search and course filters
         const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
         const courseFilter = document.getElementById('courseFilter')?.value || '';
 
@@ -163,7 +160,6 @@ class AdminDashboard {
             filteredEnrollments = filteredEnrollments.filter(e => e.courseId === courseFilter);
         }
 
-        // Display in appropriate containers
         this.renderEnrollments('pendingEnrollments', filteredEnrollments.filter(e => e.status === 'pending'));
         this.renderEnrollments('approvedEnrollments', filteredEnrollments.filter(e => e.status === 'approved'));
         this.renderEnrollments('rejectedEnrollments', filteredEnrollments.filter(e => e.status === 'rejected'));
@@ -189,8 +185,6 @@ class AdminDashboard {
     }
 
     createEnrollmentCard(enrollment) {
-        console.log('Creating card for enrollment:', enrollment.id, 'Status:', enrollment.status);
-        console.log('Is status pending?', enrollment.status === 'pending');
         const statusClass = `status-${enrollment.status}`;
         const statusText = {
             'pending': 'معلق',
@@ -250,7 +244,7 @@ class AdminDashboard {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">المبلغ المدفوع:</span>
-                            <span class="detail-value">${enrollment.paymentDetails.amount} دولار</span>
+                            <span class="detail-value">${enrollment.paymentDetails.amount || 0} دولار</span>
                         </div>
                         ${enrollment.paymentDetails.transactionId ? `
                         <div class="detail-item">
@@ -265,7 +259,7 @@ class AdminDashboard {
                 <div class="receipt-preview">
                     <h4><i class="fas fa-receipt"></i> إيصال الدفع</h4>
                     <img src="${enrollment.receiptFile}" alt="إيصال الدفع" class="receipt-image" 
-                         onclick="showReceiptModal('${enrollment.receiptFile}')">
+                         onclick="adminDashboard.showReceiptModal('${enrollment.receiptFile}')">
                     <p style="margin-top: 10px; color: #666; font-size: 0.9rem;">اضغط على الصورة لعرضها بحجم أكبر</p>
                 </div>
                 ` : ''}
@@ -279,17 +273,17 @@ class AdminDashboard {
 
                 <div class="enrollment-actions">
                     ${enrollment.status === 'pending' ? `
-                        <button class="btn-approve" onclick="showApprovalModal('${enrollment.id}')">
+                        <button class="btn-approve" onclick="adminDashboard.showApprovalModal('${enrollment.id}')">
                             <i class="fas fa-check"></i> موافقة
                         </button>
-                        <button class="btn-reject" onclick="rejectEnrollment('${enrollment.id}')">
+                        <button class="btn-reject" onclick="adminDashboard.rejectEnrollment('${enrollment.id}')">
                             <i class="fas fa-times"></i> رفض
                         </button>
-                        <button class="btn-view-students" onclick="viewStudentDetails('${enrollment.id}')">
+                        <button class="btn-view-students" onclick="adminDashboard.viewStudentDetails('${enrollment.id}')">
                             <i class="fas fa-user-graduate"></i> عرض تفاصيل الطالب
                         </button>
                     ` : ''}
-                    <button class="btn-view-details" onclick="viewEnrollmentDetails('${enrollment.id}')">
+                    <button class="btn-view-details" onclick="adminDashboard.viewEnrollmentDetails('${enrollment.id}')">
                         <i class="fas fa-eye"></i> عرض التفاصيل
                     </button>
                 </div>
@@ -301,7 +295,6 @@ class AdminDashboard {
         this.currentEnrollment = this.enrollments.find(e => e.id === enrollmentId);
         if (!this.currentEnrollment) return;
 
-        // Pre-fill welcome message using WelcomeSystem if available
         let welcomeMessage = '';
         let whatsappLink = '';
         
@@ -311,26 +304,29 @@ class AdminDashboard {
             welcomeMessage = template.message;
             whatsappLink = template.whatsappLink;
         } else {
-            // Fallback to default message
             welcomeMessage = `مرحباً ${this.currentEnrollment.studentName}!\n\nتم قبول طلب التسجيل في دورة ${this.currentEnrollment.courseName}.\n\nتفاصيل الدورة:\n- تاريخ البدء: قريباً\n- المدة: حسب الدورة\n- الوقت: سيتم إشعارك\n\nسيتم التواصل معك قريباً لتزويدك بتفاصيل الوصول.\n\nمرحباً بك في مركز نور برو الأكاديمي!`;
             whatsappLink = 'https://wa.me/249123456789';
         }
         
-        document.getElementById('welcomeMessage').value = welcomeMessage;
-        document.getElementById('whatsappLink').value = whatsappLink;
-        document.getElementById('courseAccess').value = `رابط الوصول للدورة: ${this.currentEnrollment.courseName}`;
+        const welcomeMessageElement = document.getElementById('welcomeMessage');
+        const whatsappLinkElement = document.getElementById('whatsappLink');
+        const courseAccessElement = document.getElementById('courseAccess');
+        
+        if (welcomeMessageElement) welcomeMessageElement.value = welcomeMessage;
+        if (whatsappLinkElement) whatsappLinkElement.value = whatsappLink;
+        if (courseAccessElement) courseAccessElement.value = `رابط الوصول للدورة: ${this.currentEnrollment.courseName}`;
 
-        document.getElementById('approvalModal').style.display = 'block';
+        const modal = document.getElementById('approvalModal');
+        if (modal) modal.style.display = 'block';
     }
 
     confirmApproval() {
         if (!this.currentEnrollment) return;
 
-        const welcomeMessage = document.getElementById('welcomeMessage').value;
-        const whatsappLink = document.getElementById('whatsappLink').value;
-        const courseAccess = document.getElementById('courseAccess').value;
+        const welcomeMessage = document.getElementById('welcomeMessage')?.value || '';
+        const whatsappLink = document.getElementById('whatsappLink')?.value || '';
+        const courseAccess = document.getElementById('courseAccess')?.value || '';
 
-        // Update enrollment status
         this.currentEnrollment.status = 'approved';
         this.currentEnrollment.approvalDate = new Date().toISOString();
         this.currentEnrollment.welcomeMessage = welcomeMessage;
@@ -341,13 +337,9 @@ class AdminDashboard {
         this.updateStats();
         this.displayEnrollments();
 
-        // Close modal
         this.closeModal('approvalModal');
-
-        // Show success message
         this.showNotification('تم قبول الطلب وإرسال رسالة الترحيب بنجاح!', 'success');
 
-        // Send welcome message using WelcomeSystem
         if (typeof WelcomeSystem !== 'undefined') {
             const welcomeSystem = new WelcomeSystem();
             welcomeSystem.sendWelcomeNotifications(
@@ -362,7 +354,6 @@ class AdminDashboard {
                 }
             });
         } else {
-            // Fallback to original method
             this.sendWelcomeMessage(this.currentEnrollment);
         }
     }
@@ -387,366 +378,299 @@ class AdminDashboard {
         const enrollment = this.enrollments.find(e => e.id === enrollmentId);
         if (!enrollment) return;
 
-        // Create detailed view modal (simplified for this example)
         alert(`تفاصيل الطلب ${enrollment.id}:\n\nالطالب: ${enrollment.studentName}\nالكورس: ${enrollment.courseName}\nالحالة: ${enrollment.status}\nتاريخ التقديم: ${new Date(enrollment.submissionDate).toLocaleDateString('ar-SA')}`);
     }
     
     viewStudentDetails(enrollmentId) {
         const enrollment = this.enrollments.find(e => e.id === enrollmentId);
-        if (enrollment) {
-            // إنشاء نافذة منبثقة لعرض بيانات الطالب وصورة الإيصال
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.display = 'block';
-            modal.style.zIndex = '1000';
-            
-            const modalContent = document.createElement('div');
-            modalContent.className = 'modal-content';
-            modalContent.style.maxWidth = '800px';
-            
-            const closeBtn = document.createElement('span');
-            closeBtn.className = 'close';
-            closeBtn.innerHTML = '&times;';
-            closeBtn.onclick = function() {
-                document.body.removeChild(modal);
-            };
-            
-            const header = document.createElement('div');
-            header.className = 'modal-header';
-            header.innerHTML = `<h2>بيانات الطالب: ${enrollment.studentName}</h2>`;
-            header.appendChild(closeBtn);
-            
-            const body = document.createElement('div');
-            body.className = 'modal-body';
-            
-            // بيانات الطالب
-            const studentInfo = document.createElement('div');
-            studentInfo.className = 'student-details';
-            studentInfo.innerHTML = `
-                <h3><i class="fas fa-user"></i> معلومات الطالب</h3>
-                <div class="detail-item">
-                    <span class="detail-label">الاسم الكامل:</span>
-                    <span class="detail-value">${enrollment.studentName}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">البريد الإلكتروني:</span>
-                    <span class="detail-value">${enrollment.email}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">رقم الهاتف:</span>
-                    <span class="detail-value">${enrollment.phone}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">تاريخ التقديم:</span>
-                    <span class="detail-value">${new Date(enrollment.submissionDate).toLocaleDateString('ar-SA')}</span>
+        if (!enrollment) return;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.style.zIndex = '1000';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        modalContent.style.maxWidth = '800px';
+        modalContent.style.margin = '50px auto';
+        modalContent.style.backgroundColor = 'white';
+        modalContent.style.padding = '20px';
+        modalContent.style.borderRadius = '8px';
+        modalContent.style.maxHeight = '80vh';
+        modalContent.style.overflowY = 'auto';
+        
+        const closeBtn = document.createElement('span');
+        closeBtn.className = 'close';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.float = 'right';
+        closeBtn.style.fontSize = '28px';
+        closeBtn.style.fontWeight = 'bold';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = function() {
+            document.body.removeChild(modal);
+        };
+        
+        const header = document.createElement('div');
+        header.className = 'modal-header';
+        header.innerHTML = `<h2>بيانات الطالب: ${enrollment.studentName}</h2>`;
+        header.appendChild(closeBtn);
+        
+        const body = document.createElement('div');
+        body.className = 'modal-body';
+        
+        const studentInfo = document.createElement('div');
+        studentInfo.className = 'student-details';
+        studentInfo.innerHTML = `
+            <h3><i class="fas fa-user"></i> معلومات الطالب</h3>
+            <div class="detail-item">
+                <span class="detail-label">الاسم الكامل:</span>
+                <span class="detail-value">${enrollment.studentName}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">البريد الإلكتروني:</span>
+                <span class="detail-value">${enrollment.email}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">رقم الهاتف:</span>
+                <span class="detail-value">${enrollment.phone}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">تاريخ التقديم:</span>
+                <span class="detail-value">${new Date(enrollment.submissionDate).toLocaleDateString('ar-SA')}</span>
+            </div>
+        `;
+        
+        if (enrollment.receiptFile) {
+            const receiptSection = document.createElement('div');
+            receiptSection.className = 'receipt-section';
+            receiptSection.innerHTML = `
+                <h3><i class="fas fa-receipt"></i> إيصال الدفع</h3>
+                <div class="receipt-image-container">
+                    <img src="${enrollment.receiptFile}" alt="إيصال الدفع" style="max-width: 100%; max-height: 400px;">
                 </div>
             `;
-            
-            // صورة الإيصال إذا كانت موجودة
-            if (enrollment.receiptFile) {
-                const receiptSection = document.createElement('div');
-                receiptSection.className = 'receipt-section';
-                receiptSection.innerHTML = `
-                    <h3><i class="fas fa-receipt"></i> إيصال الدفع</h3>
-                    <div class="receipt-image-container">
-                        <img src="${enrollment.receiptFile}" alt="إيصال الدفع" style="max-width: 100%; max-height: 400px;">
-                    </div>
-                `;
-                body.appendChild(receiptSection);
-            }
-            
-            // تفاصيل الدفع
-            const paymentInfo = document.createElement('div');
-            paymentInfo.className = 'payment-details';
-            
-            const paymentMethodText = {
-                'mobile-money': 'محفظة إلكترونية',
-                'areeba': 'أريبا',
-                'amteen': 'أمتين',
-                'bank-transfer': 'تحويل بنكي',
-                'in-person': 'دفع مباشر'
-            }[enrollment.paymentMethod] || enrollment.paymentMethod;
-            
-            paymentInfo.innerHTML = `
-                <h3><i class="fas fa-money-bill-wave"></i> تفاصيل الدفع</h3>
-                <div class="detail-item">
-                    <span class="detail-label">طريقة الدفع:</span>
-                    <span class="detail-value">${paymentMethodText}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">المبلغ المدفوع:</span>
-                    <span class="detail-value">${enrollment.paymentDetails.amount} دولار</span>
-                </div>
-                ${enrollment.paymentDetails.transactionId ? `
-                <div class="detail-item">
-                    <span class="detail-label">رقم المعاملة:</span>
-                    <span class="detail-value">${enrollment.paymentDetails.transactionId}</span>
-                </div>
-                ` : ''}
-            `;
-            
-            // إضافة الأقسام إلى النافذة المنبثقة
-            body.insertBefore(studentInfo, body.firstChild);
-            body.appendChild(paymentInfo);
-            
-            // أزرار الإجراءات
+            body.appendChild(receiptSection);
+        }
+        
+        const paymentMethodText = {
+            'mobile-money': 'محفظة إلكترونية',
+            'areeba': 'أريبا',
+            'amteen': 'أمتين',
+            'bank-transfer': 'تحويل بنكي',
+            'in-person': 'دفع مباشر'
+        }[enrollment.paymentMethod] || enrollment.paymentMethod;
+        
+        const paymentInfo = document.createElement('div');
+        paymentInfo.className = 'payment-details';
+        paymentInfo.innerHTML = `
+            <h3><i class="fas fa-money-bill-wave"></i> تفاصيل الدفع</h3>
+            <div class="detail-item">
+                <span class="detail-label">طريقة الدفع:</span>
+                <span class="detail-value">${paymentMethodText}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">المبلغ المدفوع:</span>
+                <span class="detail-value">${enrollment.paymentDetails.amount || 0} دولار</span>
+            </div>
+            ${enrollment.paymentDetails.transactionId ? `
+            <div class="detail-item">
+                <span class="detail-label">رقم المعاملة:</span>
+                <span class="detail-value">${enrollment.paymentDetails.transactionId}</span>
+            </div>
+            ` : ''}
+        `;
+        
+        body.insertBefore(studentInfo, body.firstChild);
+        body.appendChild(paymentInfo);
+        
+        if (enrollment.status === 'pending') {
             const actions = document.createElement('div');
             actions.className = 'modal-actions';
+            actions.style.marginTop = '20px';
             actions.innerHTML = `
-                <button class="btn-approve" onclick="showApprovalModal('${enrollment.id}')">
+                <button class="btn-approve" onclick="adminDashboard.showApprovalModal('${enrollment.id}'); document.body.removeChild(this.closest('.modal'));">
                     <i class="fas fa-check"></i> موافقة
                 </button>
-                <button class="btn-reject" onclick="rejectEnrollment('${enrollment.id}')">
+                <button class="btn-reject" onclick="adminDashboard.rejectEnrollment('${enrollment.id}'); document.body.removeChild(this.closest('.modal'));">
                     <i class="fas fa-times"></i> رفض
                 </button>
             `;
-            
-            // تجميع النافذة المنبثقة
-            modalContent.appendChild(header);
-            modalContent.appendChild(body);
-            modalContent.appendChild(actions);
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-            
-            // إغلاق النافذة عند النقر خارجها
-            window.onclick = function(event) {
-                if (event.target === modal) {
-                    document.body.removeChild(modal);
-                }
-            };
+            body.appendChild(actions);
+        }
+        
+        modalContent.appendChild(header);
+        modalContent.appendChild(body);
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+    }
+
+    showReceiptModal(receiptUrl) {
+        const modal = document.createElement('div');
+        modal.className = 'receipt-modal';
+        modal.style.display = 'block';
+        modal.style.position = 'fixed';
+        modal.style.zIndex = '2000';
+        modal.style.left = '0';
+        modal.style.top = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.position = 'relative';
+        modalContent.style.margin = '5% auto';
+        modalContent.style.width = '90%';
+        modalContent.style.maxWidth = '800px';
+        modalContent.style.textAlign = 'center';
+        
+        const closeBtn = document.createElement('span');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.position = 'absolute';
+        closeBtn.style.top = '15px';
+        closeBtn.style.right = '35px';
+        closeBtn.style.color = '#f1f1f1';
+        closeBtn.style.fontSize = '40px';
+        closeBtn.style.fontWeight = 'bold';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = function() {
+            document.body.removeChild(modal);
+        };
+        
+        const img = document.createElement('img');
+        img.src = receiptUrl;
+        img.style.width = '100%';
+        img.style.height = 'auto';
+        img.style.maxHeight = '80vh';
+        
+        modalContent.appendChild(closeBtn);
+        modalContent.appendChild(img);
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                document.body.removeChild(modal);
+            }
+        };
+    }
+
+    saveEnrollments() {
+        try {
+            localStorage.setItem('noorProEnrollments', JSON.stringify(this.enrollments));
+            console.log('Enrollments saved to localStorage');
+        } catch (error) {
+            console.error('Error saving enrollments:', error);
         }
     }
 
     sendWelcomeMessage(enrollment) {
-        // In a real application, this would send an email or SMS
-        console.log('Sending welcome message to:', enrollment.email);
+        console.log('Sending welcome message to:', enrollment.studentName);
         console.log('Message:', enrollment.welcomeMessage);
         console.log('WhatsApp Link:', enrollment.whatsappLink);
-        
-        // Simulate API call
-        setTimeout(() => {
-            this.showNotification(`تم إرسال رسالة الترحيب إلى ${enrollment.studentName}`, 'success');
-        }, 1000);
-    }
-
-    filterEnrollments() {
-        this.displayEnrollments();
-    }
-
-    saveEnrollments() {
-        // Save enrollments back to localStorage using the same key
-        const enrollmentData = this.enrollments.map(enrollment => ({
-            fullName: enrollment.studentName,
-            email: enrollment.email,
-            phone: enrollment.phone,
-            courseId: enrollment.courseId,
-            courseName: enrollment.courseName,
-            coursePrice: enrollment.coursePrice,
-            paymentMethod: enrollment.paymentMethod,
-            paymentDetails: enrollment.paymentDetails,
-            receiptFile: enrollment.receiptFile,
-            status: enrollment.status,
-            submissionDate: enrollment.submissionDate,
-            notes: enrollment.notes
-        }));
-        localStorage.setItem('noorProEnrollments', JSON.stringify(enrollmentData));
-    }
-
-    showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            ${message}
-        `;
-        
-        // Add styles
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 10000;
-            animation: slideIn 0.3s ease;
-        `;
-
-        document.body.appendChild(notification);
-
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 3000);
     }
 
     closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.padding = '15px 20px';
+        notification.style.borderRadius = '5px';
+        notification.style.zIndex = '9999';
+        notification.style.maxWidth = '300px';
+        notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+        
+        const colors = {
+            success: { bg: '#d4edda', border: '#c3e6cb', text: '#155724' },
+            error: { bg: '#f8d7da', border: '#f5c6cb', text: '#721c24' },
+            info: { bg: '#d1ecf1', border: '#bee5eb', text: '#0c5460' }
+        };
+        
+        const color = colors[type] || colors.info;
+        notification.style.backgroundColor = color.bg;
+        notification.style.border = `1px solid ${color.border}`;
+        notification.style.color = color.text;
+        
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 5000);
     }
 }
 
-// Global functions for HTML onclick events
-function showTab(tabName) {
-    // Hide all tab contents
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    // Remove active class from all tab buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Show selected tab
-    document.getElementById(tabName).classList.add('active');
-    
-    // Add active class to clicked button
-    event.target.classList.add('active');
-    
-    // Update display
-    adminDashboard.displayEnrollments(tabName === 'all' ? 'all' : tabName);
-}
-
-function showReceiptModal(imageSrc) {
-    document.getElementById('modalReceiptImage').src = imageSrc;
-    document.getElementById('receiptModal').style.display = 'block';
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-function confirmApproval() {
-    adminDashboard.confirmApproval();
-}
-
-// Initialize admin dashboard when page loads
+// Global functions for onclick handlers
 let adminDashboard;
 
-// Make functions globally available
-window.showApprovalModal = function(enrollmentId) {
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    adminDashboard = new AdminDashboard();
+});
+
+// Global functions that can be called from HTML
+function showApprovalModal(enrollmentId) {
     if (adminDashboard) {
         adminDashboard.showApprovalModal(enrollmentId);
     }
-};
+}
 
-window.rejectEnrollment = function(enrollmentId) {
-    if (adminDashboard) {
-        adminDashboard.rejectEnrollment(enrollmentId);
-    }
-};
-
-window.viewEnrollmentDetails = function(enrollmentId) {
-    if (adminDashboard) {
-        adminDashboard.viewEnrollmentDetails(enrollmentId);
-    }
-};
-
-window.viewStudentDetails = function(enrollmentId) {
-    if (adminDashboard) {
-        adminDashboard.viewStudentDetails(enrollmentId);
-    }
-};
-
-window.confirmApproval = function() {
+function confirmApproval() {
     if (adminDashboard) {
         adminDashboard.confirmApproval();
     }
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-    adminDashboard = new AdminDashboard();
-    
-    // Add CSS animations
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
-        .notification {
-            font-family: 'Cairo', sans-serif;
-            font-weight: 600;
-        }
-        
-        .notification i {
-            margin-left: 10px;
-        }
-    `;
-    document.head.appendChild(style);
-});
-
-// Close modals when clicking outside
-window.onclick = function(event) {
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
 }
 
-
-    async loadDashboardStats() {
-        try {
-            const response = await fetch('api/stats.php');
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    this.updateDashboardStats(result.data);
-                    console.log('Dashboard stats loaded from database:', result.data);
-                } else {
-                    throw new Error(result.error || 'Failed to load stats');
-                }
-            } else {
-                throw new Error('Failed to fetch stats from API');
-            }
-        } catch (error) {
-            console.log('API not available for stats, using default values:', error.message);
-            // في حالة عدم توفر API، عرض قيم افتراضية (صفر)
-            this.updateDashboardStats({
-                totalStudents: 0,
-                totalCourses: 0,
-                activeUsers: 0,
-                systemStatus: 0
-            });
-        }
+function rejectEnrollment(enrollmentId) {
+    if (adminDashboard) {
+        adminDashboard.rejectEnrollment(enrollmentId);
     }
+}
 
-    updateDashboardStats(stats) {
-        // تحديث الأرقام في الكروت
-        const totalStudentsElement = document.getElementById('totalStudents');
-        const totalCoursesElement = document.getElementById('totalCourses');
-        const activeUsersElement = document.getElementById('activeUsers');
-        const systemStatusElement = document.getElementById('systemStatus');
-
-        if (totalStudentsElement) {
-            totalStudentsElement.textContent = stats.totalStudents || 0;
-        }
-        
-        if (totalCoursesElement) {
-            totalCoursesElement.textContent = stats.totalCourses || 0;
-        }
-        
-        if (activeUsersElement) {
-            activeUsersElement.textContent = stats.activeUsers || 0;
-        }
-        
-        if (systemStatusElement) {
-            systemStatusElement.textContent = stats.systemStatus ? `${stats.systemStatus}%` : '0%';
-        }
-
-        console.log('Dashboard stats updated:', stats);
+function viewEnrollmentDetails(enrollmentId) {
+    if (adminDashboard) {
+        adminDashboard.viewEnrollmentDetails(enrollmentId);
     }
+}
+
+function viewStudentDetails(enrollmentId) {
+    if (adminDashboard) {
+        adminDashboard.viewStudentDetails(enrollmentId);
+    }
+}
+
+function showReceiptModal(receiptUrl) {
+    if (adminDashboard) {
+        adminDashboard.showReceiptModal(receiptUrl);
+    }
+}
+
+function closeModal(modalId) {
+    if (adminDashboard) {
+        adminDashboard.closeModal(modalId);
+    }
+}
+
+function filterEnrollments(status) {
+    if (adminDashboard) {
+        adminDashboard.displayEnrollments(status);
+    }
+}

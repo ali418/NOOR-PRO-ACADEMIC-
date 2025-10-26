@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/arabic.css">
     <link rel="stylesheet" href="css/courses.css">
+    <link rel="stylesheet" href="css/video-modal.css">
     <link rel="stylesheet" href="css/responsive.css">
     
     <!-- Admin Access Control - Must be in head to prevent content flash -->
@@ -118,7 +119,7 @@
                         <i class="fas fa-book"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-number">156</div>
+                        <div class="stat-number">0</div>
                         <div class="stat-label" data-ar="إجمالي المقررات" data-en="Total Courses">إجمالي المقررات</div>
                     </div>
                 </div>
@@ -127,7 +128,7 @@
                         <i class="fas fa-play-circle"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-number">89</div>
+                        <div class="stat-number">0</div>
                         <div class="stat-label" data-ar="المقررات النشطة" data-en="Active Courses">المقررات النشطة</div>
                     </div>
                 </div>
@@ -136,7 +137,7 @@
                         <i class="fas fa-video"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-number">1,247</div>
+                        <div class="stat-number">0</div>
                         <div class="stat-label" data-ar="إجمالي الدروس" data-en="Total Lessons">إجمالي الدروس</div>
                     </div>
                 </div>
@@ -145,7 +146,7 @@
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-number">3,456</div>
+                        <div class="stat-number">0</div>
                         <div class="stat-label" data-ar="الطلاب المسجلين" data-en="Enrolled Students">الطلاب المسجلين</div>
                     </div>
                 </div>
@@ -324,12 +325,24 @@
                             <textarea name="description" rows="4" data-placeholder-ar="أدخل وصف المقرر" data-placeholder-en="Enter course description" placeholder="أدخل وصف المقرر"></textarea>
                         </div>
                         <div class="form-group">
-                            <label data-ar="المدة (بالساعات)" data-en="Duration (Hours)">المدة (بالساعات)</label>
-                            <input type="number" name="duration" min="1" data-placeholder-ar="عدد الساعات" data-placeholder-en="Number of hours" placeholder="عدد الساعات">
+                            <label data-ar="المدة" data-en="Duration">المدة</label>
+                            <input type="text" name="duration" data-placeholder-ar="مثال: 2 أشهر" data-placeholder-en="Example: 2 months" placeholder="مثال: 2 أشهر">
                         </div>
                         <div class="form-group">
                             <label data-ar="السعر" data-en="Price">السعر</label>
-                            <input type="number" name="price" min="0" step="0.01" data-placeholder-ar="السعر بالريال" data-placeholder-en="Price in SAR" placeholder="السعر بالريال">
+                            <input type="number" name="price" min="0" step="0.01" data-placeholder-ar="السعر بالدولار" data-placeholder-en="Price in USD" placeholder="السعر بالدولار">
+                        </div>
+                        <div class="form-group">
+                            <label data-ar="المدرب" data-en="Instructor">المدرب</label>
+                            <input type="text" name="instructor" data-placeholder-ar="اسم المدرب" data-placeholder-en="Instructor name" placeholder="اسم المدرب">
+                        </div>
+                        <div class="form-group">
+                            <label data-ar="المواعيد" data-en="Schedule">المواعيد</label>
+                            <input type="text" name="schedule" data-placeholder-ar="مثال: السبت والثلاثاء - 8:00 مساءً" data-placeholder-en="Example: Saturday and Tuesday - 8:00 PM" placeholder="مثال: السبت والثلاثاء - 8:00 مساءً">
+                        </div>
+                        <div class="form-group full-width">
+                            <label data-ar="رابط فيديو يوتيوب" data-en="YouTube Video Link">رابط فيديو يوتيوب</label>
+                            <input type="url" name="youtubeLink" data-placeholder-ar="https://www.youtube.com/watch?v=..." data-placeholder-en="https://www.youtube.com/watch?v=..." placeholder="https://www.youtube.com/watch?v=...">
                         </div>
                     </div>
                 </div>

@@ -6,6 +6,7 @@ class EnrollmentSystem {
         this.selectedPaymentMethod = null;
         this.courseData = null;
         this.enrollmentData = {};
+        this.currentLanguage = 'ar'; // Default to Arabic
         
         this.init();
     }
@@ -16,6 +17,108 @@ class EnrollmentSystem {
         this.setupEventListeners();
         this.updateStepDisplay();
         this.setupNavigation();
+        this.setupLanguageToggle();
+        this.updateLanguage();
+    }
+
+    setupLanguageToggle() {
+        // Add language toggle button to navigation
+        const navContainer = document.querySelector('.nav-container');
+        if (navContainer) {
+            const languageToggle = document.createElement('div');
+            languageToggle.className = 'language-toggle';
+            languageToggle.innerHTML = `
+                <button class="btn-language" onclick="enrollmentSystem.toggleLanguage()">
+                    <i class="fas fa-globe"></i>
+                    <span id="languageText">English</span>
+                </button>
+            `;
+            navContainer.appendChild(languageToggle);
+        }
+    }
+
+    toggleLanguage() {
+        this.currentLanguage = this.currentLanguage === 'ar' ? 'en' : 'ar';
+        this.updateLanguage();
+    }
+
+    updateLanguage() {
+        const html = document.documentElement;
+        const elements = document.querySelectorAll('[data-ar][data-en]');
+        
+        if (this.currentLanguage === 'en') {
+            html.setAttribute('lang', 'en');
+            html.setAttribute('dir', 'ltr');
+            
+            elements.forEach(element => {
+                const englishText = element.getAttribute('data-en');
+                if (englishText) {
+                    element.textContent = englishText;
+                }
+            });
+
+            // Update placeholders
+            const placeholderElements = document.querySelectorAll('[data-ar-placeholder][data-en-placeholder]');
+            placeholderElements.forEach(element => {
+                const englishPlaceholder = element.getAttribute('data-en-placeholder');
+                if (englishPlaceholder) {
+                    element.setAttribute('placeholder', englishPlaceholder);
+                }
+            });
+
+            // Update language toggle button
+            const languageText = document.getElementById('languageText');
+            if (languageText) {
+                languageText.textContent = 'العربية';
+            }
+        } else {
+            html.setAttribute('lang', 'ar');
+            html.setAttribute('dir', 'rtl');
+            
+            elements.forEach(element => {
+                const arabicText = element.getAttribute('data-ar');
+                if (arabicText) {
+                    element.textContent = arabicText;
+                }
+            });
+
+            // Update placeholders
+            const placeholderElements = document.querySelectorAll('[data-ar-placeholder][data-en-placeholder]');
+            placeholderElements.forEach(element => {
+                const arabicPlaceholder = element.getAttribute('data-ar-placeholder');
+                if (arabicPlaceholder) {
+                    element.setAttribute('placeholder', arabicPlaceholder);
+                }
+            });
+
+            // Update language toggle button
+            const languageText = document.getElementById('languageText');
+            if (languageText) {
+                languageText.textContent = 'English';
+            }
+        }
+
+        // Update success message if visible
+        this.updateSuccessMessage();
+    }
+
+    updateSuccessMessage() {
+        const successMessage = document.getElementById('successMessage');
+        if (successMessage && successMessage.classList.contains('show')) {
+            const h2 = successMessage.querySelector('h2');
+            const p = successMessage.querySelector('p');
+            const button = successMessage.querySelector('button');
+            
+            if (this.currentLanguage === 'en') {
+                if (h2) h2.textContent = 'Your request has been sent successfully!';
+                if (p) p.textContent = 'Thank you for registering. Your request is now under review and we will contact you soon.';
+                if (button) button.textContent = 'Return to Home Page';
+            } else {
+                if (h2) h2.textContent = 'تم إرسال طلبك بنجاح!';
+                if (p) p.textContent = 'شكراً لك على التسجيل. طلبك الآن قيد المراجعة وسنتواصل معك قريباً.';
+                if (button) button.textContent = 'العودة للصفحة الرئيسية';
+            }
+        }
     }
 
     checkUserAuthentication() {

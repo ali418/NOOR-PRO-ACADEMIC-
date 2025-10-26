@@ -66,7 +66,8 @@ class CoursesManager {
                     createdDate: course.created_at,
                     image: `https://via.placeholder.com/300x180/4F46E5/FFFFFF?text=${encodeURIComponent(course.course_name)}`,
                     allowEnrollment: course.allow_enrollment === 1,
-                    requireApproval: course.require_approval === 1
+                    requireApproval: course.require_approval === 1,
+                    youtube_link: course.youtube_link || ''
                 }));
                 this.applyFilters();
                 this.updateStats();
@@ -382,6 +383,14 @@ class CoursesManager {
                 <div class="course-image">
                     <i class="fas fa-${this.getCategoryIcon(course.category)}"></i>
                     <div class="course-badge ${course.status}">${this.getStatusLabel(course.status)}</div>
+                    ${course.youtube_link ? `
+                        <div class="video-preview-overlay">
+                            <button class="btn-video-preview" onclick="coursesManager.playIntroVideo('${course.id}')" title="مشاهدة الفيديو التعريفي">
+                                <i class="fas fa-play"></i>
+                                <span>الفيديو التعريفي</span>
+                            </button>
+                        </div>
+                    ` : ''}
                     <div class="course-actions">
                         <button class="btn-action view" onclick="coursesManager.viewCourse('${course.id}')" title="عرض التفاصيل">
                             <i class="fas fa-eye"></i>
@@ -662,10 +671,12 @@ class CoursesManager {
             category: formData.get('category'),
             level: formData.get('level'),
             status: formData.get('status') || 'draft',
-            duration: parseInt(formData.get('duration')) || 0,
+            duration: formData.get('duration') || '',
             price: parseFloat(formData.get('price')) || 0,
             max_students: parseInt(formData.get('maxStudents')) || 30,
-            instructor: 'مدرس جديد',
+            instructor: formData.get('instructor') || 'مدرس جديد',
+            schedule: formData.get('schedule') || '',
+            youtube_link: formData.get('youtubeLink') || '',
             allow_enrollment: formData.get('allowEnrollment') === 'on' ? 1 : 0,
             require_approval: formData.get('requireApproval') === 'on' ? 1 : 0
         };
@@ -1004,10 +1015,111 @@ class CoursesManager {
             }, 300);
         }, 3000);
     }
+
+    // Play intro video for course
+    playIntroVideo(courseId) {
+        const course = this.courses.find(c => c.id === courseId);
+        if (!course || !course.youtube_link) {
+            this.showNotification('لا يوجد فيديو تعريفي لهذا المقرر', 'error');
+            return;
+        }
+
+        // Extract YouTube video ID from URL
+        const videoId = this.extractYouTubeId(course.youtube_link);
+        if (!videoId) {
+            this.showNotification('رابط الفيديو غير صحيح', 'error');
+            return;
+        }
+
+        // Create and show video modal
+        this.showVideoModal(course, videoId);
+    }
+
+    // Extract YouTube video ID from various URL formats
+    extractYouTubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    // Show video modal
+    showVideoModal(course, videoId) {
+        // Remove existing modal if any
+        const existingModal = document.getElementById('courseVideoModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Create modal HTML
+        const modal = document.createElement('div');
+        modal.id = 'courseVideoModal';
+        modal.className = 'modal video-modal';
+        modal.innerHTML = `
+            <div class="modal-content video-modal-content">
+                <div class="modal-header video-modal-header">
+                    <h2>${course.name} - الفيديو التعريفي</h2>
+                    <span class="close video-close">&times;</span>
+                </div>
+                <div class="video-container">
+                    <iframe 
+                        width="100%" 
+                        height="400" 
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+                        frameborder="0" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="video-info">
+                    <h4>${course.name}</h4>
+                    <p>${course.description}</p>
+                    <div class="course-details">
+                        <div class="detail-item">
+                            <i class="fas fa-user"></i>
+                            <span>المدرب: ${course.instructor}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-clock"></i>
+                            <span>المدة: ${course.duration}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-tag"></i>
+                            <span>السعر: ${course.price} ريال</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add modal to page
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+
+        // Add close event listeners
+        const closeBtn = modal.querySelector('.close');
+        closeBtn.addEventListener('click', () => {
+            modal.remove();
+            document.body.style.overflow = 'auto';
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
 }
 
 // Initialize courses manager when DOM is loaded
 let coursesManager;
+
+// Global function to play intro video
+function playIntroVideo(courseId) {
+    if (coursesManager) {
+        coursesManager.playIntroVideo(courseId);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     coursesManager = new CoursesManager();

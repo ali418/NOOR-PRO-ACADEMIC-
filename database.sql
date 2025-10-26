@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS courses (
     duration_weeks INT NOT NULL DEFAULT 16,
     instructor_name VARCHAR(100),
     max_students INT DEFAULT 30,
+    youtube_link TEXT,
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
