@@ -11,7 +11,7 @@ if ($db_url) {
 } else {
     // إعدادات محلية
     define('DB_HOST', 'localhost');
-    define('DB_NAME', 'noor_academy');
+    define('DB_NAME', 'noor_pro_academic');
     define('DB_USER', 'root');
     define('DB_PASS', '');
 }

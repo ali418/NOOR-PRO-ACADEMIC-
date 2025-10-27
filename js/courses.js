@@ -15,7 +15,7 @@ class CoursesManager {
             status: ''
         };
         this.lessons = [];
-        this.apiUrl = 'api/courses.php';
+        this.apiUrl = '/api/courses-sample';
         
         this.init();
     }
@@ -63,7 +63,7 @@ class CoursesManager {
                     enrolledStudents: course.enrolled_students || 0,
                     lessonsCount: course.lessons_count || 0,
                     instructor: course.instructor,
-                    createdDate: course.created_at,
+                    createdDate: course.created_at || course.start_date || new Date().toISOString(),
                     image: `https://via.placeholder.com/300x180/4F46E5/FFFFFF?text=${encodeURIComponent(course.course_name)}`,
                     allowEnrollment: course.allow_enrollment === 1,
                     requireApproval: course.require_approval === 1,
@@ -121,7 +121,7 @@ class CoursesManager {
 
     async deleteCourseFromAPI(dbId) {
         try {
-            const response = await fetch(this.apiUrl, {
+            const response = await fetch(`${this.apiUrl}?id=${dbId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -129,11 +129,24 @@ class CoursesManager {
                 body: JSON.stringify({ id: dbId })
             });
             
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                throw new Error('الاستجابة ليست بصيغة JSON صحيحة');
+            }
+            
             const result = await response.json();
             return result;
         } catch (error) {
             console.error('Error deleting course:', error);
-            return { success: false, message: 'خطأ في الاتصال بالخادم' };
+            return { success: false, message: 'خطأ في الاتصال بالخادم: ' + error.message };
         }
     }
 
@@ -511,8 +524,14 @@ class CoursesManager {
             math: 'calculator',
             science: 'flask',
             language: 'language',
+            english: 'language',
             social: 'globe',
-            arts: 'palette'
+            arts: 'palette',
+            hr: 'users',
+            technical: 'cogs',
+            business: 'briefcase',
+            marketing: 'bullhorn',
+            finance: 'coins'
         };
         return icons[category] || 'book';
     }
@@ -522,8 +541,14 @@ class CoursesManager {
             math: 'الرياضيات',
             science: 'العلوم',
             language: 'اللغات',
+            english: 'الإنجليزية',
             social: 'الاجتماعيات',
-            arts: 'الفنون'
+            arts: 'الفنون',
+            hr: 'الموارد البشرية',
+            technical: 'تقني',
+            business: 'الأعمال',
+            marketing: 'التسويق',
+            finance: 'المالية'
         };
         return labels[category] || category;
     }
@@ -866,7 +891,167 @@ class CoursesManager {
     }
 
     editCourse(courseId) {
-        this.showNotification('سيتم فتح نموذج التعديل قريباً', 'info');
+        // البحث عن الدورة المطلوبة
+        const course = this.courses.find(c => c.id === courseId);
+        if (!course) {
+            this.showNotification('لم يتم العثور على الدورة', 'error');
+            return;
+        }
+
+        // إنشاء نموذج التعديل
+        const modal = document.createElement('div');
+        modal.className = 'modal fade-in';
+        modal.id = 'editCourseModal';
+        
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>تعديل الدورة</h2>
+                    <button class="close-btn" onclick="document.getElementById('editCourseModal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCourseForm">
+                        <input type="hidden" id="edit-course-id" value="${course.db_id}">
+                        <input type="hidden" id="edit-course-code" value="${course.id}">
+                        
+                        <div class="form-group">
+                            <label for="edit-course-name">اسم الدورة</label>
+                            <input type="text" id="edit-course-name" value="${course.name}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-course-description">وصف الدورة</label>
+                            <textarea id="edit-course-description" rows="4" required>${course.description}</textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-course-category">الفئة</label>
+                                <select id="edit-course-category" required>
+                                    <option value="language" ${course.category === 'language' ? 'selected' : ''}>لغات</option>
+                                    <option value="business" ${course.category === 'business' ? 'selected' : ''}>أعمال</option>
+                                    <option value="technology" ${course.category === 'technology' ? 'selected' : ''}>تكنولوجيا</option>
+                                    <option value="science" ${course.category === 'science' ? 'selected' : ''}>علوم</option>
+                                    <option value="arts" ${course.category === 'arts' ? 'selected' : ''}>فنون</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="edit-course-level">المستوى</label>
+                                <select id="edit-course-level" required>
+                                    <option value="beginner" ${course.level === 'beginner' ? 'selected' : ''}>مبتدئ</option>
+                                    <option value="intermediate" ${course.level === 'intermediate' || course.level === 'متوسط' ? 'selected' : ''}>متوسط</option>
+                                    <option value="advanced" ${course.level === 'advanced' || course.level === 'متقدم' ? 'selected' : ''}>متقدم</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-course-duration">المدة</label>
+                                <input type="text" id="edit-course-duration" value="${course.duration_weeks || course.duration || ''}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="edit-course-price">السعر</label>
+                                <input type="number" id="edit-course-price" value="${course.price}" min="0" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-course-instructor">المدرس</label>
+                                <input type="text" id="edit-course-instructor" value="${course.instructor || ''}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="edit-course-status">الحالة</label>
+                                <select id="edit-course-status" required>
+                                    <option value="active" ${course.status === 'active' ? 'selected' : ''}>نشط</option>
+                                    <option value="upcoming" ${course.status === 'upcoming' ? 'selected' : ''}>قادم</option>
+                                    <option value="archived" ${course.status === 'archived' ? 'selected' : ''}>مؤرشف</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-course-youtube">رابط الفيديو التعريفي (يوتيوب)</label>
+                            <input type="url" id="edit-course-youtube" value="${course.youtube_link || ''}" placeholder="https://www.youtube.com/watch?v=...">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('editCourseModal').remove()">إلغاء</button>
+                            <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Show modal and lock body scroll
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+
+        // Close button restores body scroll
+        const closeBtn = modal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.remove();
+                document.body.style.overflow = 'auto';
+            });
+        }
+
+        // Close when clicking outside the modal content
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // إضافة مستمع الحدث لنموذج التعديل
+        document.getElementById('editCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // جمع بيانات النموذج
+            const updatedCourse = {
+                id: document.getElementById('edit-course-id').value,
+                course_code: document.getElementById('edit-course-code').value,
+                course_name: document.getElementById('edit-course-name').value,
+                description: document.getElementById('edit-course-description').value,
+                category: document.getElementById('edit-course-category').value,
+                level: document.getElementById('edit-course-level').value,
+                duration: document.getElementById('edit-course-duration').value,
+                price: document.getElementById('edit-course-price').value,
+                instructor: document.getElementById('edit-course-instructor').value,
+                status: document.getElementById('edit-course-status').value,
+                youtube_link: document.getElementById('edit-course-youtube').value || ''
+            };
+            
+            // إرسال البيانات إلى API
+            this.showLoading(true);
+            try {
+                const result = await this.updateCourseInAPI(updatedCourse);
+                
+                if (result.success) {
+                    // إعادة تحميل الدورات من API
+                    await this.loadCoursesFromAPI();
+                    this.showNotification('تم تحديث الدورة بنجاح', 'success');
+                    document.getElementById('editCourseModal').remove();
+                } else {
+                    this.showNotification('فشل تحديث الدورة: ' + result.message, 'error');
+                }
+            } catch (error) {
+                this.showNotification('حدث خطأ أثناء تحديث الدورة', 'error');
+                console.error('Error updating course:', error);
+            } finally {
+                this.showLoading(false);
+            }
+        });
     }
 
     async deleteCourse(courseId) {

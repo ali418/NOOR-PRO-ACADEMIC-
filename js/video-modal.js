@@ -14,6 +14,29 @@ class VideoModal {
         this.bindEvents();
     }
 
+    // استخراج معرف فيديو يوتيوب من روابط متنوعة
+    extractYouTubeId(url) {
+        if (!url || typeof url !== 'string') return null;
+        try {
+            // أنماط شائعة: watch?v=ID, youtu.be/ID, embed/ID
+            const patterns = [
+                /v=([\w-]{11})/,
+                /youtu\.be\/([\w-]{11})/,
+                /embed\/([\w-]{11})/
+            ];
+            for (const re of patterns) {
+                const m = url.match(re);
+                if (m && m[1]) return m[1];
+            }
+            // محاولة أخيرة: آخر جزء بطول 11 حرفًا
+            const parts = url.split(/[\/?&=#]/).filter(Boolean);
+            const candidate = parts.find(p => p.length === 11 && /[\w-]+/.test(p));
+            return candidate || null;
+        } catch (_) {
+            return null;
+        }
+    }
+
     createModal() {
         // Create modal HTML structure
         const modalHTML = `
@@ -122,6 +145,40 @@ class VideoModal {
     }
 
     getCourseData(courseId) {
+        // دعم معرفات من نمط "course-<id>" القادمة من كروت الصفحة الرئيسية
+        if (typeof courseId === 'string' && courseId.startsWith('course-')) {
+            const numericId = courseId.split('-')[1];
+            const allCourses = (window.HOMEPAGE_COURSES) || (window.courseLoader && window.courseLoader.courses) || [];
+            const course = allCourses.find(c => String(c.id) === String(numericId));
+            if (course) {
+                const title = course.title || course.course_name || `الكورس ${numericId}`;
+                const description = course.description || course.brief || '';
+                const videoId = this.extractYouTubeId(course.youtube_link);
+                if (!videoId) {
+                    console.error('لم يتم العثور على رابط يوتيوب صالح للكورس:', courseId);
+                    return null;
+                }
+                const features = [];
+                const level = course.level_name || course.level;
+                if (level) features.push({ icon: 'fas fa-layer-group', text: `المستوى: ${level}` });
+                const duration = course.duration_weeks || course.duration || course.hours;
+                if (duration) features.push({ icon: 'fas fa-clock', text: `المدة: ${duration}` });
+                const startDate = course.start_date;
+                if (startDate) features.push({ icon: 'fas fa-calendar-alt', text: `تاريخ البدء: ${new Date(startDate).toLocaleDateString('ar-EG')}` });
+                if (course.price) features.push({ icon: 'fas fa-tags', text: `السعر: ${course.price}$` });
+
+                return {
+                    title,
+                    description,
+                    videoType: 'youtube',
+                    videoId,
+                    features: features.length ? features : [
+                        { icon: 'fas fa-info-circle', text: 'فيديو تعريفي للكورس' }
+                    ]
+                };
+            }
+        }
+
         const courses = {
             'english-a1': {
                 title: 'اللغة الإنجليزية - المستوى A1',
