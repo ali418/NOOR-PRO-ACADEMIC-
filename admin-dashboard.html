@@ -548,7 +548,18 @@
         function showEnrollmentRequests() {
             document.getElementById('enrollmentModal').style.display = 'block';
             if (window.adminDashboard) {
-                adminDashboard.displayEnrollments();
+                // إعادة تعيين الفلاتر لتعرض كل الطلبات
+                const search = document.getElementById('searchInput');
+                const courseSel = document.getElementById('courseFilter');
+                if (search) search.value = '';
+                if (courseSel) courseSel.value = 'all';
+                // تفعيل تبويب "الكل" وضمان عرض العناصر
+                if (typeof showTab === 'function') {
+                    showTab('all');
+                } else {
+                    adminDashboard.currentFilter = 'all';
+                    adminDashboard.displayEnrollments('all');
+                }
             }
         }
 

@@ -7,6 +7,8 @@ class EnrollmentSystem {
         this.courseData = null;
         this.enrollmentData = {};
         this.currentLanguage = 'ar';
+        // استخدام نفس الأصل لواجهات API افتراضياً
+        this.apiBase = '';
         
         this.init();
     }
@@ -95,40 +97,23 @@ class EnrollmentSystem {
     }
 
     setupEventListeners() {
-        // Navigation buttons
-        const nextBtns = document.querySelectorAll('.btn-next');
-        const prevBtns = document.querySelectorAll('.btn-prev');
-        
-        nextBtns.forEach(btn => {
-            btn.addEventListener('click', () => this.nextStep());
-        });
-        
-        prevBtns.forEach(btn => {
-            btn.addEventListener('click', () => this.prevStep());
-        });
-
-        // Payment method selection
-        const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
-        paymentMethods.forEach(method => {
-            method.addEventListener('change', (e) => {
-                this.selectedPaymentMethod = e.target.value;
+        // Payment method selection via clickable cards
+        const paymentCards = document.querySelectorAll('.payment-method');
+        paymentCards.forEach(card => {
+            card.addEventListener('click', () => {
+                this.selectedPaymentMethod = card.getAttribute('data-method');
+                paymentCards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
                 this.updatePaymentDetails();
             });
         });
 
-        // Form submission
-        const submitBtn = document.getElementById('submitEnrollment');
-        if (submitBtn) {
-            submitBtn.addEventListener('click', () => this.submitEnrollment());
-        }
-
-        // Step navigation
-        const stepButtons = document.querySelectorAll('.step-number');
-        stepButtons.forEach((btn, index) => {
-            btn.addEventListener('click', () => {
-                if (index + 1 <= this.currentStep) {
-                    this.goToStep(index + 1);
-                }
+        // Optional: enable clicking on step indicators to go back
+        const stepIndicators = document.querySelectorAll('.step');
+        stepIndicators.forEach(ind => {
+            ind.addEventListener('click', () => {
+                const s = Number(ind.getAttribute('data-step')) || 1;
+                if (s <= this.currentStep) this.goToStep(s);
             });
         });
     }
@@ -252,48 +237,29 @@ class EnrollmentSystem {
     }
 
     updateStepDisplay() {
-        // Update step indicators
-        const stepNumbers = document.querySelectorAll('.step-number');
-        const stepTitles = document.querySelectorAll('.step-title');
-        
-        stepNumbers.forEach((step, index) => {
-            const stepNum = index + 1;
-            step.classList.remove('active', 'completed');
-            
-            if (stepNum < this.currentStep) {
-                step.classList.add('completed');
-            } else if (stepNum === this.currentStep) {
-                step.classList.add('active');
-            }
+        // Update step indicators (elements with class .step)
+        const indicators = document.querySelectorAll('.step');
+        indicators.forEach(ind => {
+            const s = Number(ind.getAttribute('data-step')) || 1;
+            ind.classList.toggle('active', s === this.currentStep);
+            ind.classList.toggle('completed', s < this.currentStep);
         });
 
-        // Update step content
-        const steps = document.querySelectorAll('.step');
-        steps.forEach((step, index) => {
-            step.classList.remove('active');
-            if (index + 1 === this.currentStep) {
-                step.classList.add('active');
-            }
+        // Update form step content (elements with class .form-step)
+        const formSteps = document.querySelectorAll('.form-step');
+        formSteps.forEach(step => {
+            const s = Number(step.getAttribute('data-step')) || 1;
+            step.classList.toggle('active', s === this.currentStep);
         });
 
-        // Update navigation buttons
-        const prevBtn = document.querySelector('.btn-prev');
-        const nextBtn = document.querySelector('.btn-next');
-        const submitBtn = document.getElementById('submitEnrollment');
+        // Update navigation buttons by IDs
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
 
-        if (prevBtn) {
-            prevBtn.style.display = this.currentStep === 1 ? 'none' : 'inline-block';
-        }
-
-        if (nextBtn && submitBtn) {
-            if (this.currentStep === this.totalSteps) {
-                nextBtn.style.display = 'none';
-                submitBtn.style.display = 'inline-block';
-            } else {
-                nextBtn.style.display = 'inline-block';
-                submitBtn.style.display = 'none';
-            }
-        }
+        if (prevBtn) prevBtn.style.display = this.currentStep === 1 ? 'none' : 'inline-block';
+        if (nextBtn) nextBtn.style.display = this.currentStep === this.totalSteps ? 'none' : 'inline-block';
+        if (submitBtn) submitBtn.style.display = this.currentStep === this.totalSteps ? 'inline-block' : 'none';
     }
 
     scrollToTop() {
@@ -312,20 +278,53 @@ class EnrollmentSystem {
             return;
         }
 
+        // حاول أولاً جلب البيانات من قاعدة البيانات، ثم وفّر بديل من بيانات العينة عند الفشل
         try {
-            const response = await fetch(`/api/courses?id=${courseId}`);
-            const course = await response.json();
-            
-            if (course) {
-                this.courseData = course;
-                this.enrollmentData.courseId = courseId;
-                this.updateEnrollmentForm(course);
-            } else {
-                this.showNotification('لم يتم العثور على بيانات الدورة', 'error');
+            const dbResp = await fetch(`${this.apiBase}/api/courses?id=${courseId}`);
+            if (dbResp.ok) {
+                const dbJson = await dbResp.json();
+                const raw = (dbJson && Array.isArray(dbJson.courses)) ? dbJson.courses[0] : null;
+                if (raw) {
+                    const course = {
+                        title: raw.title || raw.course_name || '',
+                        description: raw.description || '',
+                        duration: raw.duration_weeks || raw.duration || '',
+                        level: raw.level_name || raw.level || '',
+                        price: raw.price || 0
+                    };
+                    this.courseData = course;
+                    this.enrollmentData.courseId = courseId;
+                    this.updateEnrollmentForm(course);
+                    return;
+                }
             }
+            throw new Error('DB fetch failed or course not found');
         } catch (error) {
-            console.error('خطأ في جلب بيانات الدورة:', error);
-            this.showNotification('خطأ في تحميل بيانات الدورة', 'error');
+            console.warn('فشل جلب بيانات الدورة من قاعدة البيانات، سيتم استخدام بيانات العينة:', error);
+            try {
+                const sampleResp = await fetch(`${this.apiBase}/api/courses-sample`);
+                const sampleJson = await sampleResp.json();
+                // الواجهة الأمامية تستخدم خاصية courses في الاستجابة
+                const list = Array.isArray(sampleJson.courses) ? sampleJson.courses : [];
+                const raw = list.find(c => String(c.id) === String(courseId));
+                if (raw) {
+                    const course = {
+                        title: raw.title || '',
+                        description: raw.description || '',
+                        duration: raw.duration_weeks || raw.duration || '',
+                        level: raw.level_name || raw.level || '',
+                        price: raw.price || 0
+                    };
+                    this.courseData = course;
+                    this.enrollmentData.courseId = courseId;
+                    this.updateEnrollmentForm(course);
+                } else {
+                    this.showNotification('لم يتم العثور على بيانات الدورة', 'error');
+                }
+            } catch (fallbackError) {
+                console.error('خطأ في تحميل بيانات العينة للدورة:', fallbackError);
+                this.showNotification('خطأ في تحميل بيانات الدورة', 'error');
+            }
         }
     }
 
@@ -384,57 +383,17 @@ class EnrollmentSystem {
     }
 
     updatePaymentDetails() {
-        const paymentDetails = document.getElementById('paymentDetails');
-        if (!paymentDetails) return;
-
-        let detailsHTML = '';
-
-        switch (this.selectedPaymentMethod) {
-            case 'bank':
-                detailsHTML = `
-                    <div class="payment-info">
-                        <h4>تفاصيل التحويل البنكي</h4>
-                        <div class="bank-details">
-                            <p><strong>اسم البنك:</strong> البنك الأهلي السعودي</p>
-                            <p><strong>رقم الحساب:</strong> 1234567890123456</p>
-                            <p><strong>اسم المستفيد:</strong> مركز نور برو الأكاديمي</p>
-                            <p><strong>IBAN:</strong> SA1234567890123456789012</p>
-                        </div>
-                        <div class="upload-section">
-                            <label for="transferReceipt">رفع إيصال التحويل:</label>
-                            <input type="file" id="transferReceipt" accept="image/*,.pdf" required>
-                        </div>
-                    </div>
-                `;
-                break;
-            case 'installments':
-                detailsHTML = `
-                    <div class="payment-info">
-                        <h4>خطة الدفع بالأقساط</h4>
-                        <div class="installment-plan">
-                            <p><strong>القسط الأول:</strong> ${this.courseData ? Math.ceil(this.courseData.price / 3) : 0} ريال (عند التسجيل)</p>
-                            <p><strong>القسط الثاني:</strong> ${this.courseData ? Math.ceil(this.courseData.price / 3) : 0} ريال (بعد شهر)</p>
-                            <p><strong>القسط الثالث:</strong> ${this.courseData ? Math.floor(this.courseData.price / 3) : 0} ريال (بعد شهرين)</p>
-                        </div>
-                    </div>
-                `;
-                break;
-            case 'cash':
-                detailsHTML = `
-                    <div class="payment-info">
-                        <h4>الدفع النقدي</h4>
-                        <p>يمكنك الدفع نقدياً عند زيارة مقر المركز</p>
-                        <div class="center-address">
-                            <p><strong>العنوان:</strong> الرياض، حي النخيل، شارع الملك فهد</p>
-                            <p><strong>أوقات العمل:</strong> السبت - الخميس: 9:00 ص - 9:00 م</p>
-                            <p><strong>الهاتف:</strong> 0112345678</p>
-                        </div>
-                    </div>
-                `;
-                break;
-        }
-
-        paymentDetails.innerHTML = detailsHTML;
+        const map = {
+            'mobile-money': 'mobileMoneyDetails',
+            'areeba': 'areebaDetails',
+            'amteen': 'amteenDetails',
+            'bank': 'bankDetails'
+        };
+        const allDetails = document.querySelectorAll('.payment-details');
+        allDetails.forEach(d => d.classList.remove('active'));
+        const targetId = map[this.selectedPaymentMethod];
+        const target = targetId ? document.getElementById(targetId) : null;
+        if (target) target.classList.add('active');
     }
 
     async submitEnrollment() {
@@ -449,7 +408,7 @@ class EnrollmentSystem {
             this.showLoading(true);
             
             // Submit enrollment
-            const response = await fetch('/api/enrollments.php', {
+            const response = await fetch(`${this.apiBase}/api/enrollments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -459,7 +418,7 @@ class EnrollmentSystem {
 
             const result = await response.json();
 
-            if (result.success) {
+            if (result && result.success) {
                 this.showSuccessMessage();
                 // Redirect after success
                 setTimeout(() => {
@@ -567,7 +526,35 @@ function submitEnrollment() {
     }
 }
 
+// Global step navigation for HTML buttons calling changeStep(+/-1)
+function changeStep(delta) {
+    if (!window.enrollmentSystem) return;
+    if (delta > 0) {
+        window.enrollmentSystem.nextStep();
+    } else if (delta < 0) {
+        window.enrollmentSystem.prevStep();
+    }
+}
+
 // Initialize system when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.enrollmentSystem = new EnrollmentSystem();
 });
+
+// Helper: copy text to clipboard used by payment details buttons
+function copyToClipboard(text) {
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            console.log('تم النسخ إلى الحافظة');
+        }).catch(() => {
+            console.warn('تعذر النسخ إلى الحافظة');
+        });
+    } else {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(temp);
+    }
+}

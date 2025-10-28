@@ -1,0 +1,110 @@
+[
+  {
+    "id": "1",
+    "studentName": "???? ??????",
+    "email": "test@example.com",
+    "phone": "123456789",
+    "courseId": "1",
+    "courseName": "???? ??????",
+    "status": "pending",
+    "submissionDate": "2025-10-28T19:28:51.122Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": null,
+      "paymentMethod": null,
+      "coursePrice": "100"
+    }
+  },
+  {
+    "id": "2",
+    "studentName": "طالب تجريبي",
+    "email": "test@example.com",
+    "phone": "123456789",
+    "courseId": "1",
+    "courseName": "كورس تجريبي",
+    "status": "pending",
+    "submissionDate": "2025-10-28T19:29:09.969Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": null,
+      "paymentMethod": null,
+      "coursePrice": "100"
+    }
+  },
+  {
+    "id": "3",
+    "studentName": "admin",
+    "email": "yajoub@gmail.com",
+    "phone": "0741490119",
+    "courseId": "1",
+    "courseName": "تجريب",
+    "status": "pending",
+    "submissionDate": "2025-10-28T19:35:26.615Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": "beginner",
+      "paymentMethod": "mobile-money",
+      "coursePrice": 60
+    }
+  },
+  {
+    "id": "4",
+    "studentName": "علي ادم",
+    "email": "aliyajoub@gmail.com",
+    "phone": "0741490119",
+    "courseId": "1",
+    "courseName": "تجريب",
+    "status": "pending",
+    "submissionDate": "2025-10-28T19:38:06.845Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": "beginner",
+      "paymentMethod": "mobile-money",
+      "coursePrice": 60
+    }
+  },
+  {
+    "id": "5",
+    "studentName": "علي ادم",
+    "email": "aliyajoub@gmail.com",
+    "phone": "0741490119",
+    "courseId": "1",
+    "courseName": "تجريب",
+    "status": "pending",
+    "submissionDate": "2025-10-28T19:38:10.420Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": "beginner",
+      "paymentMethod": "mobile-money",
+      "coursePrice": 60
+    }
+  },
+  {
+    "id": "6",
+    "studentName": "علي ادم",
+    "email": "aliyajoub@gmail.com",
+    "phone": "0741490119",
+    "courseId": "1",
+    "courseName": "تجريب",
+    "status": "pending",
+    "submissionDate": "2025-10-28T19:49:43.210Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": "beginner",
+      "paymentMethod": "amteen",
+      "coursePrice": 60
+    }
+  }
+]

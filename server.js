@@ -268,9 +268,11 @@ app.use('/api/categories', (req, res) => {
     require('./api/categories.php')(req, res);
 });
 
-app.use('/api/enrollments', (req, res) => {
-    require('./api/enrollments.php')(req, res);
-});
+// Enrollments API (Node)
+const enrollmentsAPI = require('./api/enrollments');
+app.get('/api/enrollments', enrollmentsAPI.getEnrollments);
+app.post('/api/enrollments', enrollmentsAPI.postEnrollments);
+app.delete('/api/enrollments', enrollmentsAPI.deleteEnrollment);
 
 // توجيه جميع الطلبات الأخرى إلى الصفحة الرئيسية
 app.get('*', (req, res) => {

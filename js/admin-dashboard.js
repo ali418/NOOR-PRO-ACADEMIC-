@@ -3,6 +3,10 @@ class AdminDashboard {
     constructor() {
         this.enrollments = [];
         this.currentEnrollment = null;
+        // استخدم نفس الأصل لطلبات API افتراضياً
+        this.apiBase = '';
+        // فلتر الحالة الحالي لعلامات التبويب
+        this.currentFilter = 'all';
         this.init();
     }
 
@@ -66,17 +70,21 @@ class AdminDashboard {
 
     async loadEnrollments() {
         try {
-            const response = await fetch('api/enrollments.php');
+            const response = await fetch(`${this.apiBase}/api/enrollments`);
             if (response.ok) {
-                const data = await response.json();
-                this.enrollments = data;
-                console.log('Enrollments loaded from database:', this.enrollments.length);
+                const result = await response.json();
+                if (result && result.success && Array.isArray(result.data)) {
+                    this.enrollments = result.data;
+                    console.log('Enrollments loaded from API:', this.enrollments.length);
+                    console.log('First enrollment:', this.enrollments[0]); // للتشخيص
+                    return;
+                }
+                throw new Error('Invalid response format');
             } else {
                 throw new Error('Failed to load from API');
             }
         } catch (error) {
             console.log('API not available, checking localStorage:', error.message);
-            
             const stored = localStorage.getItem('noorProEnrollments');
             if (stored) {
                 const enrollmentData = JSON.parse(stored);
@@ -108,11 +116,11 @@ class AdminDashboard {
         const courseFilter = document.getElementById('courseFilter');
 
         if (searchInput) {
-            searchInput.addEventListener('input', () => this.filterEnrollments());
+            searchInput.addEventListener('input', () => this.displayEnrollments(this.currentFilter));
         }
 
         if (courseFilter) {
-            courseFilter.addEventListener('change', () => this.filterEnrollments());
+            courseFilter.addEventListener('change', () => this.displayEnrollments(this.currentFilter));
         }
     }
 
@@ -138,14 +146,22 @@ class AdminDashboard {
     }
 
     displayEnrollments(filter = 'all') {
+        console.log('displayEnrollments called with filter:', filter);
+        console.log('Total enrollments:', this.enrollments.length);
+        
         let filteredEnrollments = this.enrollments;
 
         if (filter !== 'all') {
             filteredEnrollments = this.enrollments.filter(e => e.status === filter);
         }
+        
+        console.log('After status filter:', filteredEnrollments.length);
 
         const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-        const courseFilter = document.getElementById('courseFilter')?.value || '';
+        const courseFilter = document.getElementById('courseFilter')?.value || 'all';
+        
+        console.log('Search term:', searchTerm);
+        console.log('Course filter:', courseFilter);
 
         if (searchTerm) {
             filteredEnrollments = filteredEnrollments.filter(e => 
@@ -156,14 +172,14 @@ class AdminDashboard {
             );
         }
 
-        if (courseFilter) {
-            filteredEnrollments = filteredEnrollments.filter(e => e.courseId === courseFilter);
+        if (courseFilter && courseFilter !== 'all') {
+            filteredEnrollments = filteredEnrollments.filter(e => String(e.courseId) === String(courseFilter));
         }
+        
+        console.log('Final filtered enrollments:', filteredEnrollments.length);
 
-        this.renderEnrollments('pendingEnrollments', filteredEnrollments.filter(e => e.status === 'pending'));
-        this.renderEnrollments('approvedEnrollments', filteredEnrollments.filter(e => e.status === 'approved'));
-        this.renderEnrollments('rejectedEnrollments', filteredEnrollments.filter(e => e.status === 'rejected'));
-        this.renderEnrollments('allEnrollments', filteredEnrollments);
+        // عرض البطاقات في الحاوية الموحدة داخل النموذج
+        this.renderEnrollments('enrollmentsList', filteredEnrollments);
     }
 
     renderEnrollments(containerId, enrollments) {
@@ -192,13 +208,18 @@ class AdminDashboard {
             'rejected': 'مرفوض'
         }[enrollment.status];
 
+        // استخراج بيانات الدفع من paymentDetails أو notes
+        const paymentMethod = enrollment.paymentMethod || (enrollment.notes && enrollment.notes.paymentMethod);
+        const paymentDetails = enrollment.paymentDetails || {};
+        const coursePrice = enrollment.coursePrice || (enrollment.notes && enrollment.notes.coursePrice) || 0;
+        
         const paymentMethodText = {
             'mobile-money': 'محفظة إلكترونية',
             'areeba': 'أريبا',
             'amteen': 'أمتين',
             'bank-transfer': 'تحويل بنكي',
             'in-person': 'دفع مباشر'
-        }[enrollment.paymentMethod] || enrollment.paymentMethod;
+        }[paymentMethod] || paymentMethod || 'غير محدد';
 
         return `
             <div class="enrollment-card">
@@ -236,7 +257,7 @@ class AdminDashboard {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">السعر:</span>
-                            <span class="detail-value">${enrollment.coursePrice} دولار</span>
+                            <span class="detail-value">${coursePrice} دولار</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">طريقة الدفع:</span>
@@ -244,12 +265,12 @@ class AdminDashboard {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">المبلغ المدفوع:</span>
-                            <span class="detail-value">${enrollment.paymentDetails.amount || 0} دولار</span>
+                            <span class="detail-value">${paymentDetails.amount || coursePrice || 0} دولار</span>
                         </div>
-                        ${enrollment.paymentDetails.transactionId ? `
+                        ${paymentDetails.transactionId ? `
                         <div class="detail-item">
                             <span class="detail-label">رقم المعاملة:</span>
-                            <span class="detail-value">${enrollment.paymentDetails.transactionId}</span>
+                            <span class="detail-value">${paymentDetails.transactionId}</span>
                         </div>
                         ` : ''}
                     </div>
@@ -264,10 +285,10 @@ class AdminDashboard {
                 </div>
                 ` : ''}
 
-                ${enrollment.paymentDetails.notes ? `
+                ${(paymentDetails.notes || (enrollment.notes && enrollment.notes.studentNotes)) ? `
                 <div class="detail-section">
                     <h4><i class="fas fa-sticky-note"></i> ملاحظات الطالب</h4>
-                    <p>${enrollment.paymentDetails.notes}</p>
+                    <p>${paymentDetails.notes || (enrollment.notes && enrollment.notes.studentNotes) || ''}</p>
                 </div>
                 ` : ''}
 
@@ -320,15 +341,42 @@ class AdminDashboard {
         if (modal) modal.style.display = 'block';
     }
 
-    confirmApproval() {
+    async confirmApproval() {
         if (!this.currentEnrollment) return;
 
         const welcomeMessage = document.getElementById('welcomeMessage')?.value || '';
         const whatsappLink = document.getElementById('whatsappLink')?.value || '';
         const courseAccess = document.getElementById('courseAccess')?.value || '';
+        const approvalDate = new Date().toISOString();
 
+        // Try update via API
+        try {
+            const response = await fetch(`${this.apiBase}/api/enrollments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_status',
+                    id: this.currentEnrollment.id,
+                    status: 'approved',
+                    additionalData: {
+                        approvalDate,
+                        welcomeMessage,
+                        whatsappLink,
+                        notes: { courseAccess }
+                    }
+                })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'فشل تحديث الحالة');
+            }
+        } catch (err) {
+            console.warn('API update failed, falling back to localStorage:', err.message);
+        }
+
+        // Update local state regardless to keep UI responsive
         this.currentEnrollment.status = 'approved';
-        this.currentEnrollment.approvalDate = new Date().toISOString();
+        this.currentEnrollment.approvalDate = approvalDate;
         this.currentEnrollment.welcomeMessage = welcomeMessage;
         this.currentEnrollment.whatsappLink = whatsappLink;
         this.currentEnrollment.courseAccess = courseAccess;
@@ -343,8 +391,8 @@ class AdminDashboard {
         if (typeof WelcomeSystem !== 'undefined') {
             const welcomeSystem = new WelcomeSystem();
             welcomeSystem.sendWelcomeNotifications(
-                this.currentEnrollment, 
-                welcomeMessage, 
+                this.currentEnrollment,
+                welcomeMessage,
                 whatsappLink
             ).then(result => {
                 if (result.success) {
@@ -358,12 +406,33 @@ class AdminDashboard {
         }
     }
 
-    rejectEnrollment(enrollmentId) {
+    async rejectEnrollment(enrollmentId) {
         if (confirm('هل أنت متأكد من رفض هذا الطلب؟')) {
             const enrollment = this.enrollments.find(e => e.id === enrollmentId);
             if (enrollment) {
+                const rejectionDate = new Date().toISOString();
+                // Try server update first
+                try {
+                    const response = await fetch(`${this.apiBase}/api/enrollments`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'update_status',
+                            id: enrollment.id,
+                            status: 'rejected',
+                            additionalData: { rejectionDate }
+                        })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'فشل تحديث الحالة');
+                    }
+                } catch (err) {
+                    console.warn('API update failed, using local fallback:', err.message);
+                }
+
                 enrollment.status = 'rejected';
-                enrollment.rejectionDate = new Date().toISOString();
+                enrollment.rejectionDate = rejectionDate;
                 
                 this.saveEnrollments();
                 this.updateStats();
@@ -673,4 +742,23 @@ function filterEnrollments(status) {
     if (adminDashboard) {
         adminDashboard.displayEnrollments(status);
     }
+}
+
+// تبديل علامة التبويب للحالات وتحديث العرض
+function showTab(status) {
+    if (!adminDashboard) return;
+    adminDashboard.currentFilter = status;
+
+    // تحديث حالة الأزرار النشطة إن وجدت
+    const tabs = document.querySelectorAll('.status-tabs .tab-btn');
+    if (tabs && tabs.length) {
+        tabs.forEach(btn => btn.classList.remove('active'));
+        const order = { all: 0, pending: 1, approved: 2, rejected: 3 };
+        const idx = order[status];
+        if (typeof idx === 'number' && tabs[idx]) {
+            tabs[idx].classList.add('active');
+        }
+    }
+
+    adminDashboard.displayEnrollments(status);
 }
