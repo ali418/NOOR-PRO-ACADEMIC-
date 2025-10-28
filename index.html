@@ -115,6 +115,31 @@
         </div>
     </section>
 
+    <!-- Courses Section -->
+    <section id="courses" class="courses">
+        <div class="container">
+            <h2 data-ar="المقررات المتاحة" data-en="Available Courses">المقررات المتاحة</h2>
+            
+            <!-- Course Categories -->
+            <div class="course-categories">
+                <button class="category-btn active" data-category="all" data-ar="جميع الكورسات" data-en="All Courses">جميع الكورسات</button>
+                <button class="category-btn" data-category="english" data-ar="اللغة الإنجليزية" data-en="English Language">اللغة الإنجليزية</button>
+                <button class="category-btn" data-category="hr" data-ar="الموارد البشرية" data-en="Human Resources">الموارد البشرية</button>
+                <button class="category-btn" data-category="technical" data-ar="التقنية" data-en="Technical">التقنية</button>
+            </div>
+
+            <div class="courses-grid" id="coursesGrid">
+                <!-- Loading indicator -->
+                <div class="loading-courses" id="loadingCourses" style="display: none; text-align: center; padding: 40px; color: #718096;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <p>جاري تحميل المقررات...</p>
+                </div>
+                
+                <!-- Course cards will be loaded dynamically here -->
+            </div>
+        </div>
+    </section>
+
     <!-- Features Section -->
     <section class="features">
         <div class="container">
@@ -155,49 +180,24 @@
         </div>
     </section>
 
-    <!-- Courses Section -->
-    <section id="courses" class="courses">
-        <div class="container">
-            <h2 data-ar="المقررات المتاحة" data-en="Available Courses">المقررات المتاحة</h2>
-            
-            <!-- Course Categories -->
-            <div class="course-categories">
-                <button class="category-btn active" data-category="all" data-ar="جميع الكورسات" data-en="All Courses">جميع الكورسات</button>
-                <button class="category-btn" data-category="english" data-ar="اللغة الإنجليزية" data-en="English Language">اللغة الإنجليزية</button>
-                <button class="category-btn" data-category="hr" data-ar="الموارد البشرية" data-en="Human Resources">الموارد البشرية</button>
-                <button class="category-btn" data-category="technical" data-ar="التقنية" data-en="Technical">التقنية</button>
-            </div>
-
-            <div class="courses-grid" id="coursesGrid">
-                <!-- Loading indicator -->
-                <div class="loading-courses" id="loadingCourses" style="display: none; text-align: center; padding: 40px; color: #718096;">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
-                    <p>جاري تحميل المقررات...</p>
-                </div>
-                
-                <!-- Course cards will be loaded dynamically here -->
-            </div>
-        </div>
-    </section>
-
     <!-- Stats Section -->
     <section class="stats">
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-item">
-                    <div class="stat-number">0</div>
+                    <div class="stat-number" id="totalStudents">0</div>
                     <div class="stat-label" data-ar="طالب مسجل" data-en="Enrolled Students">طالب مسجل</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">0</div>
+                    <div class="stat-number" id="totalTeachers">0</div>
                     <div class="stat-label" data-ar="معلم خبير" data-en="Expert Teachers">معلم خبير</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">0</div>
+                    <div class="stat-number" id="totalCourses">0</div>
                     <div class="stat-label" data-ar="مقرر متاح" data-en="Available Courses">مقرر متاح</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">0</div>
+                    <div class="stat-number" id="successRate">95</div>
                     <div class="stat-label" data-ar="معدل النجاح" data-en="Success Rate">معدل النجاح</div>
                 </div>
             </div>

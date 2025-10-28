@@ -91,6 +91,87 @@ class LanguageManager {
     }
 }
 
+// إدارة الإحصائيات
+class StatsManager {
+    constructor() {
+        this.apiUrl = '/api/stats';
+    }
+
+    init() {
+        this.loadStats();
+    }
+
+    async loadStats() {
+        try {
+            const response = await fetch(this.apiUrl);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                this.updateStatsDisplay(result.data);
+            } else {
+                console.warn('فشل في جلب الإحصائيات:', result.error || 'خطأ غير معروف');
+                this.showDefaultStats();
+            }
+        } catch (error) {
+            console.error('خطأ في جلب الإحصائيات:', error);
+            this.showDefaultStats();
+        }
+    }
+
+    updateStatsDisplay(stats) {
+        // تحديث عدد الطلاب
+        const studentsElement = document.getElementById('totalStudents');
+        if (studentsElement) {
+            this.animateCounterTo(studentsElement, stats.totalStudents || 0);
+        }
+
+        // تحديث عدد المعلمين
+        const teachersElement = document.getElementById('totalTeachers');
+        if (teachersElement) {
+            this.animateCounterTo(teachersElement, stats.totalTeachers || 0);
+        }
+
+        // تحديث عدد المقررات
+        const coursesElement = document.getElementById('totalCourses');
+        if (coursesElement) {
+            this.animateCounterTo(coursesElement, stats.totalCourses || 0);
+        }
+
+        // تحديث معدل النجاح
+        const successRateElement = document.getElementById('successRate');
+        if (successRateElement) {
+            this.animateCounterTo(successRateElement, stats.successRate || 95, '%');
+        }
+    }
+
+    showDefaultStats() {
+        // عرض إحصائيات افتراضية في حالة فشل جلب البيانات
+        const defaultStats = {
+            totalStudents: 0,
+            totalTeachers: 0,
+            totalCourses: 0,
+            successRate: 95
+        };
+        this.updateStatsDisplay(defaultStats);
+    }
+
+    animateCounterTo(element, targetValue, suffix = '') {
+        const duration = 2000;
+        const startValue = 0;
+        const increment = targetValue / (duration / 16);
+        let currentValue = startValue;
+
+        const timer = setInterval(() => {
+            currentValue += increment;
+            if (currentValue >= targetValue) {
+                currentValue = targetValue;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(currentValue) + suffix;
+        }, 16);
+    }
+}
+
 // Navigation Management
 class NavigationManager {
     constructor() {
@@ -759,6 +840,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     const themeManager = new ThemeManager();
+    const statsManager = new StatsManager();
+    statsManager.init();
 
     // Add loading animation
     const loader = document.createElement('div');

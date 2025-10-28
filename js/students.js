@@ -12,7 +12,7 @@ class StudentsManager {
             status: '',
             grade: ''
         };
-        this.apiUrl = 'api/students.php';
+        this.apiUrl = '/api/students';
         
         this.init();
     }
@@ -119,12 +119,11 @@ class StudentsManager {
     // حذف طالب من قاعدة البيانات
     async deleteStudentFromAPI(dbId) {
         try {
-            const response = await fetch(this.apiUrl, {
+            const response = await fetch(`${this.apiUrl}/${dbId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: dbId })
+                }
             });
             
             const result = await response.json();

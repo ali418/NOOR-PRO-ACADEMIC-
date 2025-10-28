@@ -7,7 +7,7 @@ require('dotenv').config();
 const { runMigrations } = require('./migrations');
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8010;
 
 // ضبط الإعدادات الأساسية
 app.use(cors());
@@ -22,9 +22,8 @@ app.use(fileUpload({
 app.use(express.static(path.join(__dirname, '/')));
 
 // توجيه الطلبات إلى ملفات API
-app.use('/api/students', (req, res) => {
-    require('./api/students.php')(req, res);
-});
+const studentsAPI = require('./api/students');
+app.use('/api/students', studentsAPI);
 
 // Sample courses endpoint for testing
 app.get('/api/courses-sample', (req, res) => {
@@ -268,11 +267,15 @@ app.use('/api/categories', (req, res) => {
     require('./api/categories.php')(req, res);
 });
 
-// Enrollments API (Node)
+// API endpoints
 const enrollmentsAPI = require('./api/enrollments');
 app.get('/api/enrollments', enrollmentsAPI.getEnrollments);
 app.post('/api/enrollments', enrollmentsAPI.postEnrollments);
 app.delete('/api/enrollments', enrollmentsAPI.deleteEnrollment);
+
+// Stats API endpoint
+const statsAPI = require('./api/stats');
+app.use('/api/stats', statsAPI);
 
 // توجيه جميع الطلبات الأخرى إلى الصفحة الرئيسية
 app.get('*', (req, res) => {
