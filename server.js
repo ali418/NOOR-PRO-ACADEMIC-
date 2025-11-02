@@ -259,12 +259,18 @@ app.post('/api/courses', coursesAPI.addCourse);
 app.put('/api/courses', coursesAPI.updateCourse);
 app.delete('/api/courses', coursesAPI.deleteCourse);
 
+// Import categories API
+const categoriesAPI = require('./api/categories');
+
+// Categories API routes
+app.get('/api/categories', categoriesAPI.getCategories);
+app.get('/api/categories/:id/courses', categoriesAPI.getCoursesByCategory);
+app.post('/api/categories', categoriesAPI.addCategory);
+app.put('/api/categories/:id', categoriesAPI.updateCategory);
+app.delete('/api/categories/:id', categoriesAPI.deleteCategory);
+
 app.use('/api/videos', (req, res) => {
     require('./api/videos.php')(req, res);
-});
-
-app.use('/api/categories', (req, res) => {
-    require('./api/categories.php')(req, res);
 });
 
 // API endpoints

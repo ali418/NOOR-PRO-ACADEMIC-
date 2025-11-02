@@ -1,0 +1,70 @@
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
+// Mock categories data
+$categories = [
+    [
+        'id' => 1,
+        'category_name_ar' => 'اللغة الإنجليزية',
+        'category_name_en' => 'English Language',
+        'description' => 'تعلم اللغة الإنجليزية من الأساسيات إلى الاحتراف',
+        'courses_count' => 12,
+        'created_at' => '2024-01-01 00:00:00'
+    ],
+    [
+        'id' => 2,
+        'category_name_ar' => 'الموارد البشرية',
+        'category_name_en' => 'Human Resources',
+        'description' => 'تطوير مهارات إدارة الموارد البشرية والقيادة',
+        'courses_count' => 8,
+        'created_at' => '2024-01-01 00:00:00'
+    ],
+    [
+        'id' => 3,
+        'category_name_ar' => 'التقنية',
+        'category_name_en' => 'Technology',
+        'description' => 'تعلم أحدث التقنيات والبرمجة والتطوير',
+        'courses_count' => 15,
+        'created_at' => '2024-01-01 00:00:00'
+    ],
+    [
+        'id' => 4,
+        'category_name_ar' => 'Speaking',
+        'category_name_en' => 'Speaking Skills',
+        'description' => 'تطوير مهارات المحادثة والتحدث باللغة الإنجليزية',
+        'courses_count' => 6,
+        'created_at' => '2024-01-01 00:00:00'
+    ],
+    [
+        'id' => 5,
+        'category_name_ar' => 'Grammar',
+        'category_name_en' => 'English Grammar',
+        'description' => 'إتقان قواعد اللغة الإنجليزية بطريقة سهلة ومبسطة',
+        'courses_count' => 4,
+        'created_at' => '2024-01-01 00:00:00'
+    ],
+    [
+        'id' => 6,
+        'category_name_ar' => 'HR diplomas',
+        'category_name_en' => 'HR Diplomas',
+        'description' => 'دبلومات متخصصة في إدارة الموارد البشرية',
+        'courses_count' => 3,
+        'created_at' => '2024-01-01 00:00:00'
+    ]
+];
+
+// Return success response
+echo json_encode([
+    'success' => true,
+    'data' => $categories,
+    'message' => 'Categories loaded successfully'
+]);
+?>

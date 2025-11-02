@@ -3,381 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المقررات - نور أكاديمي</title>
+    <title>جميع المقررات - مركز نور برو الأكاديمي</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/arabic.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .admin-header {
+        .courses-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px 0;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 60px 0;
+            position: relative;
+            overflow: hidden;
         }
 
-        .admin-nav {
+        .courses-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .admin-logo i {
-            margin-left: 10px;
-            font-size: 28px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
         }
 
         .back-btn {
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .back-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
         }
 
-        .courses-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .page-title {
+        .header-content {
             text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-description {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            line-height: 1.6;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .courses-section {
+            padding: 80px 0;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             margin-bottom: 40px;
         }
 
-        .page-title h1 {
-            font-size: 36px;
-            color: #2d3748;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .page-title p {
-            color: #718096;
-            font-size: 18px;
-        }
-
-        .courses-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .add-course-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
+        .filters-title {
+            font-size: 1.3rem;
             font-weight: 600;
-            transition: all 0.3s ease;
+            color: #1e293b;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
+            gap: 10px;
+        }
+
+        .filters-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
             gap: 8px;
         }
 
-        .add-course-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        .filter-label {
+            font-weight: 500;
+            color: #64748b;
+            font-size: 0.9rem;
         }
 
-        .search-box {
-            display: flex;
-            align-items: center;
-            background: white;
+        .filter-select, .search-input {
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
             border-radius: 10px;
-            padding: 10px 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            min-width: 300px;
-        }
-
-        .search-box input {
-            border: none;
-            outline: none;
-            flex: 1;
-            font-size: 16px;
-            padding: 5px;
-        }
-
-        .search-box i {
-            color: #718096;
-            margin-left: 10px;
-        }
-
-        .courses-table {
             background: white;
-            border-radius: 15px;
+            color: #1e293b;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus, .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-group {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        .search-input {
+            padding-left: 45px;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        .table-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            font-weight: 600;
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
-        .table-content {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: right;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        tr:hover {
-            background: #f8fafc;
-        }
-
-        .course-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+        .course-image {
+            height: 200px;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 18px;
-            margin: 0 auto;
+            font-size: 3rem;
         }
 
-        .english-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-        .hr-icon { background: linear-gradient(135deg, #fa709a, #fee140); }
-        .technical-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); }
-        .general-icon { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .english-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .hr-bg { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .tech-bg { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .general-bg { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
 
         .course-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1e293b;
+            padding: 5px 12px;
+            border-radius: 15px;
             font-size: 12px;
             font-weight: 600;
+        }
+
+        .course-level {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.3);
             color: white;
-        }
-
-        .badge-new { background: #48bb78; }
-        .badge-featured { background: #ed8936; }
-        .badge-intensive { background: #9f7aea; }
-        .badge-diploma { background: #38b2ac; }
-        .badge-tot { background: #e53e3e; }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-edit {
-            background: #4299e1;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #3182ce;
-        }
-
-        .btn-delete {
-            background: #f56565;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #e53e3e;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
+            padding: 5px 12px;
             border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
+            font-size: 12px;
+            font-weight: 600;
         }
 
-        .modal-header {
+        .course-content {
+            padding: 25px;
+        }
+
+        .course-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .course-description {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .course-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .modal-title {
-            font-size: 24px;
+        .course-price {
+            font-size: 1.2rem;
             font-weight: 700;
-            color: #2d3748;
+            color: #059669;
         }
 
-        .close {
-            color: #718096;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .close:hover {
-            color: #2d3748;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .modal-actions {
+        .course-duration {
+            color: #64748b;
+            font-size: 0.9rem;
             display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #e2e8f0;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .course-actions {
+            display: flex;
+            gap: 10px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            flex: 1;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             color: white;
-            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
+            padding: 12px 20px;
+            border-radius: 10px;
             font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 14px;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
         }
 
         .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: 600;
             transition: all 0.3s ease;
+            font-size: 14px;
         }
 
         .btn-secondary:hover {
-            background: #cbd5e0;
+            background: #e2e8f0;
+            color: #1e293b;
         }
 
-        .loading {
-            display: none;
+        .loading-state {
             text-align: center;
-            padding: 40px;
-            color: #718096;
+            padding: 80px 20px;
+            color: #64748b;
         }
 
-        .loading i {
-            font-size: 48px;
-            animation: spin 1s linear infinite;
+        .loading-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: spin 2s linear infinite;
         }
 
         @keyframes spin {
@@ -385,475 +359,624 @@
             100% { transform: rotate(360deg); }
         }
 
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #cbd5e1;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .courses-actions {
-                flex-direction: column;
-                align-items: stretch;
+            .header-title {
+                font-size: 2rem;
             }
-
-            .search-box {
-                min-width: auto;
-            }
-
-            .form-row {
+            
+            .courses-grid {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
-
-            .modal-content {
-                margin: 10% auto;
-                width: 95%;
-                padding: 20px;
+            
+            .filters-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
             }
-
-            .table-content {
-                font-size: 14px;
-            }
-
-            th, td {
-                padding: 10px 8px;
+            
+            .stats-row {
+                flex-direction: column;
+                gap: 20px;
             }
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <div class="header-background"></div>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <div class="logo-wrapper">
-                        <div class="logo-glow"></div>
-                        <img src="logo/nor-01.jpg" alt="Noor Academy Logo" class="logo-img">
-                    </div>
-                    <div class="logo-text">
-                        <h1 data-ar="نور أكاديمي" data-en="Noor Academy">نور أكاديمي</h1>
-                        <p data-ar="التميز في التعليم" data-en="Excellence in Education">التميز في التعليم</p>
-                    </div>
-                </div>
-                
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="index.html" class="nav-link" data-ar="الرئيسية" data-en="Home">
-                            <i class="fas fa-home"></i>
-                            <span>الرئيسية</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="students.html" class="nav-link" data-ar="الطلاب" data-en="Students">
-                            <i class="fas fa-user-graduate"></i>
-                            <span>الطلاب</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="courses.html" class="nav-link active" data-ar="المقررات" data-en="Courses">
-                            <i class="fas fa-book"></i>
-                            <span>المقررات</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="teachers.html" class="nav-link" data-ar="المدرسون" data-en="Teachers">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                            <span>المدرسون</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="reports.html" class="nav-link" data-ar="التقارير" data-en="Reports">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>التقارير</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <div class="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content">
+    <section class="courses-header">
         <div class="container">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="page-title">
-                    <h1 data-ar="إدارة المقررات والدروس" data-en="Courses & Lessons Management">إدارة المقررات والدروس</h1>
-                    <p data-ar="إدارة شاملة للمقررات الدراسية والدروس التعليمية" data-en="Comprehensive management of academic courses and educational lessons">إدارة شاملة للمقررات الدراسية والدروس التعليمية</p>
-                </div>
-                <div class="page-actions">
-                    <button class="btn btn-secondary" id="importCoursesBtn">
-                        <i class="fas fa-upload"></i>
-                        <span data-ar="استيراد" data-en="Import">استيراد</span>
-                    </button>
-                    <button class="btn btn-secondary" id="exportCoursesBtn">
-                        <i class="fas fa-download"></i>
-                        <span data-ar="تصدير" data-en="Export">تصدير</span>
-                    </button>
-                    <button class="btn btn-primary" id="addCourseBtn">
-                        <i class="fas fa-plus"></i>
-                        <span data-ar="إضافة مقرر" data-en="Add Course">إضافة مقرر</span>
-                    </button>
-                </div>
+            <div class="header-nav">
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للرئيسية
+                </a>
+                <a href="categories.html" class="back-btn">
+                    <i class="fas fa-th-large"></i>
+                    التصنيفات
+                </a>
             </div>
-
-            <!-- Statistics Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label" data-ar="إجمالي المقررات" data-en="Total Courses">إجمالي المقررات</div>
-                    </div>
+            
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-graduation-cap"></i>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-play-circle"></i>
+                <h1 class="header-title">جميع المقررات</h1>
+                <p class="header-description">اكتشف مجموعة واسعة من المقررات التعليمية المتخصصة في مختلف المجالات</p>
+                
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalCourses">0</span>
+                        <div class="stat-label">مقرر متاح</div>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label" data-ar="المقررات النشطة" data-en="Active Courses">المقررات النشطة</div>
+                    <div class="stat-item">
+                        <span class="stat-number">6</span>
+                        <div class="stat-label">تصنيف</div>
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label" data-ar="إجمالي الدروس" data-en="Total Lessons">إجمالي الدروس</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label" data-ar="الطلاب المسجلين" data-en="Enrolled Students">الطلاب المسجلين</div>
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <div class="stat-label">طالب</div>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Courses Management -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h2 data-ar="المقررات الدراسية" data-en="Academic Courses">المقررات الدراسية</h2>
-                    <div class="section-actions">
-                        <div class="view-toggle">
-                            <button class="view-btn active" data-view="grid" title="عرض الشبكة">
-                                <i class="fas fa-th-large"></i>
-                            </button>
-                            <button class="view-btn" data-view="list" title="عرض القائمة">
-                                <i class="fas fa-list"></i>
-                            </button>
-                        </div>
-                        <button class="btn btn-icon" id="refreshCourses" title="تحديث">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Filters -->
-                <div class="filters-section">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="courseSearch" data-placeholder-ar="البحث في المقررات..." data-placeholder-en="Search courses..." placeholder="البحث في المقررات...">
-                    </div>
+    <!-- Courses Section -->
+    <section class="courses-section">
+        <div class="container">
+            <!-- Admin Controls (visible only for admin) -->
+            <div id="adminControls" style="display: none; margin-bottom: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="addCourseBtn" class="btn-primary" style="max-width: 220px;">
+                    <i class="fas fa-plus"></i>
+                    إضافة مقرر جديد
+                </button>
+            </div>
+            <!-- Filters -->
+            <div class="filters-section">
+                <h3 class="filters-title">
+                    <i class="fas fa-filter"></i>
+                    تصفية وبحث المقررات
+                </h3>
+                <div class="filters-row">
                     <div class="filter-group">
-                        <select id="categoryFilter">
-                            <option value="" data-ar="جميع التصنيفات" data-en="All Categories">جميع التصنيفات</option>
-                            <option value="english" data-ar="اللغة الإنجليزية" data-en="English Language">اللغة الإنجليزية</option>
-                            <option value="hr" data-ar="الموارد البشرية" data-en="Human Resources">الموارد البشرية</option>
-                            <option value="technical" data-ar="التقنية" data-en="Technical">التقنية</option>
-                            <option value="business" data-ar="إدارة الأعمال" data-en="Business Management">إدارة الأعمال</option>
-                            <option value="marketing" data-ar="التسويق" data-en="Marketing">التسويق</option>
-                            <option value="finance" data-ar="المالية" data-en="Finance">المالية</option>
+                        <label class="filter-label">التصنيف:</label>
+                        <select class="filter-select" id="categoryFilter">
+                            <option value="">جميع التصنيفات</option>
+                            <option value="1">اللغة الإنجليزية</option>
+                            <option value="2">الموارد البشرية</option>
+                            <option value="3">التقنية</option>
+                            <option value="4">Speaking</option>
+                            <option value="5">Grammar</option>
+                            <option value="6">HR diplomas</option>
                         </select>
-                        <select id="levelFilter">
-                            <option value="" data-ar="جميع المستويات" data-en="All Levels">جميع المستويات</option>
-                            <option value="beginner" data-ar="مبتدئ (A1)" data-en="Beginner (A1)">مبتدئ (A1)</option>
-                            <option value="elementary" data-ar="تأسيسي (A2)" data-en="Elementary (A2)">تأسيسي (A2)</option>
-                            <option value="intermediate" data-ar="متوسط (B1)" data-en="Intermediate (B1)">متوسط (B1)</option>
-                            <option value="advanced" data-ar="متقدم (B2)" data-en="Advanced (B2)">متقدم (B2)</option>
-                            <option value="professional" data-ar="مهني" data-en="Professional">مهني</option>
-                            <option value="diploma" data-ar="دبلوم" data-en="Diploma">دبلوم</option>
-                        </select>
-                        <select id="statusFilter">
-                            <option value="" data-ar="جميع الحالات" data-en="All Status">جميع الحالات</option>
-                            <option value="active" data-ar="نشط" data-en="Active">نشط</option>
-                            <option value="draft" data-ar="مسودة" data-en="Draft">مسودة</option>
-                            <option value="archived" data-ar="مؤرشف" data-en="Archived">مؤرشف</option>
-                        </select>
-                        <select id="sortBy">
-                            <option value="name" data-ar="الاسم" data-en="Name">الاسم</option>
-                            <option value="date" data-ar="التاريخ" data-en="Date">التاريخ</option>
-                            <option value="students" data-ar="عدد الطلاب" data-en="Students Count">عدد الطلاب</option>
-                            <option value="lessons" data-ar="عدد الدروس" data-en="Lessons Count">عدد الدروس</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Courses Grid -->
-                <div class="courses-container" id="coursesContainer">
-                    <div class="courses-grid" id="coursesGrid">
-                        <!-- Courses will be populated here -->
                     </div>
                     
-                    <!-- Courses List (hidden by default) -->
-                    <div class="courses-list" id="coursesList" style="display: none;">
-                        <div class="table-container">
-                            <table class="courses-table">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            <input type="checkbox" id="selectAllCourses">
-                                        </th>
-                                        <th data-ar="المقرر" data-en="Course">المقرر</th>
-                                        <th data-ar="التصنيف" data-en="Category">التصنيف</th>
-                                        <th data-ar="المستوى" data-en="Level">المستوى</th>
-                                        <th data-ar="الدروس" data-en="Lessons">الدروس</th>
-                                        <th data-ar="الطلاب" data-en="Students">الطلاب</th>
-                                        <th data-ar="الحالة" data-en="Status">الحالة</th>
-                                        <th data-ar="تاريخ الإنشاء" data-en="Created">تاريخ الإنشاء</th>
-                                        <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="coursesTableBody">
-                                    <!-- Courses data will be populated here -->
-                                </tbody>
-                            </table>
+                    <div class="filter-group">
+                        <label class="filter-label">المستوى:</label>
+                        <select class="filter-select" id="levelFilter">
+                            <option value="">جميع المستويات</option>
+                            <option value="مبتدئ">مبتدئ</option>
+                            <option value="متوسط">متوسط</option>
+                            <option value="متقدم">متقدم</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">الترتيب:</label>
+                        <select class="filter-select" id="sortFilter">
+                            <option value="newest">الأحدث</option>
+                            <option value="oldest">الأقدم</option>
+                            <option value="price_low">السعر: من الأقل للأعلى</option>
+                            <option value="price_high">السعر: من الأعلى للأقل</option>
+                            <option value="name">الاسم</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">البحث:</label>
+                        <div class="search-group">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" id="searchInput" placeholder="ابحث عن مقرر...">
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Pagination -->
-                <div class="pagination-container">
-                    <div class="pagination-info">
-                        <span data-ar="عرض 1-12 من 156 مقرر" data-en="Showing 1-12 of 156 courses">عرض 1-12 من 156 مقرر</span>
-                    </div>
-                    <div class="pagination">
-                        <button class="pagination-btn" disabled>
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                        <button class="pagination-btn active">1</button>
-                        <button class="pagination-btn">2</button>
-                        <button class="pagination-btn">3</button>
-                        <span class="pagination-dots">...</span>
-                        <button class="pagination-btn">13</button>
-                        <button class="pagination-btn">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                    </div>
-                </div>
+            <!-- Loading State -->
+            <div class="loading-state" id="loadingState">
+                <i class="fas fa-spinner"></i>
+                <h3>جاري تحميل المقررات...</h3>
+                <p>يرجى الانتظار قليلاً</p>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h3>لا توجد نتائج</h3>
+                <p>لم يتم العثور على مقررات تطابق معايير البحث</p>
+            </div>
+
+            <!-- Courses Grid -->
+            <div class="courses-grid" id="coursesGrid" style="display: none;">
+                <!-- Course cards will be loaded dynamically here -->
             </div>
         </div>
-    </main>
+    </section>
 
     <!-- Add Course Modal -->
-    <div id="addCourseModal" class="modal">
-        <div class="modal-content large">
-            <div class="modal-header">
-                <h2 data-ar="إضافة مقرر جديد" data-en="Add New Course">إضافة مقرر جديد</h2>
-                <span class="close">&times;</span>
-            </div>
-            <form class="course-form" id="addCourseForm">
-                <div class="form-tabs">
-                    <button type="button" class="tab-btn active" data-tab="basic">
-                        <i class="fas fa-info-circle"></i>
-                        <span data-ar="المعلومات الأساسية" data-en="Basic Info">المعلومات الأساسية</span>
-                    </button>
-                    <button type="button" class="tab-btn" data-tab="content">
-                        <i class="fas fa-book-open"></i>
-                        <span data-ar="المحتوى" data-en="Content">المحتوى</span>
-                    </button>
-                    <button type="button" class="tab-btn" data-tab="settings">
-                        <i class="fas fa-cog"></i>
-                        <span data-ar="الإعدادات" data-en="Settings">الإعدادات</span>
-                    </button>
-                </div>
-
-                <div class="tab-content active" id="basicTab">
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label data-ar="اسم المقرر" data-en="Course Name">اسم المقرر</label>
-                            <input type="text" name="courseName" required data-placeholder-ar="أدخل اسم المقرر" data-placeholder-en="Enter course name" placeholder="أدخل اسم المقرر">
-                        </div>
-                        <div class="form-group">
-                            <label data-ar="التصنيف" data-en="Category">التصنيف</label>
-                            <select name="category" required>
-                                <option value="">اختر التصنيف</option>
-                                <option value="english">اللغة الإنجليزية</option>
-                                <option value="hr">الموارد البشرية</option>
-                                <option value="technical">التقنية</option>
-                                <option value="business">إدارة الأعمال</option>
-                                <option value="marketing">التسويق</option>
-                                <option value="finance">المالية</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label data-ar="المستوى التعليمي" data-en="Education Level">المستوى التعليمي</label>
-                            <select name="level" required>
-                                <option value="">اختر المستوى</option>
-                                <option value="beginner">مبتدئ (A1)</option>
-                                <option value="elementary">تأسيسي (A2)</option>
-                                <option value="intermediate">متوسط (B1)</option>
-                                <option value="advanced">متقدم (B2)</option>
-                                <option value="professional">مهني</option>
-                                <option value="diploma">دبلوم</option>
-                            </select>
-                        </div>
-                        <div class="form-group full-width">
-                            <label data-ar="وصف المقرر" data-en="Course Description">وصف المقرر</label>
-                            <textarea name="description" rows="4" data-placeholder-ar="أدخل وصف المقرر" data-placeholder-en="Enter course description" placeholder="أدخل وصف المقرر"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label data-ar="المدة" data-en="Duration">المدة</label>
-                            <input type="text" name="duration" data-placeholder-ar="مثال: 2 أشهر" data-placeholder-en="Example: 2 months" placeholder="مثال: 2 أشهر">
-                        </div>
-                        <div class="form-group">
-                            <label data-ar="السعر" data-en="Price">السعر</label>
-                            <input type="number" name="price" min="0" step="0.01" data-placeholder-ar="السعر بالدولار" data-placeholder-en="Price in USD" placeholder="السعر بالدولار">
-                        </div>
-                        <div class="form-group">
-                            <label data-ar="المدرب" data-en="Instructor">المدرب</label>
-                            <input type="text" name="instructor" data-placeholder-ar="اسم المدرب" data-placeholder-en="Instructor name" placeholder="اسم المدرب">
-                        </div>
-                        <div class="form-group">
-                            <label data-ar="المواعيد" data-en="Schedule">المواعيد</label>
-                            <input type="text" name="schedule" data-placeholder-ar="مثال: السبت والثلاثاء - 8:00 مساءً" data-placeholder-en="Example: Saturday and Tuesday - 8:00 PM" placeholder="مثال: السبت والثلاثاء - 8:00 مساءً">
-                        </div>
-                        <div class="form-group full-width">
-                            <label data-ar="رابط فيديو يوتيوب" data-en="YouTube Video Link">رابط فيديو يوتيوب</label>
-                            <input type="url" name="youtubeLink" data-placeholder-ar="https://www.youtube.com/watch?v=..." data-placeholder-en="https://www.youtube.com/watch?v=..." placeholder="https://www.youtube.com/watch?v=...">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tab-content" id="contentTab">
-                    <div class="lessons-section">
-                        <div class="section-header">
-                            <h3 data-ar="دروس المقرر" data-en="Course Lessons">دروس المقرر</h3>
-                            <button type="button" class="btn btn-secondary" id="addLessonBtn">
-                                <i class="fas fa-plus"></i>
-                                <span data-ar="إضافة درس" data-en="Add Lesson">إضافة درس</span>
-                            </button>
-                        </div>
-                        <div class="lessons-list" id="lessonsList">
-                            <!-- Lessons will be added here -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tab-content" id="settingsTab">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label data-ar="حالة المقرر" data-en="Course Status">حالة المقرر</label>
-                            <select name="status">
-                                <option value="draft">مسودة</option>
-                                <option value="active">نشط</option>
-                                <option value="archived">مؤرشف</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label data-ar="الحد الأقصى للطلاب" data-en="Max Students">الحد الأقصى للطلاب</label>
-                            <input type="number" name="maxStudents" min="1" data-placeholder-ar="عدد الطلاب" data-placeholder-en="Number of students" placeholder="عدد الطلاب">
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="allowEnrollment">
-                                    <span class="checkmark"></span>
-                                    <span data-ar="السماح بالتسجيل" data-en="Allow Enrollment">السماح بالتسجيل</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="requireApproval">
-                                    <span class="checkmark"></span>
-                                    <span data-ar="يتطلب موافقة للتسجيل" data-en="Requires Approval">يتطلب موافقة للتسجيل</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCourseModal')">
-                        <span data-ar="إلغاء" data-en="Cancel">إلغاء</span>
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        <span data-ar="حفظ المقرر" data-en="Save Course">حفظ المقرر</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Course Details Modal -->
-    <div id="courseDetailsModal" class="modal">
-        <div class="modal-content large">
-            <div class="modal-header">
-                <h2 data-ar="تفاصيل المقرر" data-en="Course Details">تفاصيل المقرر</h2>
-                <span class="close">&times;</span>
-            </div>
-            <div class="course-details" id="courseDetailsContent">
-                <!-- Course details will be populated here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Lesson Modal -->
-    <div id="addLessonModal" class="modal">
+    <div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 data-ar="إضافة درس جديد" data-en="Add New Lesson">إضافة درس جديد</h2>
-                <span class="close">&times;</span>
+          <div class="modal-header">
+            <h5 class="modal-title" id="addCourseModalLabel">إضافة مقرر جديد</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="addCourseForm">
+            <div class="modal-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">اسم المقرر</label>
+                  <input type="text" class="form-control" id="addTitle" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">التصنيف</label>
+                  <select class="form-select" id="addCategory" required>
+                    <option value="english">اللغة الإنجليزية</option>
+                    <option value="hr">الموارد البشرية</option>
+                    <option value="technical">التقنية</option>
+                    <option value="speaking">Speaking</option>
+                    <option value="grammar">Grammar</option>
+                    <option value="hr_diplomas">HR diplomas</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">الوصف</label>
+                  <textarea class="form-control" id="addDescription" rows="3"></textarea>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">المستوى</label>
+                  <select class="form-select" id="addLevel">
+                    <option value="مبتدئ">مبتدئ</option>
+                    <option value="متوسط">متوسط</option>
+                    <option value="متقدم">متقدم</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">المدة (أسابيع)</label>
+                  <input type="number" class="form-control" id="addDuration" min="1" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">السعر (ريال)</label>
+                  <input type="number" class="form-control" id="addPrice" min="0" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">المدرس</label>
+                  <input type="text" class="form-control" id="addInstructor" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">رابط يوتيوب (اختياري)</label>
+                  <input type="url" class="form-control" id="addYoutube" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">أيقونة المقرر (Font Awesome)</label>
+                  <input type="text" class="form-control" id="addIcon" placeholder="مثال: fas fa-book" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">شارة (اختياري)</label>
+                  <input type="text" class="form-control" id="addBadge" placeholder="جديد، مميز..." />
+                </div>
+              </div>
             </div>
-            <form class="lesson-form" id="addLessonForm">
-                <div class="form-group">
-                    <label data-ar="عنوان الدرس" data-en="Lesson Title">عنوان الدرس</label>
-                    <input type="text" name="lessonTitle" required data-placeholder-ar="أدخل عنوان الدرس" data-placeholder-en="Enter lesson title" placeholder="أدخل عنوان الدرس">
-                </div>
-                <div class="form-group">
-                    <label data-ar="نوع الدرس" data-en="Lesson Type">نوع الدرس</label>
-                    <select name="lessonType" required>
-                        <option value="">اختر نوع الدرس</option>
-                        <option value="video">فيديو</option>
-                        <option value="text">نص</option>
-                        <option value="quiz">اختبار</option>
-                        <option value="assignment">واجب</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label data-ar="المدة (بالدقائق)" data-en="Duration (Minutes)">المدة (بالدقائق)</label>
-                    <input type="number" name="lessonDuration" min="1" data-placeholder-ar="المدة بالدقائق" data-placeholder-en="Duration in minutes" placeholder="المدة بالدقائق">
-                </div>
-                <div class="form-group">
-                    <label data-ar="وصف الدرس" data-en="Lesson Description">وصف الدرس</label>
-                    <textarea name="lessonDescription" rows="3" data-placeholder-ar="أدخل وصف الدرس" data-placeholder-en="Enter lesson description" placeholder="أدخل وصف الدرس"></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addLessonModal')">
-                        <span data-ar="إلغاء" data-en="Cancel">إلغاء</span>
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i>
-                        <span data-ar="إضافة الدرس" data-en="Add Lesson">إضافة الدرس</span>
-                    </button>
-                </div>
-            </form>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+              <button type="submit" class="btn btn-primary">حفظ</button>
+            </div>
+          </form>
         </div>
+      </div>
     </div>
 
-    <script src="js/script.js"></script>
-    <script src="js/courses.js"></script>
+    <!-- Edit Course Modal -->
+    <div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editCourseModalLabel">تعديل المقرر</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="editCourseForm">
+            <div class="modal-body">
+              <input type="hidden" id="editId" />
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">اسم المقرر</label>
+                  <input type="text" class="form-control" id="editTitle" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">التصنيف</label>
+                  <select class="form-select" id="editCategory" required>
+                    <option value="english">اللغة الإنجليزية</option>
+                    <option value="hr">الموارد البشرية</option>
+                    <option value="technical">التقنية</option>
+                    <option value="speaking">Speaking</option>
+                    <option value="grammar">Grammar</option>
+                    <option value="hr_diplomas">HR diplomas</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">الوصف</label>
+                  <textarea class="form-control" id="editDescription" rows="3"></textarea>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">المستوى</label>
+                  <select class="form-select" id="editLevel">
+                    <option value="مبتدئ">مبتدئ</option>
+                    <option value="متوسط">متوسط</option>
+                    <option value="متقدم">متقدم</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">المدة (أسابيع)</label>
+                  <input type="number" class="form-control" id="editDuration" min="1" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">السعر (ريال)</label>
+                  <input type="number" class="form-control" id="editPrice" min="0" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">المدرس</label>
+                  <input type="text" class="form-control" id="editInstructor" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">رابط يوتيوب (اختياري)</label>
+                  <input type="url" class="form-control" id="editYoutube" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">أيقونة المقرر (Font Awesome)</label>
+                  <input type="text" class="form-control" id="editIcon" placeholder="مثال: fas fa-book" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">شارة (اختياري)</label>
+                  <input type="text" class="form-control" id="editBadge" placeholder="جديد، مميز..." />
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+              <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API URL for dynamic courses
+        const API_URL = '/api/courses';
+
+        // In-memory collections
+        let allCourses = [];
+        let filteredCourses = [];
+        const isAdmin = localStorage.getItem('adminLoggedIn') === 'true';
+
+        // Category mapping to labels and backgrounds
+        const categoryMap = {
+            english: { name: 'اللغة الإنجليزية', bg: 'english-bg', icon: 'fas fa-book-open' },
+            language: { name: 'اللغات', bg: 'english-bg', icon: 'fas fa-language' },
+            hr: { name: 'الموارد البشرية', bg: 'hr-bg', icon: 'fas fa-users-cog' },
+            technical: { name: 'التقنية', bg: 'tech-bg', icon: 'fas fa-code' },
+            speaking: { name: 'Speaking', bg: 'general-bg', icon: 'fas fa-microphone' },
+            grammar: { name: 'Grammar', bg: 'english-bg', icon: 'fas fa-spell-check' },
+            hr_diplomas: { name: 'HR diplomas', bg: 'hr-bg', icon: 'fas fa-graduation-cap' }
+        };
+
+        const levelMap = { beginner: 'مبتدئ', intermediate: 'متوسط', advanced: 'متقدم' };
+        const categoryFilterMap = { '1': 'english', '2': 'hr', '3': 'technical', '4': 'speaking', '5': 'grammar', '6': 'hr_diplomas' };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCourses();
+            setupFilters();
+            setupAdminUI();
+        });
+
+        function setupAdminUI() {
+            if (isAdmin) {
+                const controls = document.getElementById('adminControls');
+                if (controls) controls.style.display = 'flex';
+                const addBtn = document.getElementById('addCourseBtn');
+                if (addBtn) {
+                    addBtn.addEventListener('click', () => {
+                        const modal = new bootstrap.Modal(document.getElementById('addCourseModal'));
+                        document.getElementById('addCourseForm').reset();
+                        modal.show();
+                    });
+                }
+                const addForm = document.getElementById('addCourseForm');
+                if (addForm) {
+                    addForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        try {
+                            const payload = {
+                                course_code: `CRS-${Date.now()}`,
+                                title: document.getElementById('addTitle').value.trim(),
+                                description: document.getElementById('addDescription').value.trim(),
+                                category: document.getElementById('addCategory').value,
+                                level_name: document.getElementById('addLevel').value,
+                                duration_weeks: parseInt(document.getElementById('addDuration').value) || null,
+                                price: document.getElementById('addPrice').value ? String(document.getElementById('addPrice').value) : null,
+                                instructor_name: document.getElementById('addInstructor').value.trim(),
+                                youtube_link: document.getElementById('addYoutube').value.trim(),
+                                course_icon: document.getElementById('addIcon').value.trim(),
+                                badge_text: document.getElementById('addBadge').value.trim()
+                            };
+                            const res = await fetch(API_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            const result = await res.json();
+                            if (!res.ok || result.success === false) throw new Error(result.message || 'فشل إضافة المقرر');
+                            bootstrap.Modal.getInstance(document.getElementById('addCourseModal')).hide();
+                            await loadCourses();
+                        } catch (err) {
+                            alert('حدث خطأ أثناء إضافة المقرر: ' + err.message);
+                        }
+                    });
+                }
+            }
+        }
+
+        async function loadCourses() {
+            showLoading();
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                const courses = data.courses || data.data || [];
+
+                allCourses = courses.map(c => ({
+                    id: c.id,
+                    title: c.title || c.course_name || 'مقرر',
+                    description: c.description || '',
+                    price: (typeof c.price === 'number' ? `${c.price} ريال` : (c.price ? `${c.price} ريال` : '—')),
+                    duration: c.duration_weeks ? `${c.duration_weeks}` : '—',
+                    level: levelMap[c.level_name] || c.level_name || '',
+                    category: c.category,
+                    categoryName: (categoryMap[c.category] || { name: c.category || 'عام' }).name,
+                    image: c.course_icon || (categoryMap[c.category] || { icon: 'fas fa-graduation-cap' }).icon,
+                    background: (categoryMap[c.category] || { bg: 'general-bg' }).bg
+                }));
+
+                filteredCourses = [...allCourses];
+                updateTotalCourses();
+                displayCourses(filteredCourses);
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                showEmpty();
+            }
+        }
+
+        function displayCourses(courses) {
+            const grid = document.getElementById('coursesGrid');
+            
+            if (courses.length === 0) {
+                showEmpty();
+                return;
+            }
+
+            const coursesHTML = courses.map(course => `
+                <div class="course-card">
+                    <div class="course-image ${course.background}">
+                        <i class="${course.image}"></i>
+                        <div class="course-badge">${course.categoryName}</div>
+                        <div class="course-level">${course.level}</div>
+                    </div>
+                    <div class="course-content">
+                        <h3 class="course-title">${course.title}</h3>
+                        <p class="course-description">${course.description}</p>
+                        <div class="course-meta">
+                            <div class="course-price">${course.price}</div>
+                            <div class="course-duration">
+                                <i class="fas fa-clock"></i>
+                                ${course.duration}
+                            </div>
+                        </div>
+                        <div class="course-actions">
+                            <button class="btn-primary" onclick="enrollCourse(${course.id})">
+                                <i class="fas fa-user-plus"></i>
+                                التسجيل
+                            </button>
+                            <button class="btn-secondary" onclick="viewCourse(${course.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${isAdmin ? `
+                            <button class="btn-secondary" onclick="openEditCourse(${course.id})" title="تعديل">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-secondary" onclick="deleteCourse(${course.id})" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            grid.innerHTML = coursesHTML;
+            showCourses();
+        }
+
+        function setupFilters() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const levelFilter = document.getElementById('levelFilter');
+            const sortFilter = document.getElementById('sortFilter');
+            const searchInput = document.getElementById('searchInput');
+
+            categoryFilter.addEventListener('change', applyFilters);
+            levelFilter.addEventListener('change', applyFilters);
+            sortFilter.addEventListener('change', applyFilters);
+            searchInput.addEventListener('input', applyFilters);
+        }
+
+        function applyFilters() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const levelFilter = document.getElementById('levelFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = [...allCourses];
+
+            // Apply category filter
+            if (categoryFilter) {
+                const catValue = categoryFilterMap[categoryFilter] || categoryFilter;
+                filtered = filtered.filter(course => course.category === catValue);
+            }
+
+            // Apply level filter
+            if (levelFilter) {
+                filtered = filtered.filter(course => course.level === levelFilter);
+            }
+
+            // Apply search filter
+            if (searchTerm) {
+                filtered = filtered.filter(course => 
+                    course.title.toLowerCase().includes(searchTerm) ||
+                    course.description.toLowerCase().includes(searchTerm) ||
+                    course.categoryName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Apply sorting
+            switch (sortFilter) {
+                case 'newest':
+                    filtered.sort((a, b) => b.id - a.id);
+                    break;
+                case 'oldest':
+                    filtered.sort((a, b) => a.id - b.id);
+                    break;
+                case 'name':
+                    filtered.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                case 'price_low':
+                    filtered.sort((a, b) => (parseInt(a.price) || 0) - (parseInt(b.price) || 0));
+                    break;
+                case 'price_high':
+                    filtered.sort((a, b) => (parseInt(b.price) || 0) - (parseInt(a.price) || 0));
+                    break;
+            }
+
+            filteredCourses = filtered;
+            displayCourses(filtered);
+        }
+
+        function updateTotalCourses() {
+            document.getElementById('totalCourses').textContent = allCourses.length;
+        }
+
+        function showLoading() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('coursesGrid').style.display = 'none';
+        }
+
+        function showCourses() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('coursesGrid').style.display = 'grid';
+        }
+
+        function showEmpty() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('coursesGrid').style.display = 'none';
+        }
+
+        function enrollCourse(courseId) {
+            // Redirect to enrollment page
+            window.location.href = `enrollment.html?course=${courseId}`;
+        }
+
+        function viewCourse(courseId) {
+            // Redirect to course details page
+            window.location.href = `course-details.html?id=${courseId}`;
+        }
+
+        // Admin actions
+        async function deleteCourse(id) {
+            if (!isAdmin) return;
+            if (!confirm('هل تريد حذف هذا المقرر؟')) return;
+            try {
+                const res = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (!res.ok || result.success === false) throw new Error(result.message || 'فشل الحذف');
+                await loadCourses();
+            } catch (err) {
+                alert('حدث خطأ أثناء الحذف: ' + err.message);
+            }
+        }
+
+        function openEditCourse(id) {
+            if (!isAdmin) return;
+            const course = allCourses.find(c => c.id == id);
+            if (!course) return;
+            document.getElementById('editId').value = course.id;
+            document.getElementById('editTitle').value = course.title || '';
+            document.getElementById('editDescription').value = course.description || '';
+            document.getElementById('editCategory').value = course.category || 'english';
+            document.getElementById('editLevel').value = course.level || 'مبتدئ';
+            document.getElementById('editDuration').value = (course.duration && course.duration !== '—') ? parseInt(course.duration) : '';
+            document.getElementById('editPrice').value = (course.price && course.price !== '—') ? parseInt(course.price) : '';
+            document.getElementById('editInstructor').value = course.instructor || '';
+            document.getElementById('editYoutube').value = course.youtube_link || '';
+            document.getElementById('editIcon').value = (course.image && course.image.startsWith('fa')) ? course.image : '';
+            document.getElementById('editBadge').value = course.badge_text || '';
+            const modal = new bootstrap.Modal(document.getElementById('editCourseModal'));
+            modal.show();
+        }
+
+        document.getElementById('editCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isAdmin) return;
+            try {
+                const payload = {
+                    id: parseInt(document.getElementById('editId').value),
+                    title: document.getElementById('editTitle').value.trim(),
+                    description: document.getElementById('editDescription').value.trim(),
+                    category: document.getElementById('editCategory').value,
+                    level_name: document.getElementById('editLevel').value,
+                    duration_weeks: parseInt(document.getElementById('editDuration').value) || null,
+                    price: document.getElementById('editPrice').value ? String(document.getElementById('editPrice').value) : null,
+                    instructor_name: document.getElementById('editInstructor').value.trim(),
+                    youtube_link: document.getElementById('editYoutube').value.trim(),
+                    course_icon: document.getElementById('editIcon').value.trim(),
+                    badge_text: document.getElementById('editBadge').value.trim()
+                };
+                const res = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (!res.ok || result.success === false) throw new Error(result.message || 'فشل التعديل');
+                bootstrap.Modal.getInstance(document.getElementById('editCourseModal')).hide();
+                await loadCourses();
+            } catch (err) {
+                alert('حدث خطأ أثناء تعديل المقرر: ' + err.message);
+            }
+        });
+    </script>
 </body>
 </html>

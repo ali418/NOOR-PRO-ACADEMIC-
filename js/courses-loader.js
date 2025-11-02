@@ -67,9 +67,22 @@ class CourseLoader {
 
         const icon = course.course_icon || categoryIcons[course.category] || 'fas fa-book';
         const badge = course.badge_text || 'جديد';
-        const price = course.price ? `${course.price}$` : 'قريباً';
+        const levelMap = { beginner: 'مبتدئ', intermediate: 'متوسط', advanced: 'متقدم' };
+        const levelRaw = course.level_name || course.level || '';
+        const level = levelMap[levelRaw] || levelRaw || 'جميع المستويات';
+
+        const title = course.title || course.course_name || 'مقرر';
+        const description = course.description || '';
+        const durationText = course.duration || (course.duration_weeks ? `${course.duration_weeks} أسبوع` : '');
         const startDate = course.start_date ? new Date(course.start_date).toLocaleDateString('ar-EG') : '';
-        const level = course.level_name || course.level || 'جميع المستويات';
+        let priceText = 'قريباً';
+        if (typeof course.price === 'number') {
+            priceText = `${course.price} ريال`;
+        } else if (typeof course.price === 'string' && course.price.trim() !== '') {
+            // إذا كانت القيمة نصية رقمية
+            const num = parseInt(course.price, 10);
+            priceText = isNaN(num) ? course.price : `${num} ريال`;
+        }
 
         return `
             <div class="course-card" data-category="${course.category || 'general'}" data-course-id="${course.id}">
@@ -78,18 +91,18 @@ class CourseLoader {
                     <div class="course-badge">${badge}</div>
                 </div>
                 <div class="course-content">
-                    <h3>${course.title}</h3>
-                    <p>${course.description || ''}</p>
+                    <h3>${title}</h3>
+                    <p>${description}</p>
                     <div class="course-meta">
-                        <span class="duration">${course.duration || ''}</span>
+                        <span class="duration">${durationText}</span>
                         <span class="level">${level}</span>
-                        <span class="price">${price}</span>
+                        <span class="price">${priceText}</span>
                     </div>
                     ${startDate ? `
-                        <div class="course-dates">
-                            <small>البداية: ${startDate}</small>
-                        </div>
-                    ` : ''}
+                            <div class="course-dates">
+                                <small>البداية: ${startDate}</small>
+                            </div>
+                        ` : ''}
                     <div class="course-video">
                         <button class="btn-preview" onclick="playIntroVideo('course-${course.id}')">
                             <i class="fas fa-play"></i>

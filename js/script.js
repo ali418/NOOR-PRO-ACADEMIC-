@@ -106,10 +106,25 @@ class StatsManager {
             const response = await fetch(this.apiUrl);
             const result = await response.json();
             
-            if (result.success && result.data) {
-                this.updateStatsDisplay(result.data);
+            // دعم شكلين من الاستجابة:
+            // 1) { success: true, data: { totalStudents, totalTeachers, totalCourses, successRate } }
+            // 2) { students, teachers, courses, successRate }
+            let statsData = null;
+            if (result && result.success && result.data) {
+                statsData = result.data;
+            } else if (result && (typeof result.students !== 'undefined' || typeof result.courses !== 'undefined')) {
+                statsData = {
+                    totalStudents: result.students ?? 0,
+                    totalTeachers: result.teachers ?? 0,
+                    totalCourses: result.courses ?? 0,
+                    successRate: result.successRate ?? 95
+                };
+            }
+
+            if (statsData) {
+                this.updateStatsDisplay(statsData);
             } else {
-                console.warn('فشل في جلب الإحصائيات:', result.error || 'خطأ غير معروف');
+                console.warn('فشل في جلب الإحصائيات:', result && (result.error || result.message) || 'خطأ غير معروف');
                 this.showDefaultStats();
             }
         } catch (error) {

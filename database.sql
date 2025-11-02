@@ -23,17 +23,34 @@ CREATE TABLE IF NOT EXISTS students (
 CREATE TABLE IF NOT EXISTS courses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_code VARCHAR(20) UNIQUE NOT NULL,
+    title VARCHAR(100),
     course_name VARCHAR(100) NOT NULL,
     description TEXT,
     credits INT NOT NULL DEFAULT 3,
     duration_weeks INT NOT NULL DEFAULT 16,
     instructor_name VARCHAR(100),
     max_students INT DEFAULT 30,
+    price VARCHAR(255),
+    level_name VARCHAR(50),
+    start_date DATE,
+    end_date DATE,
+    duration VARCHAR(50),
+    capacity INT,
+    details TEXT,
+    category VARCHAR(50),
+    course_icon VARCHAR(50),
+    badge_text VARCHAR(50),
     youtube_link TEXT,
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Ensure category_id exists and is linked to course_categories
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS category_id INT DEFAULT NULL;
+-- Add FK constraint (will be ignored if already exists)
+ALTER TABLE courses ADD CONSTRAINT fk_courses_category 
+FOREIGN KEY (category_id) REFERENCES course_categories(id) ON DELETE SET NULL;
 
 -- جدول المدرسين
 CREATE TABLE IF NOT EXISTS teachers (

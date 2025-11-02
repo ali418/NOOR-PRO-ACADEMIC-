@@ -1,36 +1,19 @@
 [
   {
     "id": 1,
-    "title": "تجريب",
-    "course_code": "CRS-001",
-    "description": "حيخ\nسكرنوهرتكقطشلحرهقلابة مئسيجخرظز",
-    "instructor_name": "علي ادم",
-    "duration_weeks": "3 شهور ",
-    "credits": 3,
-    "max_students": 25,
-    "category": "english",
-    "price": 60,
-    "level_name": "beginner",
-    "start_date": "2025-10-27",
-    "course_icon": "fas fa-book",
-    "badge_text": "جديد",
-    "youtube_link": "https://youtu.be/libmyQtcuIA?si=uM3evAKEkEzJnFF5"
-  },
-  {
-    "id": 2,
-    "title": "تجربي 2",
-    "course_code": "CRS-002",
-    "description": "حخهقث0فهkrghileghns;fole99tuerioghj",
-    "instructor_name": "hhhhhhhhhhhhh",
+    "title": "المستوى الأول – مبتدئين (A1)",
+    "course_code": "CRS-1762072602459",
+    "description": "وصف المقرر",
+    "instructor_name": "نور",
     "duration_weeks": 5,
     "credits": 3,
     "max_students": 25,
-    "category": "language",
-    "price": "100",
-    "level_name": "advanced",
-    "start_date": "2025-10-27",
+    "category": "english",
+    "price": "75260000",
+    "level_name": "مبتدئ",
+    "start_date": "2025-11-02",
     "course_icon": "fas fa-book",
-    "badge_text": "جديد",
-    "youtube_link": "https://youtu.be/AaySooXjAQs?si=pSrEqZQusDjmK945"
+    "badge_text": null,
+    "youtube_link": ""
   }
 ]
