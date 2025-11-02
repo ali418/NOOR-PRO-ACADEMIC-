@@ -780,3 +780,17 @@
         transform: none;
     }
 }
+
+/* Extra Mobile Safety: prevent horizontal overflow and clamp widths */
+@media (max-width: 767px) {
+    html, body { overflow-x: hidden; }
+    .nav-container { max-width: 100%; padding: 0 16px; gap: 1rem; }
+    .header, .navbar, .hero, .features, .section, .footer { width: 100%; }
+    .hero-content { padding: 0 16px; }
+}
+
+@media (max-width: 575px) {
+    .nav-container { padding: 0 12px; gap: 0.75rem; }
+    .search-box { max-width: 100%; }
+    .search-box input, .search-input { width: 100%; }
+}
