@@ -559,7 +559,7 @@
                   <input type="number" class="form-control" id="addDuration" min="1" />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">السعر (ريال)</label>
+                  <label class="form-label">السعر (دولار)</label>
                   <input type="number" class="form-control" id="addPrice" min="0" />
                 </div>
                 <div class="col-md-6">
@@ -633,7 +633,7 @@
                   <input type="number" class="form-control" id="editDuration" min="1" />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">السعر (ريال)</label>
+                  <label class="form-label">السعر (دولار)</label>
                   <input type="number" class="form-control" id="editPrice" min="0" />
                 </div>
                 <div class="col-md-6">
@@ -752,7 +752,7 @@
                     id: c.id,
                     title: c.title || c.course_name || 'مقرر',
                     description: c.description || '',
-                    price: (typeof c.price === 'number' ? `${c.price} ريال` : (c.price ? `${c.price} ريال` : '—')),
+                    price: (typeof c.price === 'number' ? `${c.price} $` : (c.price ? `${parseInt(String(c.price).replace(/[^0-9]/g,'')) || c.price} $` : '—')),
                     duration: c.duration_weeks ? `${c.duration_weeks}` : '—',
                     level: levelMap[c.level_name] || c.level_name || '',
                     category: c.category,
@@ -874,7 +874,7 @@
                     filtered.sort((a, b) => (parseInt(a.price) || 0) - (parseInt(b.price) || 0));
                     break;
                 case 'price_high':
-                    filtered.sort((a, b) => (parseInt(b.price) || 0) - (parseInt(a.price) || 0));
+                    filtered.sort((a, b) => ((parseInt(String(b.price).replace(/[^0-9]/g,'')) || 0) - (parseInt(String(a.price).replace(/[^0-9]/g,'')) || 0)));
                     break;
             }
 

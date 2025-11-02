@@ -349,11 +349,11 @@
     <section class="category-header">
         <div class="container">
             <div class="category-nav">
-                <a href="index.html" class="back-btn">
+                <a href="index.html" class="back-btn" data-ar="العودة للرئيسية" data-en="Back to Home">
                     <i class="fas fa-arrow-right"></i>
                     العودة للرئيسية
                 </a>
-                <a href="categories.html" class="back-btn">
+                <a href="categories.html" class="back-btn" data-ar="جميع التصنيفات" data-en="All Categories">
                     <i class="fas fa-th-large"></i>
                     جميع التصنيفات
                 </a>
@@ -367,7 +367,8 @@
                 <p class="category-description" id="categoryDescription">جاري تحميل معلومات التصنيف...</p>
                 <div class="courses-count-badge" id="coursesCountBadge">
                     <i class="fas fa-book"></i>
-                    <span>جاري التحميل...</span>
+                    <span class="count-number">—</span>
+                    <span class="count-label" data-ar="مقرر متاح" data-en="Available Courses">مقرر متاح</span>
                 </div>
             </div>
         </div>
@@ -378,7 +379,7 @@
         <div class="container">
             <!-- Filters -->
             <div class="filters-section">
-                <h3 class="filters-title">
+                <h3 class="filters-title" data-ar="تصفية المقررات" data-en="Filter Courses">
                     <i class="fas fa-filter"></i>
                     تصفية المقررات
                 </h3>
@@ -434,8 +435,9 @@
         </div>
     </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="js/script.js"></script>
+        <script>
         // Get category ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const categoryId = urlParams.get('category');
@@ -501,7 +503,7 @@
                     id: 2,
                     title: 'Business English',
                     description: 'تطوير مهارات اللغة الإنجليزية في بيئة العمل والمراسلات التجارية',
-                    price: '499 ريال',
+                    price: '499 $',
                     duration: '12 أسبوع',
                     level: 'متوسط',
                     image: 'fas fa-briefcase'
@@ -510,7 +512,7 @@
                     id: 3,
                     title: 'IELTS Preparation',
                     description: 'التحضير الشامل لامتحان IELTS مع التدريب على جميع المهارات',
-                    price: '699 ريال',
+                    price: '699 $',
                     duration: '16 أسبوع',
                     level: 'متقدم',
                     image: 'fas fa-certificate'
@@ -521,7 +523,7 @@
                     id: 4,
                     title: 'إدارة الموارد البشرية',
                     description: 'دورة شاملة في إدارة الموارد البشرية والتوظيف والتطوير',
-                    price: '599 ريال',
+                    price: '599 $',
                     duration: '10 أسابيع',
                     level: 'متوسط',
                     image: 'fas fa-users-cog'
@@ -764,12 +766,17 @@
         }
 
         function updateCoursesCount(count) {
+            const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
+            const labelAr = 'مقرر متاح';
+            const labelEn = 'Available Courses';
+            const labelText = lang === 'en' ? labelEn : labelAr;
             document.getElementById('coursesCountBadge').innerHTML = `
                 <i class="fas fa-book"></i>
-                <span>${count} مقرر متاح</span>
+                <span class="count-number">${count}</span>
+                <span class="count-label" data-ar="${labelAr}" data-en="${labelEn}">${labelText}</span>
             `;
         }
-
+        
         function showLoading() {
             document.getElementById('loadingState').style.display = 'block';
             document.getElementById('errorState').style.display = 'none';

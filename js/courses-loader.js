@@ -77,11 +77,11 @@ class CourseLoader {
         const startDate = course.start_date ? new Date(course.start_date).toLocaleDateString('ar-EG') : '';
         let priceText = 'قريباً';
         if (typeof course.price === 'number') {
-            priceText = `${course.price} ريال`;
+            priceText = `${course.price} $`;
         } else if (typeof course.price === 'string' && course.price.trim() !== '') {
             // إذا كانت القيمة نصية رقمية
-            const num = parseInt(course.price, 10);
-            priceText = isNaN(num) ? course.price : `${num} ريال`;
+            const num = parseInt(course.price.replace(/[^0-9]/g, ''), 10);
+            priceText = isNaN(num) ? course.price : `${num} $`;
         }
 
         return `

@@ -80,21 +80,42 @@ class CategoriesLoader {
         const icon = this.getCategoryIcon(category.category_name_ar);
         const color = this.getCategoryColor(category.category_name_ar);
         const coursesCount = category.courses_count || 0;
-        const description = category.description || this.getDefaultDescription(category.category_name_ar);
+        const descriptionAr = category.description || this.getDefaultDescription(category.category_name_ar);
+        const descriptionEn = this.getDefaultDescriptionEn(category.category_name_en || category.category_name_ar);
+
+        const titleAr = category.category_name_ar || 'تصنيف';
+        const titleEn = category.category_name_en || titleAr;
+
+        const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
+        const labelAr = 'مقرر متاح';
+        const labelEn = 'Available Courses';
+        const labelText = lang === 'en' ? labelEn : labelAr;
 
         return `
             <div class="category-card" data-category-id="${category.id}" onclick="navigateToCategory(${category.id})">
                 <div class="category-icon" style="background: ${color}">
                     <i class="${icon}"></i>
                 </div>
-                <h3 class="category-title">${category.category_name_ar}</h3>
-                <p class="category-description">${description}</p>
+                <h3 class="category-title" data-ar="${this.escapeAttr(titleAr)}" data-en="${this.escapeAttr(titleEn)}">${lang === 'en' ? this.escapeHTML(titleEn) : this.escapeHTML(titleAr)}</h3>
+                <p class="category-description" data-ar="${this.escapeAttr(descriptionAr)}" data-en="${this.escapeAttr(descriptionEn)}">${lang === 'en' ? this.escapeHTML(descriptionEn) : this.escapeHTML(descriptionAr)}</p>
                 <div class="courses-count">
                     <i class="fas fa-book"></i>
-                    <span>${coursesCount} مقرر متاح</span>
+                    <span class="count-number">${coursesCount}</span>
+                    <span class="count-label" data-ar="${labelAr}" data-en="${labelEn}">${labelText}</span>
                 </div>
             </div>
         `;
+    }
+
+    // بسيطة لتفادي مشاكل السمات HTML
+    escapeAttr(text) {
+        return String(text || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    escapeHTML(text) {
+        const div = document.createElement('div');
+        div.textContent = text || '';
+        return div.innerHTML;
     }
 
     getCategoryIcon(categoryName) {
@@ -191,6 +212,28 @@ class CategoriesLoader {
         };
 
         return descriptionMap[categoryName] || 'مجال تعليمي متميز يهدف إلى تطوير مهاراتك المهنية';
+    }
+
+    getDefaultDescriptionEn(categoryName) {
+        const descriptionMapEn = {
+            'اللغة الإنجليزية': 'Learn English from basics to proficiency',
+            'English Language': 'Learn English from basics to proficiency',
+            'Speaking': 'Develop English speaking and conversational skills',
+            'Grammar': 'Master English grammar in a simple, easy way',
+            'الموارد البشرية': 'Develop HR management and leadership skills',
+            'Human Resources': 'Develop HR management and leadership skills',
+            'HR diplomas': 'Specialized diplomas in human resources',
+            'HR Diplomas': 'Specialized diplomas in human resources',
+            'التقنية': 'Learn the latest technologies and programming',
+            'Technology': 'Learn the latest technologies and programming',
+            'Programming': 'Learn programming from zero to expert',
+            'Web Development': 'Build modern websites and web apps',
+            'Database': 'Design and manage databases',
+            'AI': 'Artificial Intelligence and Machine Learning',
+            'Security': 'Information security and cyber protection'
+        };
+
+        return descriptionMapEn[categoryName] || 'An educational field that helps you develop professional skills';
     }
 
     showError(message) {

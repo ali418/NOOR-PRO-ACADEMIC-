@@ -430,7 +430,7 @@ class CoursesManager {
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-tag"></i>
-                            <span>${course.price} ريال</span>
+                            <span>${course.price} $</span>
                         </div>
                     </div>
                     <div class="course-stats">
@@ -861,7 +861,7 @@ class CoursesManager {
                                 </div>
                                 <div class="meta-item">
                                     <span class="meta-label">السعر</span>
-                                    <span class="meta-value">${course.price} ريال</span>
+                                    <span class="meta-value">${course.price} $</span>
                                 </div>
                                 <div class="meta-item">
                                     <span class="meta-label">عدد الدروس</span>
@@ -1268,7 +1268,7 @@ class CoursesManager {
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-tag"></i>
-                            <span>السعر: ${course.price} ريال</span>
+                            <span>السعر: ${course.price} $</span>
                         </div>
                     </div>
                 </div>
