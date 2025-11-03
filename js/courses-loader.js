@@ -53,6 +53,11 @@ class CourseLoader {
             </div>
             ${coursesHTML}
         `;
+
+        // Refresh translations for newly injected elements
+        if (window.languageManager && typeof window.languageManager.updateContent === 'function') {
+            window.languageManager.updateContent();
+        }
     }
 
     createCourseCard(course) {
@@ -66,51 +71,66 @@ class CourseLoader {
         };
 
         const icon = course.course_icon || categoryIcons[course.category] || 'fas fa-book';
-        const badge = course.badge_text || 'جديد';
-        const levelMap = { beginner: 'مبتدئ', intermediate: 'متوسط', advanced: 'متقدم' };
+        const rawBadge = course.badge_text || 'جديد';
+        const badgeAr = rawBadge;
+        const badgeMapEn = { 'جديد': 'New', 'مميز': 'Featured', 'مكثف': 'Intensive', 'دبلوم': 'Diploma', 'TOT': 'TOT' };
+        const badgeEn = badgeMapEn[rawBadge] || rawBadge;
+
+        const levelMapAr = { beginner: 'مبتدئ', intermediate: 'متوسط', advanced: 'متقدم' };
+        const levelMapEn = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
         const levelRaw = course.level_name || course.level || '';
-        const level = levelMap[levelRaw] || levelRaw || 'جميع المستويات';
+        const levelAr = levelMapAr[levelRaw] || levelRaw || 'جميع المستويات';
+        const levelEn = levelMapEn[levelRaw] || levelRaw || 'All levels';
 
         const title = course.title || course.course_name || 'مقرر';
         const description = course.description || '';
-        const durationText = course.duration || (course.duration_weeks ? `${course.duration_weeks} أسبوع` : '');
-        const startDate = course.start_date ? new Date(course.start_date).toLocaleDateString('ar-EG') : '';
-        let priceText = 'قريباً';
+        const durationWeeks = course.duration_weeks || '';
+        const durationAr = course.duration || (durationWeeks ? `${durationWeeks} أسبوع` : '');
+        const durationEn = course.duration || (durationWeeks ? `${durationWeeks} weeks` : '');
+        const startDateObj = course.start_date ? new Date(course.start_date) : null;
+        const startDateAr = startDateObj ? startDateObj.toLocaleDateString('ar-EG') : '';
+        const startDateEn = startDateObj ? startDateObj.toLocaleDateString('en-US') : '';
+        let priceAr = 'قريباً';
+        let priceEn = 'Coming Soon';
         if (typeof course.price === 'number') {
-            priceText = `${course.price} $`;
+            priceAr = `${course.price} $`;
+            priceEn = `${course.price} $`;
         } else if (typeof course.price === 'string' && course.price.trim() !== '') {
             // إذا كانت القيمة نصية رقمية
             const num = parseInt(course.price.replace(/[^0-9]/g, ''), 10);
-            priceText = isNaN(num) ? course.price : `${num} $`;
+            const priceVal = isNaN(num) ? course.price : `${num} $`;
+            priceAr = priceVal;
+            priceEn = priceVal;
         }
+        const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
 
         return `
             <div class="course-card" data-category="${course.category || 'general'}" data-course-id="${course.id}">
                 <div class="course-image">
                     <i class="${icon}"></i>
-                    <div class="course-badge">${badge}</div>
+                    <div class="course-badge" data-ar="${badgeAr}" data-en="${badgeEn}">${lang === 'en' ? badgeEn : badgeAr}</div>
                 </div>
                 <div class="course-content">
-                    <h3>${title}</h3>
-                    <p>${description}</p>
+                    <h3 data-ar="${title}" data-en="${title}">${lang === 'en' ? title : title}</h3>
+                    <p data-ar="${description}" data-en="${description}">${lang === 'en' ? description : description}</p>
                     <div class="course-meta">
-                        <span class="duration">${durationText}</span>
-                        <span class="level">${level}</span>
-                        <span class="price">${priceText}</span>
+                        <span class="duration" data-ar="${durationAr}" data-en="${durationEn}">${lang === 'en' ? durationEn : durationAr}</span>
+                        <span class="level" data-ar="${levelAr}" data-en="${levelEn}">${lang === 'en' ? levelEn : levelAr}</span>
+                        <span class="price" data-ar="${priceAr}" data-en="${priceEn}">${lang === 'en' ? priceEn : priceAr}</span>
                     </div>
-                    ${startDate ? `
+                    ${startDateObj ? `
                             <div class="course-dates">
-                                <small>البداية: ${startDate}</small>
+                                <small data-ar="البداية: ${startDateAr}" data-en="Start: ${startDateEn}">${lang === 'en' ? `Start: ${startDateEn}` : `البداية: ${startDateAr}`}</small>
                             </div>
                         ` : ''}
                     <div class="course-video">
-                        <button class="btn-preview" onclick="playIntroVideo('course-${course.id}')">
+                        <button class="btn-preview" onclick="playIntroVideo('course-${course.id}')" data-ar="مشاهدة الفيديو التعريفي" data-en="Watch Intro Video">
                             <i class="fas fa-play"></i>
-                            مشاهدة الفيديو التعريفي
+                            ${lang === 'en' ? 'Watch Intro Video' : 'مشاهدة الفيديو التعريفي'}
                         </button>
                     </div>
-                    <button class="btn-enroll" onclick="window.location.href='enrollment.html?course=${course.id}'">
-                        التسجيل الآن
+                    <button class="btn-enroll" onclick="window.location.href='enrollment.html?course=${course.id}'" data-ar="التسجيل الآن" data-en="Enroll Now">
+                        ${lang === 'en' ? 'Enroll Now' : 'التسجيل الآن'}
                     </button>
                 </div>
             </div>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
     <title>مقررات التصنيف - مركز نور برو الأكاديمي</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/arabic.css">
@@ -381,24 +382,24 @@
             <div class="filters-section">
                 <h3 class="filters-title" data-ar="تصفية المقررات" data-en="Filter Courses">
                     <i class="fas fa-filter"></i>
-                    تصفية المقررات
+                    <span data-ar="تصفية المقررات" data-en="Filter Courses">تصفية المقررات</span>
                 </h3>
                 <div class="filter-group">
-                    <label class="filter-label">المستوى:</label>
+                    <label class="filter-label"><span data-ar="المستوى:" data-en="Level:">المستوى:</span></label>
                     <select class="filter-select" id="levelFilter">
-                        <option value="">جميع المستويات</option>
-                        <option value="مبتدئ">مبتدئ</option>
-                        <option value="متوسط">متوسط</option>
-                        <option value="متقدم">متقدم</option>
+                        <option value="" data-ar="جميع المستويات" data-en="All Levels">جميع المستويات</option>
+                        <option value="مبتدئ" data-ar="مبتدئ" data-en="Beginner">مبتدئ</option>
+                        <option value="متوسط" data-ar="متوسط" data-en="Intermediate">متوسط</option>
+                        <option value="متقدم" data-ar="متقدم" data-en="Advanced">متقدم</option>
                     </select>
                     
-                    <label class="filter-label">الترتيب:</label>
+                    <label class="filter-label"><span data-ar="الترتيب:" data-en="Sort:">الترتيب:</span></label>
                     <select class="filter-select" id="sortFilter">
-                        <option value="newest">الأحدث</option>
-                        <option value="oldest">الأقدم</option>
-                        <option value="price_low">السعر: من الأقل للأعلى</option>
-                        <option value="price_high">السعر: من الأعلى للأقل</option>
-                        <option value="name">الاسم</option>
+                        <option value="newest" data-ar="الأحدث" data-en="Newest">الأحدث</option>
+                        <option value="oldest" data-ar="الأقدم" data-en="Oldest">الأقدم</option>
+                        <option value="price_low" data-ar="السعر: من الأقل للأعلى" data-en="Price: Low to High">السعر: من الأقل للأعلى</option>
+                        <option value="price_high" data-ar="السعر: من الأعلى للأقل" data-en="Price: High to Low">السعر: من الأعلى للأقل</option>
+                        <option value="name" data-ar="الاسم" data-en="Name">الاسم</option>
                     </select>
                 </div>
             </div>
@@ -406,26 +407,26 @@
             <!-- Loading State -->
             <div class="loading-state" id="loadingState">
                 <i class="fas fa-spinner"></i>
-                <h3>جاري تحميل المقررات...</h3>
-                <p>يرجى الانتظار قليلاً</p>
+                <h3 data-ar="جاري تحميل المقررات..." data-en="Loading courses...">جاري تحميل المقررات...</h3>
+                <p data-ar="يرجى الانتظار قليلاً" data-en="Please wait a moment">يرجى الانتظار قليلاً</p>
             </div>
 
             <!-- Error State -->
             <div class="error-state" id="errorState" style="display: none;">
                 <i class="fas fa-exclamation-triangle"></i>
-                <h3>حدث خطأ في تحميل المقررات</h3>
-                <p id="errorMessage">يرجى المحاولة مرة أخرى</p>
+                <h3 data-ar="حدث خطأ في تحميل المقررات" data-en="An error occurred while loading courses">حدث خطأ في تحميل المقررات</h3>
+                <p id="errorMessage" data-ar="يرجى المحاولة مرة أخرى" data-en="Please try again">يرجى المحاولة مرة أخرى</p>
                 <button class="retry-btn" onclick="loadCourses()">
                     <i class="fas fa-redo"></i>
-                    إعادة المحاولة
+                    <span data-ar="إعادة المحاولة" data-en="Retry">إعادة المحاولة</span>
                 </button>
             </div>
 
             <!-- Empty State -->
             <div class="empty-state" id="emptyState" style="display: none;">
                 <i class="fas fa-folder-open"></i>
-                <h3>لا توجد مقررات متاحة</h3>
-                <p>لا توجد مقررات في هذا التصنيف حالياً</p>
+                <h3 data-ar="لا توجد مقررات متاحة" data-en="No courses available">لا توجد مقررات متاحة</h3>
+                <p data-ar="لا توجد مقررات في هذا التصنيف حالياً" data-en="There are currently no courses in this category">لا توجد مقررات في هذا التصنيف حالياً</p>
             </div>
 
             <!-- Courses Grid -->
@@ -438,9 +439,10 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="js/script.js"></script>
         <script>
-        // Get category ID from URL
+        // Get category ID from URL or pretty path /category/:id
         const urlParams = new URLSearchParams(window.location.search);
-        const categoryId = urlParams.get('category');
+        const pathMatch = (window.location.pathname || '').match(/\/category\/(\d+)/);
+        const categoryId = urlParams.get('category') || (pathMatch ? pathMatch[1] : null);
 
         // Category data and courses
         let currentCategory = null;
@@ -692,28 +694,28 @@
                         <div class="course-meta">
                             <div class="course-duration">
                                 <i class="fas fa-calendar-alt"></i>
-                                <strong>المدة:</strong> ${course.duration || '—'}
+                                <strong><span data-ar="المدة:" data-en="Duration:">المدة:</span></strong> ${course.duration || '—'}
                             </div>
                             <div class="course-dates">
                                 <i class="fas fa-play"></i>
-                                <strong>البداية:</strong> ${course.startDate ? new Date(course.startDate).toLocaleDateString('ar-EG') : '—'}
+                                <strong><span data-ar="البداية:" data-en="Start:">البداية:</span></strong> ${course.startDate ? new Date(course.startDate).toLocaleDateString('ar-EG') : '—'}
                             </div>
                             <div class="course-dates">
                                 <i class="fas fa-stop"></i>
-                                <strong>النهاية:</strong> ${course.endDate ? new Date(course.endDate).toLocaleDateString('ar-EG') : '—'}
+                                <strong><span data-ar="النهاية:" data-en="End:">النهاية:</span></strong> ${course.endDate ? new Date(course.endDate).toLocaleDateString('ar-EG') : '—'}
                             </div>
                             <div class="course-capacity">
                                 <i class="fas fa-users"></i>
-                                <strong>العدد المستهدف:</strong> ${course.capacity || '—'}
+                                <strong><span data-ar="العدد المستهدف:" data-en="Capacity:">العدد المستهدف:</span></strong> ${course.capacity || '—'}
                             </div>
                             <div class="course-price">
                                 <i class="fas fa-money-bill"></i>
-                                <strong>السعر:</strong> ${course.price}
+                                <strong><span data-ar="السعر:" data-en="Price:">السعر:</span></strong> ${course.price}
                             </div>
                         </div>
                         <button class="enroll-btn" onclick="enrollCourse(${course.id})">
                             <i class="fas fa-user-plus"></i>
-                            التسجيل في المقرر
+                            <span data-ar="التسجيل في المقرر" data-en="Enroll in Course">التسجيل في المقرر</span>
                         </button>
                     </div>
                 </div>

@@ -32,11 +32,24 @@ class CategoriesLoader {
             loadingElement.style.display = 'block';
             gridElement.style.display = 'none';
 
-            // Fetch categories from API
-            const response = await fetch('/api/categories.json');
-            const result = await response.json();
+            // Fetch categories from API (Node route), fallback to static JSON if status not OK or network error
+            let result;
+            try {
+                const response = await fetch('/api/categories');
+                if (response.ok) {
+                    result = await response.json();
+                } else {
+                    console.warn('Categories API responded with non-OK status, falling back to /api/categories.json', response.status);
+                    const fallbackResp = await fetch('/api/categories.json');
+                    result = await fallbackResp.json();
+                }
+            } catch (err) {
+                console.warn('Primary categories API failed, falling back to /api/categories.json', err);
+                const fallbackResp = await fetch('/api/categories.json');
+                result = await fallbackResp.json();
+            }
 
-            if (result.success && result.data) {
+            if (result && result.success && result.data) {
                 this.categories = result.data;
                 this.displayCategories();
             } else {
@@ -74,6 +87,11 @@ class CategoriesLoader {
 
         // Add click event listeners
         this.addEventListeners();
+
+        // Refresh translations for newly injected elements
+        if (window.languageManager && typeof window.languageManager.updateContent === 'function') {
+            window.languageManager.updateContent();
+        }
     }
 
     createCategoryCard(category) {
@@ -285,7 +303,8 @@ class CategoriesLoader {
 
 // Global function to navigate to category
 function navigateToCategory(categoryId) {
-    window.location.href = `category-courses.html?category=${categoryId}`;
+    // Use pretty URL route
+    window.location.href = `/category/${categoryId}`;
 }
 
 // Initialize categories loader

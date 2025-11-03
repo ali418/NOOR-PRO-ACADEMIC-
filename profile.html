@@ -101,6 +101,10 @@
                     <i class="fas fa-book"></i>
                     <span>كورساتي</span>
                 </button>
+                <button class="tab-btn" data-tab="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>الإشعارات</span>
+                </button>
                 <button class="tab-btn" data-tab="certificates">
                     <i class="fas fa-certificate"></i>
                     <span>الشهادات</span>
@@ -172,6 +176,16 @@
                     </div>
                 </div>
 
+                <!-- Notifications Tab -->
+                <div class="tab-pane" id="notifications">
+                    <div class="notifications-section">
+                        <h3>الإشعارات</h3>
+                        <div id="student-notifications" class="notifications-list">
+                            <!-- Notifications will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Certificates Tab -->
                 <div class="tab-pane" id="certificates">
                     <div class="certificates-section">
@@ -215,6 +229,7 @@
         </div>
     </main>
 
+    <script src="js/script.js"></script>
     <script src="js/profile.js"></script>
 </body>
 </html>

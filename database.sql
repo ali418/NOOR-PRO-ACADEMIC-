@@ -110,6 +110,31 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- جدول طلبات التسجيل (واجهة المستخدم) مع دعم صورة الإيصال
+CREATE TABLE IF NOT EXISTS enrollment_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_name VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    course_id VARCHAR(50) NOT NULL,
+    course_name VARCHAR(200) NOT NULL,
+    course_price VARCHAR(100) NULL,
+    payment_method VARCHAR(50) NULL,
+    payment_details JSON NULL,
+    receipt_file VARCHAR(500) NULL,
+    status ENUM('pending','approved','rejected') DEFAULT 'pending',
+    request_number VARCHAR(100) UNIQUE,
+    submission_date DATETIME NOT NULL,
+    approval_date DATETIME NULL,
+    welcome_message TEXT NULL,
+    whatsapp_link VARCHAR(500) NULL,
+    notes TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_enrollment_requests_status (status),
+    INDEX idx_enrollment_requests_submission (submission_date)
+);
+
 -- إدراج بيانات تجريبية للطلاب
 INSERT INTO students (student_id, first_name, last_name, email, phone, date_of_birth, gender, address, enrollment_date) VALUES
 ('ST001', 'أحمد', 'محمد', 'ahmed.mohamed@email.com', '01234567890', '2000-05-15', 'male', 'القاهرة، مصر', '2024-01-15'),

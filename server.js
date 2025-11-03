@@ -283,6 +283,11 @@ app.delete('/api/enrollments', enrollmentsAPI.deleteEnrollment);
 const statsAPI = require('./api/stats');
 app.use('/api/stats', statsAPI);
 
+// Pretty URL route: /category/:id -> serve category-courses.html
+app.get('/category/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, 'category-courses.html'));
+});
+
 // توجيه جميع الطلبات الأخرى إلى الصفحة الرئيسية
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));

@@ -629,18 +629,18 @@ class StudentsManager {
         const form = e.target;
         const formData = new FormData(form);
         
-        // Create new student object
+        // إنشاء رقم طالب فريد وحزمة بيانات مطابقة لواجهة الإضافة
+        const studentId = `STU-${Date.now()}`;
         const newStudent = {
-            first_name: formData.get('firstName'),
-            last_name: formData.get('lastName'),
+            id: studentId,
+            firstName: formData.get('firstName'),
+            lastName: formData.get('lastName'),
             email: formData.get('email'),
-            phone: formData.get('phone'),
-            birth_date: formData.get('birthDate'),
+            phone: formData.get('phone') || '',
+            birthDate: formData.get('birthDate'),
             gender: formData.get('gender'),
-            grade_level: formData.get('gradeLevel'),
-            address: formData.get('address'),
-            status: 'active',
-            notes: formData.get('notes') || ''
+            address: formData.get('address') || '',
+            registrationDate: new Date().toISOString().split('T')[0]
         };
 
         try {

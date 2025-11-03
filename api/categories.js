@@ -54,12 +54,34 @@ async function getCategories(req, res) {
         });
         
     } catch (error) {
-        console.error('Error fetching categories:', error);
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في جلب التصنيفات',
-            error: error.message
-        });
+        console.error('Error fetching categories from DB, attempting fallback:', error);
+        // Graceful fallback to static JSON file
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const jsonPath = path.join(__dirname, 'categories.json');
+            const raw = fs.readFileSync(jsonPath, 'utf8');
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.success && parsed.data) {
+                return res.json({
+                    success: true,
+                    data: parsed.data,
+                    message: 'تم جلب التصنيفات (بيانات ثابتة بسبب مشكلة قاعدة البيانات)'
+                });
+            }
+            return res.status(500).json({
+                success: false,
+                message: 'خطأ في جلب التصنيفات',
+                error: error.message
+            });
+        } catch (fallbackErr) {
+            console.error('Categories JSON fallback failed:', fallbackErr);
+            return res.status(500).json({
+                success: false,
+                message: 'خطأ في جلب التصنيفات',
+                error: error.message
+            });
+        }
     } finally {
         if (connection) {
             await connection.end();

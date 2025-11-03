@@ -6,16 +6,14 @@
     "phone": "123456789",
     "courseId": "1",
     "courseName": "???? ??????",
-    "status": "pending",
+    "status": "approved",
     "submissionDate": "2025-10-28T19:28:51.122Z",
     "notes": {
-      "address": null,
-      "birthDate": null,
-      "education": null,
-      "experience": null,
-      "paymentMethod": null,
-      "coursePrice": "100"
-    }
+      "courseAccess": ""
+    },
+    "approvalDate": "2025-11-03T11:59:55.973Z",
+    "welcomeMessage": "مرحباً undefined في نور أكاديمي! 🎉\n\nتم قبول طلب التسجيل الخاص بك بنجاح.\n\nنحن سعداء لانضمامك إلى عائلة نور أكاديمي ونتطلع لرحلة تعليمية مثمرة معك.\n\n\n\n📖 سيتم التواصل معك قريباً لتزويدك بتفاصيل الدخول والمواد التعليمية.\n\nمع أطيب التمنيات بالتوفيق والنجاح! 🌟\nفريق نور أكاديمي",
+    "whatsappLink": "hsedf.kjj"
   },
   {
     "id": "2",
@@ -106,5 +104,95 @@
       "paymentMethod": "amteen",
       "coursePrice": 60
     }
+  },
+  {
+    "id": "7",
+    "studentName": "admin",
+    "email": "admin@gmil.com",
+    "phone": "2222222222222",
+    "courseId": "1",
+    "courseName": "المستوى الأول – مبتدئين (A1)",
+    "status": "pending",
+    "submissionDate": "2025-11-03T10:11:26.600Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": "beginner",
+      "paymentMethod": "mobile-money",
+      "coursePrice": "75260000"
+    }
+  },
+  {
+    "id": "8",
+    "studentName": "admin",
+    "email": "admin@gmil.com",
+    "phone": "2222222222222",
+    "courseId": "1",
+    "courseName": "المستوى الأول – مبتدئين (A1)",
+    "status": "approved",
+    "submissionDate": "2025-11-03T10:11:39.427Z",
+    "notes": {
+      "courseAccess": ""
+    },
+    "approvalDate": "2025-11-03T10:14:06.098Z",
+    "welcomeMessage": "مرحباً undefined في نور أكاديمي! 🎉\n\nتم قبول طلب التسجيل الخاص بك بنجاح.\n\nنحن سعداء لانضمامك إلى عائلة نور أكاديمي ونتطلع لرحلة تعليمية مثمرة معك.\n\n\n\n📖 سيتم التواصل معك قريباً لتزويدك بتفاصيل الدخول والمواد التعليمية.\n\nمع أطيب التمنيات بالتوفيق والنجاح! 🌟\nفريق نور أكاديمي",
+    "whatsappLink": "hsedf.kjj"
+  },
+  {
+    "id": "9",
+    "studentName": "Test User",
+    "email": "test@example.com",
+    "phone": "123456789",
+    "courseId": "CRS001",
+    "courseName": "مقدمة في البرمجة",
+    "status": "pending",
+    "submissionDate": "2025-11-03T12:12:38.570Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": null,
+      "paymentMethod": "bank",
+      "coursePrice": null
+    }
+  },
+  {
+    "id": "10",
+    "studentName": "Receipt Test",
+    "email": "test@example.com",
+    "phone": "123456789",
+    "courseId": "CRS001",
+    "courseName": "مقدمة في البرمجة",
+    "status": "pending",
+    "submissionDate": "2025-11-03T12:15:18.470Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": null,
+      "paymentMethod": "bank",
+      "coursePrice": "100"
+    },
+    "receiptFile": "/uploads/receipts/receipt_1762172108455_6040.jpg"
+  },
+  {
+    "id": "11",
+    "studentName": "PDF Test",
+    "email": "test@example.com",
+    "phone": "555555555",
+    "courseId": "CRS002",
+    "courseName": "أساسيات الحاسوب",
+    "status": "pending",
+    "submissionDate": "2025-11-03T12:25:02.146Z",
+    "notes": {
+      "address": null,
+      "birthDate": null,
+      "education": null,
+      "experience": null,
+      "paymentMethod": "bank",
+      "coursePrice": "250"
+    },
+    "receiptFile": "/uploads/receipts/receipt_1762172692132_9715.pdf"
   }
 ]

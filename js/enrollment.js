@@ -18,50 +18,7 @@ class EnrollmentSystem {
         this.setupEventListeners();
         this.updateStepDisplay();
         this.setupNavigation();
-        this.setupLanguageToggle();
         this.loadCourseData();
-        this.updateLanguage();
-    }
-
-    setupLanguageToggle() {
-        const navContainer = document.querySelector('.nav-container');
-        if (navContainer) {
-            const languageToggle = document.createElement('div');
-            languageToggle.className = 'language-toggle';
-            languageToggle.innerHTML = `
-                <button class="btn-language" onclick="enrollmentSystem.toggleLanguage()">
-                    <i class="fas fa-globe"></i>
-                    <span id="languageText">English</span>
-                </button>
-            `;
-            navContainer.appendChild(languageToggle);
-        }
-    }
-
-    toggleLanguage() {
-        this.currentLanguage = this.currentLanguage === 'ar' ? 'en' : 'ar';
-        this.updateLanguage();
-    }
-
-    updateLanguage() {
-        const html = document.documentElement;
-        const elements = document.querySelectorAll('[data-ar][data-en]');
-        
-        if (this.currentLanguage === 'en') {
-            html.setAttribute('lang', 'en');
-            html.setAttribute('dir', 'ltr');
-            elements.forEach(el => {
-                el.textContent = el.getAttribute('data-en');
-            });
-            document.getElementById('languageText').textContent = 'العربية';
-        } else {
-            html.setAttribute('lang', 'ar');
-            html.setAttribute('dir', 'rtl');
-            elements.forEach(el => {
-                el.textContent = el.getAttribute('data-ar');
-            });
-            document.getElementById('languageText').textContent = 'English';
-        }
     }
 
     checkUserAuthentication() {
@@ -116,6 +73,23 @@ class EnrollmentSystem {
                 if (s <= this.currentStep) this.goToStep(s);
             });
         });
+
+        // Receipt file selection preview
+        const receiptInput = document.getElementById('receiptFile');
+        const uploadedFileDiv = document.getElementById('uploadedFile');
+        const fileNameSpan = document.getElementById('fileName');
+        if (receiptInput) {
+            receiptInput.addEventListener('change', () => {
+                if (receiptInput.files && receiptInput.files[0]) {
+                    const f = receiptInput.files[0];
+                    if (fileNameSpan) fileNameSpan.textContent = f.name;
+                    if (uploadedFileDiv) uploadedFileDiv.style.display = 'flex';
+                } else {
+                    if (uploadedFileDiv) uploadedFileDiv.style.display = 'none';
+                    if (fileNameSpan) fileNameSpan.textContent = '';
+                }
+            });
+        }
     }
 
     setupNavigation() {
@@ -407,13 +381,42 @@ class EnrollmentSystem {
         try {
             this.showLoading(true);
             
+            // Build multipart form data to support receipt upload
+            const formData = new FormData();
+            const data = this.enrollmentData || {};
+            Object.keys(data).forEach(key => {
+                if (data[key] !== undefined && data[key] !== null) {
+                    formData.append(key, data[key]);
+                }
+            });
+            // Append payment extra fields
+            const paymentAmountEl = document.getElementById('paymentAmount');
+            const transactionIdEl = document.getElementById('transactionId');
+            if (paymentAmountEl && paymentAmountEl.value) formData.append('paymentAmount', paymentAmountEl.value);
+            if (transactionIdEl && transactionIdEl.value) formData.append('transactionId', transactionIdEl.value);
+
+            // Append receipt file if selected
+            const fileInput = document.getElementById('receiptFile');
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const allowed = ['image/jpeg', 'image/png', 'application/pdf'];
+                if (!allowed.includes(file.type)) {
+                    this.showNotification('صيغة الملف غير مدعومة. استخدم JPG, PNG, أو PDF', 'error');
+                    this.showLoading(false);
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    this.showNotification('حجم الملف أكبر من 5 ميجا', 'error');
+                    this.showLoading(false);
+                    return;
+                }
+                formData.append('receiptFile', file);
+            }
+
             // Submit enrollment
             const response = await fetch(`${this.apiBase}/api/enrollments`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(this.enrollmentData)
+                body: formData
             });
 
             const result = await response.json();
@@ -467,6 +470,12 @@ class EnrollmentSystem {
             this.enrollmentData.courseTitle = this.courseData.title;
             this.enrollmentData.coursePrice = this.courseData.price;
         }
+
+        // Extra payment fields shown in step 4
+        const paymentAmountEl = document.getElementById('paymentAmount');
+        const transactionIdEl = document.getElementById('transactionId');
+        if (paymentAmountEl) this.enrollmentData.paymentAmount = paymentAmountEl.value || '';
+        if (transactionIdEl) this.enrollmentData.transactionId = transactionIdEl.value || '';
     }
 
     showSuccessMessage() {

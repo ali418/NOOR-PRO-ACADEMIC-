@@ -19,28 +19,54 @@ class AdminDashboard {
     }
 
     async loadDashboardStats() {
+        // أولاً جرّب واجهة Node: /api/stats
         try {
-            const response = await fetch('api/stats.php');
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    this.updateDashboardStats(result.data);
-                    console.log('Dashboard stats loaded from database:', result.data);
-                } else {
-                    throw new Error(result.error || 'Failed to load stats');
-                }
-            } else {
-                throw new Error('Failed to fetch stats from API');
+            const nodeResp = await fetch('/api/stats');
+            if (nodeResp.ok) {
+                const result = await nodeResp.json();
+                // يدعم عدة أشكال من الاستجابة
+                const data = result?.data ? result.data : result;
+                const mapped = {
+                    totalStudents: Number(data.totalStudents ?? data.students ?? 0),
+                    totalCourses: Number(data.totalCourses ?? data.courses ?? 0),
+                    activeUsers: Number(data.activeUsers ?? data.enrollments ?? 0),
+                    systemStatus: Number(data.systemStatus ?? 100)
+                };
+                this.updateDashboardStats(mapped);
+                console.log('Dashboard stats loaded via Node API:', mapped);
+                return;
             }
-        } catch (error) {
-            console.log('API not available for stats, using default values:', error.message);
-            this.updateDashboardStats({
-                totalStudents: 0,
-                totalCourses: 0,
-                activeUsers: 0,
-                systemStatus: 0
-            });
+        } catch (e) {
+            console.warn('Node stats API failed, will try PHP:', e.message);
         }
+
+        // سقوط احتياطي إلى PHP: api/stats.php (في حالة وجود خادم PHP)
+        try {
+            const phpResp = await fetch('api/stats.php');
+            if (phpResp.ok) {
+                const result = await phpResp.json();
+                const data = result?.data || {};
+                const mapped = {
+                    totalStudents: Number(data.totalStudents ?? 0),
+                    totalCourses: Number(data.totalCourses ?? 0),
+                    activeUsers: Number(data.activeUsers ?? 0),
+                    systemStatus: Number(data.systemStatus ?? 100)
+                };
+                this.updateDashboardStats(mapped);
+                console.log('Dashboard stats loaded via PHP API:', mapped);
+                return;
+            }
+        } catch (e) {
+            console.warn('PHP stats API failed:', e.message);
+        }
+
+        // في حال فشل كل شيء
+        this.updateDashboardStats({
+            totalStudents: 0,
+            totalCourses: 0,
+            activeUsers: 0,
+            systemStatus: 0
+        });
     }
 
     updateDashboardStats(stats) {
@@ -381,12 +407,24 @@ class AdminDashboard {
         this.currentEnrollment.whatsappLink = whatsappLink;
         this.currentEnrollment.courseAccess = courseAccess;
 
+        // Record a student notification in localStorage for profile page
+        this.addStudentNotification(this.currentEnrollment, welcomeMessage, whatsappLink);
+
         this.saveEnrollments();
         this.updateStats();
         this.displayEnrollments();
 
         this.closeModal('approvalModal');
         this.showNotification('تم قبول الطلب وإرسال رسالة الترحيب بنجاح!', 'success');
+
+        // بعد قبول الطلب، أضف الطالب تلقائياً إلى جدول الطلاب عبر API
+        try {
+            await this.createStudentFromEnrollment(this.currentEnrollment);
+            this.showNotification('تم إضافة الطالب إلى قائمة الطلاب بنجاح', 'success');
+        } catch (e) {
+            console.warn('Failed to add student to DB:', e.message);
+            this.showNotification('تم القبول، لكن حدث خطأ في إضافة الطالب لقاعدة البيانات', 'error');
+        }
 
         if (typeof WelcomeSystem !== 'undefined') {
             const welcomeSystem = new WelcomeSystem();
@@ -403,6 +441,64 @@ class AdminDashboard {
             });
         } else {
             this.sendWelcomeMessage(this.currentEnrollment);
+        }
+    }
+
+    // إنشاء سجل طالب جديد بناءً على بيانات الطلب المقبول
+    async createStudentFromEnrollment(enrollment) {
+        // تقسيم الاسم الكامل إلى اسم أول واسم أخير
+        const parts = String(enrollment.studentName || '').trim().split(/\s+/);
+        const first_name = parts[0] || String(enrollment.studentName || 'طالب');
+        const last_name = parts.slice(1).join(' ') || '';
+
+        // توليد رقم طالب فريد بالاعتماد على معرف الطلب
+        const student_id = `STU-${String(enrollment.id)}`;
+        const enrollment_date = new Date().toISOString().split('T')[0];
+
+        const payload = {
+            student_id,
+            first_name,
+            last_name,
+            email: String(enrollment.email || ''),
+            phone: String(enrollment.phone || ''),
+            date_of_birth: null,
+            gender: 'male',
+            address: '',
+            enrollment_date
+        };
+
+        const resp = await fetch('/api/students', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await resp.json().catch(() => ({ success: false, message: 'استجابة غير صالحة' }));
+        if (!resp.ok || !result.success) {
+            // في حال تعارض المفتاح الفريد، نتجاهل الإضافة (قد يكون الطالب مضاف مسبقاً)
+            throw new Error(result.message || 'فشل إضافة الطالب');
+        }
+        return result;
+    }
+
+    addStudentNotification(enrollment, message, whatsappLink = '') {
+        try {
+            const list = JSON.parse(localStorage.getItem('studentNotifications') || '[]');
+            const notification = {
+                id: 'NOTIF-' + Date.now(),
+                email: String(enrollment.email || ''),
+                courseId: String(enrollment.courseId || ''),
+                courseName: String(enrollment.courseName || ''),
+                type: 'approval',
+                title: 'تم قبولك في كورس',
+                message: message || `تم قبولك في ${enrollment.courseName}`,
+                whatsappLink: whatsappLink || '',
+                createdAt: new Date().toISOString(),
+                isRead: false
+            };
+            list.push(notification);
+            localStorage.setItem('studentNotifications', JSON.stringify(list));
+        } catch (e) {
+            console.warn('Failed to store student notification:', e.message);
         }
     }
 

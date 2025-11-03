@@ -1,7 +1,19 @@
 // Language Management System
 class LanguageManager {
     constructor() {
-        this.currentLang = localStorage.getItem('language') || 'ar';
+        // Allow URL parameter to override saved language
+        let urlLang = null;
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const maybeLang = params.get('lang');
+            if (maybeLang && (maybeLang === 'ar' || maybeLang === 'en')) {
+                urlLang = maybeLang;
+            }
+        } catch (e) {
+            // ignore URL parsing errors
+        }
+
+        this.currentLang = urlLang || localStorage.getItem('language') || 'ar';
         this.translations = {};
         this.init();
     }
@@ -57,13 +69,13 @@ class LanguageManager {
             }
         });
 
-        // Update placeholders
-        const inputs = document.querySelectorAll('input[placeholder]');
-        inputs.forEach(input => {
-            const arPlaceholder = input.getAttribute('data-placeholder-ar');
-            const enPlaceholder = input.getAttribute('data-placeholder-en');
+        // Update placeholders (support both naming conventions)
+        const fields = document.querySelectorAll('input[placeholder], textarea[placeholder]');
+        fields.forEach(field => {
+            const arPlaceholder = field.getAttribute('data-placeholder-ar') || field.getAttribute('data-ar-placeholder');
+            const enPlaceholder = field.getAttribute('data-placeholder-en') || field.getAttribute('data-en-placeholder');
             if (arPlaceholder && enPlaceholder) {
-                input.placeholder = lang === 'ar' ? arPlaceholder : enPlaceholder;
+                field.placeholder = lang === 'ar' ? arPlaceholder : enPlaceholder;
             }
         });
     }
@@ -104,19 +116,25 @@ class StatsManager {
     async loadStats() {
         try {
             const response = await fetch(this.apiUrl);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
             const result = await response.json();
             
             // دعم شكلين من الاستجابة:
-            // 1) { success: true, data: { totalStudents, totalTeachers, totalCourses, successRate } }
-            // 2) { students, teachers, courses, successRate }
+            // 1) { data: { totalStudents, totalTeachers, totalCourses, successRate } }
+            // 2) { success: true, data: { totalStudents, totalTeachers, totalCourses, successRate } }
+            // 3) { students, teachers, courses, successRate } أو { totalStudents, totalTeachers, totalCourses }
             let statsData = null;
-            if (result && result.success && result.data) {
+            if (result && result.data) {
+                // قبول وجود الحقل data سواء كان success موجوداً أم لا
                 statsData = result.data;
-            } else if (result && (typeof result.students !== 'undefined' || typeof result.courses !== 'undefined')) {
+            } else if (result && (typeof result.students !== 'undefined' || typeof result.courses !== 'undefined' || typeof result.totalStudents !== 'undefined')) {
+                // التعامل مع حقول بأسماء مختلفة
                 statsData = {
-                    totalStudents: result.students ?? 0,
-                    totalTeachers: result.teachers ?? 0,
-                    totalCourses: result.courses ?? 0,
+                    totalStudents: (typeof result.totalStudents !== 'undefined') ? result.totalStudents : (result.students ?? 0),
+                    totalTeachers: (typeof result.totalTeachers !== 'undefined') ? result.totalTeachers : (result.teachers ?? 0),
+                    totalCourses: (typeof result.totalCourses !== 'undefined') ? result.totalCourses : (result.courses ?? 0),
                     successRate: result.successRate ?? 95
                 };
             }

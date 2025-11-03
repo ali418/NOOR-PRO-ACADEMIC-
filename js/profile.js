@@ -2,6 +2,9 @@
 class ProfileManager {
     constructor() {
         this.currentUser = null;
+        this.apiEnrollments = '/api/enrollments';
+        this.apiStudentsNode = '/api/students';
+        this.apiStudentsPhp = '/api/students.php?action=get';
         this.init();
     }
 
@@ -11,6 +14,8 @@ class ProfileManager {
         this.setupTabs();
         this.loadUserCourses();
         this.loadUserCertificates();
+        // حمّل الإشعارات مبدئياً
+        this.loadNotifications();
     }
 
     setupEventListeners() {
@@ -82,26 +87,140 @@ class ProfileManager {
                 // Add active class to clicked tab and corresponding pane
                 btn.classList.add('active');
                 document.getElementById(targetTab).classList.add('active');
+
+                // عند فتح تبويب الإشعارات، نقوم بتحميلها
+                if (targetTab === 'notifications') {
+                    this.loadNotifications();
+                }
             });
         });
     }
 
-    loadUserData() {
-        // Get user data from localStorage or API
-        const userData = JSON.parse(localStorage.getItem('currentUser')) || {
+    async loadUserData() {
+        // محاولة تحديد المستخدم عبر باراميترات الرابط أو التخزين المحلي
+        const params = new URLSearchParams(window.location.search);
+        const paramEmail = params.get('email');
+        const paramId = params.get('id');
+
+        const storedUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        const baseUser = storedUser || {
             name: 'أحمد محمد',
             email: 'ahmed@example.com',
             phone: '+966501234567',
             birthDate: '1995-05-15',
             city: 'الرياض',
             educationLevel: 'bachelor',
-            enrolledCourses: 3,
-            completedCourses: 1,
-            pendingCourses: 2
+            enrolledCourses: 0,
+            completedCourses: 0,
+            pendingCourses: 0
         };
 
-        this.currentUser = userData;
-        this.displayUserData(userData);
+        try {
+            let userData = null;
+
+            // أولوية: البحث بالمعرف إن وُجد، ثم بالبريد، ثم بالمستخدم المخزن
+            if (paramId) {
+                userData = await this.fetchStudentById(paramId);
+            }
+
+            if (!userData && (paramEmail || baseUser.email)) {
+                const emailToFind = (paramEmail || baseUser.email || '').trim();
+                if (emailToFind) {
+                    userData = await this.fetchStudentByEmail(emailToFind);
+                }
+            }
+
+            // إذا لم يتم العثور على بيانات من الـ API، استخدم البيانات المخزنة/الافتراضية
+            this.currentUser = userData || baseUser;
+            this.displayUserData(this.currentUser);
+        } catch (e) {
+            console.error('Error loading user profile from API:', e);
+            this.currentUser = baseUser;
+            this.displayUserData(this.currentUser);
+        }
+    }
+
+    async fetchStudentById(id) {
+        // جرّب Node أولاً ثم PHP كنسخة احتياطية
+        try {
+            const nodeRes = await fetch(`${this.apiStudentsNode}/${encodeURIComponent(id)}`);
+            if (nodeRes.ok) {
+                const result = await nodeRes.json();
+                if (result && result.success && result.data) {
+                    return this.mapStudentToUserData(result.data);
+                }
+            }
+        } catch (err) {
+            // تجاهل، وسنحاول PHP
+        }
+
+        try {
+            const phpRes = await fetch(`${this.apiStudentsPhp}&id=${encodeURIComponent(id)}`);
+            if (phpRes.ok) {
+                const result = await phpRes.json();
+                if (result && result.success && Array.isArray(result.data) && result.data.length > 0) {
+                    return this.mapStudentToUserData(result.data[0]);
+                }
+            }
+        } catch (err) {
+            // لا شيء
+        }
+
+        return null;
+    }
+
+    async fetchStudentByEmail(email) {
+        const normalized = (email || '').toLowerCase();
+
+        // Node API: جلب جميع الطلاب ثم البحث بالبريد
+        try {
+            const nodeRes = await fetch(this.apiStudentsNode);
+            if (nodeRes.ok) {
+                const result = await nodeRes.json();
+                if (result && result.success && Array.isArray(result.data)) {
+                    const match = result.data.find(s => String(s.email || '').toLowerCase() === normalized);
+                    if (match) return this.mapStudentToUserData(match);
+                }
+            }
+        } catch (err) {
+            // تجاهل وسنحاول PHP
+        }
+
+        // PHP API: البحث باستخدام باراميتر search
+        try {
+            const phpRes = await fetch(`${this.apiStudentsPhp}&search=${encodeURIComponent(email)}`);
+            if (phpRes.ok) {
+                const result = await phpRes.json();
+                if (result && result.success && Array.isArray(result.data)) {
+                    const match = result.data.find(s => String(s.email || '').toLowerCase() === normalized);
+                    if (match) return this.mapStudentToUserData(match);
+                }
+            }
+        } catch (err) {
+            // لا شيء
+        }
+
+        return null;
+    }
+
+    mapStudentToUserData(student) {
+        // توحيد حقول بيانات الطالب لعرضها في الملف الشخصي
+        const first = student.first_name || '';
+        const last = student.last_name || '';
+        const fullName = `${first} ${last}`.trim() || student.name || '';
+
+        return {
+            name: fullName || 'طالب',
+            email: student.email || '',
+            phone: student.phone || '',
+            birthDate: student.date_of_birth || '',
+            city: student.address || '',
+            educationLevel: '',
+            // ستُحدّث هذه لاحقاً من بيانات التسجيلات
+            enrolledCourses: 0,
+            completedCourses: 0,
+            pendingCourses: 0
+        };
     }
 
     displayUserData(userData) {
@@ -124,39 +243,122 @@ class ProfileManager {
         document.getElementById('education-level').value = userData.educationLevel || '';
     }
 
-    loadUserCourses() {
-        // Sample courses data - in real app, this would come from API
-        const courses = [
-            {
-                id: 1,
-                title: 'أساسيات البرمجة',
-                description: 'تعلم أساسيات البرمجة باستخدام Python',
-                status: 'approved',
-                progress: 75,
-                instructor: 'د. محمد أحمد',
-                enrollDate: '2024-01-15'
-            },
-            {
-                id: 2,
-                title: 'تطوير المواقع',
-                description: 'تعلم تطوير المواقع باستخدام HTML, CSS, JavaScript',
-                status: 'pending',
-                progress: 0,
-                instructor: 'أ. سارة علي',
-                enrollDate: '2024-02-01'
-            },
-            {
-                id: 3,
-                title: 'قواعد البيانات',
-                description: 'تعلم إدارة قواعد البيانات باستخدام MySQL',
-                status: 'completed',
-                progress: 100,
-                instructor: 'د. عبدالله محمد',
-                enrollDate: '2023-12-01'
-            }
-        ];
+    async loadUserCourses() {
+        const email = (this.currentUser && this.currentUser.email) ? this.currentUser.email.toLowerCase() : null;
+        try {
+            const resp = await fetch(this.apiEnrollments);
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const result = await resp.json();
+            const items = Array.isArray(result) ? result : (result.data || []);
+            const userItems = email ? items.filter(i => (i.email || '').toLowerCase() === email) : items;
+            const courses = userItems.map(i => ({
+                id: i.id,
+                title: i.courseName || 'مقرر',
+                description: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `السعر: ${i.notes.coursePrice || '—'} - الدفع: ${i.notes.paymentMethod || '—'}` : '',
+                status: (i.status === 'approved' || i.status === 'completed' || i.status === 'pending') ? i.status : 'pending',
+                progress: i.status === 'completed' ? 100 : 0,
+                instructor: '',
+                enrollDate: i.submissionDate || new Date().toISOString(),
+                whatsappLink: i.whatsappLink || (i.notes && i.notes.whatsappLink) || ''
+            }));
 
-        this.displayCourses(courses);
+            // Update counters from enrollments
+            const total = courses.length;
+            const approved = courses.filter(c => c.status === 'approved').length;
+            const completed = courses.filter(c => c.status === 'completed').length;
+            const pending = courses.filter(c => c.status === 'pending').length;
+            document.getElementById('enrolled-courses').textContent = String(total);
+            document.getElementById('completed-courses').textContent = String(completed);
+            document.getElementById('pending-courses').textContent = String(pending);
+
+            this.displayCourses(courses);
+        } catch (err) {
+            console.warn('فشل جلب طلبات التسجيل، سيتم استخدام البيانات المحلية:', err);
+            // Fallback to local JSON file
+            try {
+                const fallbackResp = await fetch('enrollment-requests.json');
+                if (!fallbackResp.ok) throw new Error('HTTP ' + fallbackResp.status);
+                const items = await fallbackResp.json();
+                const userItems = email ? items.filter(i => (i.email || '').toLowerCase() === email) : items;
+                const courses = userItems.map(i => ({
+                    id: i.id,
+                    title: i.courseName || 'مقرر',
+                    description: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `السعر: ${i.notes.coursePrice || '—'} - الدفع: ${i.notes.paymentMethod || '—'}` : '',
+                    status: (i.status === 'approved' || i.status === 'completed' || i.status === 'pending') ? i.status : 'pending',
+                    progress: i.status === 'completed' ? 100 : 0,
+                    instructor: '',
+                    enrollDate: i.submissionDate || new Date().toISOString(),
+                    whatsappLink: i.whatsappLink || (i.notes && i.notes.whatsappLink) || ''
+                }));
+
+                const total = courses.length;
+                const approved = courses.filter(c => c.status === 'approved').length;
+                const completed = courses.filter(c => c.status === 'completed').length;
+                const pending = courses.filter(c => c.status === 'pending').length;
+                document.getElementById('enrolled-courses').textContent = String(total);
+                document.getElementById('completed-courses').textContent = String(completed);
+                document.getElementById('pending-courses').textContent = String(pending);
+
+                this.displayCourses(courses);
+            } catch (fallbackErr) {
+                console.error('فشل جلب البيانات من الملف المحلي أيضاً:', fallbackErr);
+                this.displayCourses([]);
+            }
+        }
+    }
+
+    // إشعارات الطالب
+    loadNotifications() {
+        const container = document.getElementById('student-notifications');
+        if (!container) return;
+
+        const email = (this.currentUser && this.currentUser.email) ? String(this.currentUser.email).toLowerCase() : '';
+        let list = [];
+        try {
+            list = JSON.parse(localStorage.getItem('studentNotifications') || '[]');
+        } catch (e) {
+            list = [];
+        }
+
+        const userItems = list.filter(n => String(n.email || '').toLowerCase() === email);
+        userItems.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+        if (!userItems.length) {
+            container.innerHTML = `
+                <div class="empty-state" style="text-align:center;color:#666;padding:30px;">
+                    <i class="fas fa-bell" style="font-size:1.5rem;color:#999;"></i>
+                    <div style="margin-top:10px;">لا توجد إشعارات حالياً</div>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = userItems.map(n => this.createNotificationCard(n)).join('');
+    }
+
+    createNotificationCard(n) {
+        const dateStr = n.createdAt ? new Date(n.createdAt).toLocaleString('ar-SA') : '';
+        const whatsappBtn = n.whatsappLink ? `
+            <a class="btn-whatsapp" href="${n.whatsappLink}" target="_blank" rel="noopener">
+                <i class="fab fa-whatsapp"></i>
+                <span>الانضمام لمجموعة الواتساب</span>
+            </a>
+        ` : '';
+
+        return `
+            <div class="notification-card" style="background:#fff;border:1px solid #eee;border-radius:10px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow-sm, 0 2px 6px rgba(0,0,0,0.06));">
+                <div class="notification-header" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <i class="fas fa-bell" style="color:#f39c12"></i>
+                    <div style="font-weight:600;">${n.title || 'إشعار'}</div>
+                    <div style="margin-inline-start:auto;color:#777;font-size:0.85rem;">${dateStr}</div>
+                </div>
+                <div class="notification-body" style="color:#444;">
+                    <div class="notification-message">${n.message || ''}</div>
+                    ${n.courseName ? `<div class="notification-course" style="margin-top:8px;color:#555;"><i class="fas fa-book"></i> ${n.courseName}</div>` : ''}
+                    ${whatsappBtn ? `<div style="margin-top:10px;">${whatsappBtn}</div>` : ''}
+                </div>
+            </div>
+        `;
     }
 
     displayCourses(courses) {
@@ -199,6 +401,14 @@ class ProfileManager {
                 <p><strong>المدرس:</strong> ${course.instructor}</p>
                 <p><strong>تاريخ التسجيل:</strong> ${new Date(course.enrollDate).toLocaleDateString('ar-SA')}</p>
             </div>
+            ${course.status === 'approved' && course.whatsappLink ? `
+            <div class="course-actions" style="margin-top: 10px;">
+                <a class="btn-secondary" href="${course.whatsappLink}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>الانضمام إلى مجموعة الواتساب</span>
+                </a>
+            </div>
+            ` : ''}
         `;
 
         return card;
