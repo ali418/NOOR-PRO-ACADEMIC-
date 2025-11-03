@@ -240,7 +240,8 @@ class AdminDashboard {
         const coursePrice = enrollment.coursePrice || (enrollment.notes && enrollment.notes.coursePrice) || 0;
         
         const paymentMethodText = {
-            'mobile-money': 'محفظة إلكترونية',
+            'mobile-money': 'موبايل موني',
+            'bank': 'بنكك',
             'areeba': 'أريبا',
             'amteen': 'أمتين',
             'bank-transfer': 'تحويل بنكي',
@@ -625,7 +626,8 @@ class AdminDashboard {
         }
         
         const paymentMethodText = {
-            'mobile-money': 'محفظة إلكترونية',
+            'mobile-money': 'موبايل موني',
+            'bank': 'بنكك',
             'areeba': 'أريبا',
             'amteen': 'أمتين',
             'bank-transfer': 'تحويل بنكي',

@@ -382,7 +382,12 @@
         }
 
         .account-info strong {
-            color: #333;
+            color: #111 !important;
+        }
+
+        /* Ensure payment detail text (labels and numbers) is dark and visible */
+        .account-info span {
+            color: #111 !important;
         }
 
         .copy-btn {
@@ -689,22 +694,10 @@
                                 <p data-ar="الدفع عبر موبايل موني" data-en="Payment via Mobile Money">الدفع عبر موبايل موني</p>
                             </div>
 
-                            <div class="payment-method" data-method="areeba">
-                                <i class="fas fa-credit-card"></i>
-                                <h4 data-ar="أرتيال" data-en="Areeba">أرتيال</h4>
-                                <p data-ar="الدفع عبر أرتيال" data-en="Payment via Areeba">الدفع عبر أرتيال</p>
-                            </div>
-
-                            <div class="payment-method" data-method="amteen">
-                                <i class="fas fa-wallet"></i>
-                                <h4 data-ar="أمتين" data-en="Amteen">أمتين</h4>
-                                <p data-ar="الدفع عبر أمتين" data-en="Payment via Amteen">الدفع عبر أمتين</p>
-                            </div>
-
                             <div class="payment-method" data-method="bank">
                                 <i class="fas fa-university"></i>
-                                <h4 data-ar="بنك الخرطوم" data-en="Bank of Khartoum">بنك الخرطوم</h4>
-                                <p data-ar="التحويل البنكي" data-en="Bank Transfer">التحويل البنكي</p>
+                                <h4 data-ar="بنكك" data-en="Bankak">بنكك</h4>
+                                <p data-ar="الدفع عبر بنكك" data-en="Payment via Bankak">الدفع عبر بنكك</p>
                             </div>
                         </div>
 
@@ -713,58 +706,28 @@
                             <div class="payment-info">
                                 <h4 data-ar="معلومات الدفع - موبايل موني" data-en="Payment Information - Mobile Money">معلومات الدفع - موبايل موني</h4>
                                 <div class="account-info">
-                                    <span data-ar="رقم الحساب: " data-en="Account Number: ">رقم الحساب: <strong>0123456789</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('0123456789')" data-ar="نسخ" data-en="Copy">نسخ</button>
+                                    <span data-ar="رقم الحساب: " data-en="Account Number: ">رقم الحساب: <strong>+256767033631</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('+256767033631')" data-ar="نسخ" data-en="Copy">نسخ</button>
                                 </div>
                                 <div class="account-info">
-                                    <span data-ar="اسم الحساب: " data-en="Account Name: ">اسم الحساب: <strong data-ar="مركز نور برو الأكاديمي" data-en="Noor Pro Academic Center">مركز نور برو الأكاديمي</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('مركز نور برو الأكاديمي')" data-ar="نسخ" data-en="Copy">نسخ</button>
+                                    <span data-ar="اسم الحساب: " data-en="Account Name: ">اسم الحساب: <strong data-ar="محمد محمد نور الدين" data-en="Mohamed Mohamed Nour Eldeen">محمد محمد نور الدين</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('محمد محمد نور الدين')" data-ar="نسخ" data-en="Copy">نسخ</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="payment-details" id="areebaDetails">
-                            <div class="payment-info">
-                                <h4 data-ar="معلومات الدفع - أرتيال" data-en="Payment Information - Areeba">معلومات الدفع - أرتيال</h4>
-                                <div class="account-info">
-                                    <span data-ar="رقم الحساب: " data-en="Account Number: ">رقم الحساب: <strong>9876543210</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('9876543210')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                                <div class="account-info">
-                                    <span data-ar="اسم الحساب: " data-en="Account Name: ">اسم الحساب: <strong data-ar="مركز نور برو الأكاديمي" data-en="Noor Pro Academic Center">مركز نور برو الأكاديمي</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('مركز نور برو الأكاديمي')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="payment-details" id="amteenDetails">
-                            <div class="payment-info">
-                                <h4 data-ar="معلومات الدفع - أمتين" data-en="Payment Information - Amteen">معلومات الدفع - أمتين</h4>
-                                <div class="account-info">
-                                    <span data-ar="رقم الحساب: " data-en="Account Number: ">رقم الحساب: <strong>5555666677</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('5555666677')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                                <div class="account-info">
-                                    <span data-ar="اسم الحساب: " data-en="Account Name: ">اسم الحساب: <strong data-ar="مركز نور برو الأكاديمي" data-en="Noor Pro Academic Center">مركز نور برو الأكاديمي</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('مركز نور برو الأكاديمي')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                            </div>
-                        </div>
+                        
 
                         <div class="payment-details" id="bankDetails">
                             <div class="payment-info">
-                                <h4 data-ar="معلومات الدفع - بنك الخرطوم" data-en="Payment Information - Bank of Khartoum">معلومات الدفع - بنك الخرطوم</h4>
+                                <h4 data-ar="معلومات الدفع - بنكك" data-en="Payment Information - Bankak">معلومات الدفع - بنكك</h4>
                                 <div class="account-info">
-                                    <span data-ar="رقم الحساب: " data-en="Account Number: ">رقم الحساب: <strong>1234567890123</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('1234567890123')" data-ar="نسخ" data-en="Copy">نسخ</button>
+                                    <span data-ar="رقم الحساب: " data-en="Account Number: ">رقم الحساب: <strong>4055971</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('4055971')" data-ar="نسخ" data-en="Copy">نسخ</button>
                                 </div>
                                 <div class="account-info">
-                                    <span data-ar="اسم الحساب: " data-en="Account Name: ">اسم الحساب: <strong data-ar="مركز نور برو الأكاديمي" data-en="Noor Pro Academic Center">مركز نور برو الأكاديمي</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('مركز نور برو الأكاديمي')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                                <div class="account-info">
-                                    <span data-ar="فرع البنك: " data-en="Bank Branch: ">فرع البنك: <strong data-ar="الخرطوم - شارع الجامعة" data-en="Khartoum - University Street">الخرطوم - شارع الجامعة</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('الخرطوم - شارع الجامعة')" data-ar="نسخ" data-en="Copy">نسخ</button>
+                                    <span data-ar="اسم الحساب: " data-en="Account Name: ">اسم الحساب: <strong data-ar="نورالدين محمد" data-en="Nour Eldeen Mohamed">نورالدين محمد</strong></span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('نورالدين محمد')" data-ar="نسخ" data-en="Copy">نسخ</button>
                                 </div>
                             </div>
                         </div>
