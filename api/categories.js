@@ -194,52 +194,31 @@ async function getCoursesByCategory(req, res) {
         
     } catch (error) {
         console.error('Error fetching courses by category:', error);
-        // Fallback to sample data to keep category page functional if DB fails
+        // Safe fallback: avoid 500, return sample-filtered or empty list
+        const fs = require('fs');
+        const path = require('path');
+        const catIdNum = Number(req.params.id);
+
+        // Static mapping (no dependency on categories.json)
+        const idToKey = {
+            1: 'english',
+            2: 'hr',
+            3: 'technical',
+            4: 'speaking',
+            5: 'grammar',
+            6: 'hr diplomas'
+        };
+        const legacyKey = idToKey[catIdNum] || null;
+
+        let normalizedCourses = [];
         try {
-            const fs = require('fs');
-            const path = require('path');
-            const categoryId = req.params.id;
-
-            // Load categories JSON to build a minimal category object and name mapping
-            const categoriesPath = path.join(__dirname, 'categories.json');
-            const categoriesRaw = fs.readFileSync(categoriesPath, 'utf8');
-            const categoriesJson = JSON.parse(categoriesRaw);
-            const categoriesList = (categoriesJson && categoriesJson.data) ? categoriesJson.data : [];
-            const categoryObj = categoriesList.find(c => String(c.id) === String(categoryId));
-
-            // Build a mapping from category id to legacy textual keys (supporting synonyms)
-            const idToKeys = {
-                1: ['english', 'english-language', 'english_language'],
-                2: ['hr', 'human-resources', 'human_resources'],
-                3: ['technical', 'technology', 'tech'],
-                4: ['speaking', 'speaking-skills', 'english-speaking'],
-                5: ['grammar', 'english-grammar', 'english_grammar'],
-                6: ['hr diplomas', 'hr-diplomas', 'hr_diplomas']
-            };
-            const legacyKeys = idToKeys[Number(categoryId)] || [];
-
-            // Load sample courses
             const samplePath = path.join(__dirname, '..', 'sample-courses.json');
             const sampleRaw = fs.readFileSync(samplePath, 'utf8');
             const sampleCourses = JSON.parse(sampleRaw);
-
-            // Filter by textual category if available; otherwise return empty list
-            const filtered = legacyKeys.length > 0
-                ? sampleCourses.filter(c => legacyKeys.includes(String(c.category).toLowerCase()))
+            const filtered = legacyKey
+                ? sampleCourses.filter(c => String(c.category).toLowerCase() === legacyKey)
                 : [];
-
-            // Compose minimal category data for frontend
-            const fallbackCategory = categoryObj ? {
-                id: categoryObj.id,
-                category_name: categoryObj.category_name_en || categoryObj.category_name_ar || 'Category',
-                category_name_ar: categoryObj.category_name_ar || categoryObj.category_name_en || 'تصنيف',
-                description: categoryObj.description || null,
-                icon: categoryObj.icon || null,
-                color: categoryObj.color || null
-            } : { id: Number(categoryId), category_name: 'Category', category_name_ar: 'تصنيف' };
-
-            // Normalize sample format to match SQL response
-            const normalizedCourses = filtered.map(c => ({
+            normalizedCourses = filtered.map(c => ({
                 id: c.id,
                 course_code: c.course_code,
                 course_name: c.title,
@@ -260,23 +239,28 @@ async function getCoursesByCategory(req, res) {
                 created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
                 enrolled_students: 0
             }));
-
-            return res.json({
-                success: true,
-                data: {
-                    category: fallbackCategory,
-                    courses: normalizedCourses
-                },
-                message: 'تم جلب المقررات من بيانات تجريبية'
-            });
         } catch (fallbackErr) {
-            console.error('Category courses fallback failed:', fallbackErr);
-            return res.status(500).json({
-                success: false,
-                message: 'خطأ في جلب المقررات',
-                error: error.message
-            });
+            console.warn('Sample data fallback failed, returning empty list:', fallbackErr.message);
         }
+
+        const categoryNameMap = {
+            1: { en: 'English Language', ar: 'اللغة الإنجليزية' },
+            2: { en: 'Human Resources', ar: 'الموارد البشرية' },
+            3: { en: 'Technology', ar: 'التقنية' },
+            4: { en: 'Speaking Skills', ar: 'Speaking' },
+            5: { en: 'English Grammar', ar: 'Grammar' },
+            6: { en: 'HR Diplomas', ar: 'HR diplomas' }
+        };
+        const names = categoryNameMap[catIdNum] || { en: 'Category', ar: 'تصنيف' };
+
+        return res.json({
+            success: true,
+            data: {
+                category: { id: catIdNum, category_name: names.en, category_name_ar: names.ar },
+                courses: normalizedCourses
+            },
+            message: normalizedCourses.length > 0 ? 'تم جلب المقررات من بيانات تجريبية' : 'لا توجد مقررات في هذا التصنيف حالياً'
+        });
     } finally {
         if (connection) {
             await connection.end();
