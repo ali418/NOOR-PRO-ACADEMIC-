@@ -621,7 +621,7 @@
                 
                 // Normalize API courses
                 const normalizedFromApi = apiCourses.map(c => {
-                    const usdPriceValue = parseFloat(c.price_usd || c.price || 0);
+                    const usdPriceValue = Number(c.price) || 0;
                     const sdgPriceValue = usdPriceValue * 1500; // Assuming a fixed rate for now, should be dynamic
                     const usdPriceAmount = usdPriceValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     const sdgPriceAmount = sdgPriceValue.toLocaleString('en-US');
