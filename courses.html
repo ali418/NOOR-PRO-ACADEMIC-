@@ -571,6 +571,10 @@
                   <input type="url" class="form-control" id="addYoutube" />
                 </div>
                 <div class="col-md-4">
+                  <label class="form-label">تاريخ البداية</label>
+                  <input type="date" class="form-control" id="addStartDate" />
+                </div>
+                <div class="col-md-4">
                   <label class="form-label">تاريخ النهاية</label>
                   <input type="date" class="form-control" id="addEndDate" />
                 </div>
@@ -651,6 +655,10 @@
                 <div class="col-md-6">
                   <label class="form-label">رابط يوتيوب (اختياري)</label>
                   <input type="url" class="form-control" id="editYoutube" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">تاريخ البداية</label>
+                  <input type="date" class="form-control" id="editStartDate" />
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">تاريخ النهاية</label>
@@ -743,6 +751,7 @@
                     youtube_link: document.getElementById('addYoutube').value.trim(),
                     course_icon: document.getElementById('addIcon').value.trim(),
                     badge_text: document.getElementById('addBadge').value.trim(),
+                    start_date: document.getElementById('addStartDate').value || null,
                     end_date: document.getElementById('addEndDate').value || null,
                     max_students: parseInt(document.getElementById('addMaxStudents').value) || null
                 };
@@ -782,6 +791,7 @@
                     image: c.course_icon || (categoryMap[c.category] || { icon: 'fas fa-graduation-cap' }).icon,
                     background: (categoryMap[c.category] || { bg: 'general-bg' }).bg,
                     max_students: c.max_students || null,
+                    start_date: c.start_date || null,
                     end_date: c.end_date || null
                 }));
 
@@ -967,6 +977,7 @@
             document.getElementById('editYoutube').value = course.youtube_link || '';
             document.getElementById('editIcon').value = (course.image && course.image.startsWith('fa')) ? course.image : '';
             document.getElementById('editBadge').value = course.badge_text || '';
+            document.getElementById('editStartDate').value = course.start_date || '';
             document.getElementById('editEndDate').value = course.end_date || '';
             document.getElementById('editMaxStudents').value = course.max_students || '';
             const modal = new bootstrap.Modal(document.getElementById('editCourseModal'));
@@ -992,6 +1003,7 @@
                     youtube_link: document.getElementById('editYoutube').value.trim(),
                     course_icon: document.getElementById('editIcon').value.trim(),
                     badge_text: document.getElementById('editBadge').value.trim(),
+                    start_date: document.getElementById('editStartDate').value || null,
                     end_date: document.getElementById('editEndDate').value || null,
                     max_students: parseInt(document.getElementById('editMaxStudents').value) || null
                 };
