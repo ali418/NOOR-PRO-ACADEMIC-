@@ -130,6 +130,7 @@ async function addCourse(req, res) {
             duration,
             instructor_name,
             max_students,
+            status,
             youtube_link,
             category,
             category_id,
@@ -187,7 +188,7 @@ async function addCourse(req, res) {
             // تضمين course_name لتفادي قيود NOT NULL في بعض المخططات
             query = `INSERT INTO courses (
                 course_code, course_name, title, description, credits, duration_weeks, duration,
-                instructor_name, max_students, youtube_link, category, 
+                instructor_name, max_students, status, youtube_link, category, 
                 price, level_name, start_date, end_date, course_icon, badge_text, category_id
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
             params = [
@@ -200,6 +201,7 @@ async function addCourse(req, res) {
                 duration || null,
                 instructor_name || null,
                 max_students || 30,
+                status || 'active',
                 youtube_link || null,
                 category || 'general',
                 price || '0',
@@ -214,7 +216,7 @@ async function addCourse(req, res) {
             // Fallback for databases without category_id column
             query = `INSERT INTO courses (
                 course_code, course_name, title, description, credits, duration_weeks, duration,
-                instructor_name, max_students, youtube_link, category, 
+                instructor_name, max_students, status, youtube_link, category, 
                 price, level_name, start_date, end_date, course_icon, badge_text
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
             params = [
@@ -227,6 +229,7 @@ async function addCourse(req, res) {
                 duration || null,
                 instructor_name || null,
                 max_students || 30,
+                status || 'active',
                 youtube_link || null,
                 category || 'general',
                 price || '0',
