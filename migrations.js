@@ -11,7 +11,10 @@ const dotenv = require('dotenv');
 // تحميل متغيرات البيئة
 dotenv.config();
 
-// قراءة ملف قاعدة البيانات
+// مسار مجلد ملفات المهاجرات
+const getMigrationsDir = () => path.join(__dirname, 'db', 'migrations');
+
+// قراءة ملف قاعدة البيانات (استخدام احتياطي إذا لم توجد ملفات مهاجرات)
 const readDatabaseFile = () => {
   try {
     const databaseFilePath = path.join(__dirname, 'database.sql');
@@ -19,6 +22,30 @@ const readDatabaseFile = () => {
   } catch (error) {
     console.error('خطأ في قراءة ملف قاعدة البيانات:', error);
     return null;
+  }
+};
+
+// تحميل ملفات المهاجرات مرتبة حسب الاسم
+const loadMigrationFiles = () => {
+  const dir = getMigrationsDir();
+  try {
+    if (!fs.existsSync(dir)) {
+      return [];
+    }
+    const files = fs
+      .readdirSync(dir)
+      .filter(f => f.toLowerCase().endsWith('.sql'))
+      .sort((a, b) => a.localeCompare(b));
+
+    const migrations = files.map(file => {
+      const fullPath = path.join(dir, file);
+      const sql = fs.readFileSync(fullPath, 'utf8');
+      return { name: file, commands: splitSqlCommands(sql) };
+    });
+    return migrations;
+  } catch (error) {
+    console.error('خطأ في قراءة ملفات المهاجرات:', error);
+    return [];
   }
 };
 
@@ -103,16 +130,26 @@ const executeSqlCommands = async (connection, commands) => {
 const runMigrations = async () => {
   let connection;
   try {
-    // قراءة ملف قاعدة البيانات
-    const sqlContent = readDatabaseFile();
-    if (!sqlContent) {
-      console.error('لم يتم العثور على ملف قاعدة البيانات');
-      return;
+    // محاولة تحميل ملفات المهاجرات
+    const migrations = loadMigrationFiles();
+    let commands = [];
+    if (migrations.length > 0) {
+      console.log(`تم العثور على ${migrations.length} ملف مهاجرات. سيتم تنفيذها بالترتيب.`);
+      // دمج جميع الأوامر مع الحفاظ على ترتيب الملفات
+      migrations.forEach(m => {
+        console.log(`تحميل ملف المهاجرات: ${m.name} - عدد الأوامر: ${m.commands.length}`);
+        commands.push(...m.commands);
+      });
+    } else {
+      // استخدام ملف قاعدة البيانات كحل احتياطي
+      const sqlContent = readDatabaseFile();
+      if (!sqlContent) {
+        console.error('لم يتم العثور على ملف قاعدة البيانات أو ملفات مهاجرات');
+        return;
+      }
+      commands = splitSqlCommands(sqlContent);
+      console.log(`تم العثور على ${commands.length} أمر SQL للتنفيذ من database.sql`);
     }
-
-    // تقسيم الأوامر
-    const commands = splitSqlCommands(sqlContent);
-    console.log(`تم العثور على ${commands.length} أمر SQL للتنفيذ`);
 
     // إنشاء اتصال بقاعدة البيانات
     connection = await createConnection();
