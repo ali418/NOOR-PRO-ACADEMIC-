@@ -652,8 +652,9 @@
                 
                 // Normalize API courses
                 const normalizedFromApi = apiCourses.map(c => {
-                    const priceValue = extractNumeric(c.price);
-                    const priceAmount = priceValue ? priceValue.toLocaleString('en-US') : '—';
+                    // ثابت: السعر المطلوب عرضه بشكل دائم
+                    const priceValue = 75260000;
+                    const priceAmount = priceValue.toLocaleString('en-US');
                     return ({
                         id: c.id,
                         title: c.course_name || 'مقرر',
@@ -677,8 +678,9 @@
                 if (!Array.isArray(finalCourses) || finalCourses.length === 0) {
                     const samples = sampleCourses[categoryId] || [];
                     finalCourses = samples.map(s => {
-                        const priceValue = extractNumeric(s.price);
-                        const priceAmount = priceValue ? priceValue.toLocaleString('en-US') : '—';
+                        // ثابت: السعر المطلوب عرضه بشكل دائم
+                        const priceValue = 75260000;
+                        const priceAmount = priceValue.toLocaleString('en-US');
                         return ({
                         id: s.id,
                         title: s.title,
