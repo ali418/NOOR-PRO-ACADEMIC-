@@ -90,18 +90,16 @@ class CourseLoader {
         const startDateObj = course.start_date ? new Date(course.start_date) : null;
         const startDateAr = startDateObj ? startDateObj.toLocaleDateString('ar-EG') : '';
         const startDateEn = startDateObj ? startDateObj.toLocaleDateString('en-US') : '';
-        let priceAr = 'قريباً';
-        let priceEn = 'Coming Soon';
-        if (typeof course.price === 'number') {
-            priceAr = `${course.price} $`;
-            priceEn = `${course.price} $`;
-        } else if (typeof course.price === 'string' && course.price.trim() !== '') {
-            // إذا كانت القيمة نصية رقمية
-            const num = parseInt(course.price.replace(/[^0-9]/g, ''), 10);
-            const priceVal = isNaN(num) ? course.price : `${num} $`;
-            priceAr = priceVal;
-            priceEn = priceVal;
+        
+        // معالجة السعر بشكل صحيح
+        let priceDisplay = 'قريباً';
+        const priceUsd = course.price_usd || course.price; // استخدم price_usd إذا كان متاحاً
+
+        if (priceUsd && !isNaN(parseFloat(priceUsd))) {
+            const priceFloat = parseFloat(priceUsd);
+            priceDisplay = `${priceFloat.toFixed(2)} $`;
         }
+
         const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
 
         return `
@@ -116,7 +114,7 @@ class CourseLoader {
                     <div class="course-meta">
                         <span class="duration" data-ar="${durationAr}" data-en="${durationEn}">${lang === 'en' ? durationEn : durationAr}</span>
                         <span class="level" data-ar="${levelAr}" data-en="${levelEn}">${lang === 'en' ? levelEn : levelAr}</span>
-                        <span class="price" data-ar="${priceAr}" data-en="${priceEn}">${lang === 'en' ? priceEn : priceAr}</span>
+                        <span class="price" data-ar="{priceDisplay}" data-en="{priceDisplay}">${priceDisplay}</span>
                     </div>
                     ${startDateObj ? `
                             <div class="course-dates">
