@@ -627,8 +627,24 @@
         // Helpers for duration/end-date
         function parseDaysFromDurationText(input) {
             if (!input) return 0;
-            const n = extractNumeric(input);
-            return Number.isFinite(n) && n > 0 ? n : 0;
+            const s = String(input).trim();
+            const norm = toEnglishDigits(s).toLowerCase();
+            const n = extractNumeric(norm);
+            if (!Number.isFinite(n) || n <= 0) return 0;
+
+            // Detect Arabic/English units and convert to days
+            const weekTokens = ['اسبوع', 'أسبوع', 'اسابيع', 'أسابيع', 'week', 'weeks'];
+            const dayTokens = ['يوم', 'أيام', 'day', 'days'];
+            const monthTokens = ['شهر', 'أشهر', 'شهور', 'month', 'months'];
+
+            if (weekTokens.some(t => norm.includes(t))) {
+                return n * 7;
+            }
+            if (monthTokens.some(t => norm.includes(t))) {
+                return n * 30; // تقريبياً
+            }
+            // Default: treat as days
+            return n;
         }
 
         function addDaysToDate(startDateStr, days) {

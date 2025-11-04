@@ -737,7 +737,26 @@
                         e.preventDefault();
                         try {
                 const durationText = document.getElementById('addDuration').value.trim();
-                const durationDays = parseInt(durationText.replace(/[^0-9]/g,'')) || null;
+                // Helpers to compute weeks accurately from Arabic/English units
+                const toEnglishDigits = (inp) => String(inp || '').replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
+                const extractNumeric = (inp) => {
+                    const s = toEnglishDigits(String(inp || ''));
+                    const cleaned = s.replace(/[^0-9.]/g, '');
+                    const n = cleaned ? Number(cleaned) : NaN;
+                    return Number.isFinite(n) ? n : 0;
+                };
+                const computeDurationWeeks = (text) => {
+                    const norm = toEnglishDigits(String(text || '').trim()).toLowerCase();
+                    const n = extractNumeric(norm);
+                    if (!n) return null;
+                    const weekTokens = ['اسبوع','أسبوع','اسابيع','أسابيع','week','weeks'];
+                    const dayTokens = ['يوم','أيام','day','days'];
+                    const monthTokens = ['شهر','أشهر','شهور','month','months'];
+                    if (weekTokens.some(t => norm.includes(t))) return n;
+                    if (monthTokens.some(t => norm.includes(t))) return n * 4; // تقريبياً
+                    return Math.ceil(n / 7); // افتراضي: أيام
+                };
+                const durationWeeks = computeDurationWeeks(durationText);
                 const payload = {
                     course_code: `CRS-${Date.now()}`,
                     title: document.getElementById('addTitle').value.trim(),
@@ -745,7 +764,7 @@
                     category: document.getElementById('addCategory').value,
                     level_name: document.getElementById('addLevel').value,
                     duration: durationText || null,
-                    duration_weeks: durationDays ? Math.ceil(durationDays / 7) : null,
+                    duration_weeks: durationWeeks,
                     price: document.getElementById('addPrice').value ? String(document.getElementById('addPrice').value) : null,
                     instructor_name: document.getElementById('addInstructor').value.trim(),
                     youtube_link: document.getElementById('addYoutube').value.trim(),
@@ -763,7 +782,7 @@
                             let result = await res.json();
                             if (!res.ok || result.success === false) {
                                 // مسار بديل: حفظ في البيانات التجريبية
-                                const weeks = payload.duration_weeks || (durationDays ? Math.ceil(durationDays / 7) : null);
+                                const weeks = payload.duration_weeks || durationWeeks || null;
                                 const samplePayload = {
                                     course_name: payload.title,
                                     description: payload.description,
@@ -1014,7 +1033,26 @@
             if (!isAdmin) return;
             try {
                 const durationTextEdit = document.getElementById('editDuration').value.trim();
-                const durationDaysEdit = parseInt(durationTextEdit.replace(/[^0-9]/g,'')) || null;
+                // نفس الدوال المساعدة لحساب الأسابيع من النص
+                const toEnglishDigits = (inp) => String(inp || '').replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
+                const extractNumeric = (inp) => {
+                    const s = toEnglishDigits(String(inp || ''));
+                    const cleaned = s.replace(/[^0-9.]/g, '');
+                    const n = cleaned ? Number(cleaned) : NaN;
+                    return Number.isFinite(n) ? n : 0;
+                };
+                const computeDurationWeeks = (text) => {
+                    const norm = toEnglishDigits(String(text || '').trim()).toLowerCase();
+                    const n = extractNumeric(norm);
+                    if (!n) return null;
+                    const weekTokens = ['اسبوع','أسبوع','اسابيع','أسابيع','week','weeks'];
+                    const dayTokens = ['يوم','أيام','day','days'];
+                    const monthTokens = ['شهر','أشهر','شهور','month','months'];
+                    if (weekTokens.some(t => norm.includes(t))) return n;
+                    if (monthTokens.some(t => norm.includes(t))) return n * 4; // تقريبياً
+                    return Math.ceil(n / 7);
+                };
+                const durationWeeksEdit = computeDurationWeeks(durationTextEdit);
                 const payload = {
                     id: parseInt(document.getElementById('editId').value),
                     title: document.getElementById('editTitle').value.trim(),
@@ -1022,7 +1060,7 @@
                     category: document.getElementById('editCategory').value,
                     level_name: document.getElementById('editLevel').value,
                     duration: durationTextEdit || null,
-                    duration_weeks: durationDaysEdit ? Math.ceil(durationDaysEdit / 7) : null,
+                    duration_weeks: durationWeeksEdit,
                     price: document.getElementById('editPrice').value ? String(document.getElementById('editPrice').value) : null,
                     instructor_name: document.getElementById('editInstructor').value.trim(),
                     youtube_link: document.getElementById('editYoutube').value.trim(),
@@ -1040,7 +1078,7 @@
                 let result = await res.json();
                 if (!res.ok || result.success === false) {
                     // مسار بديل: حفظ في البيانات التجريبية
-                    const weeksEdit = payload.duration_weeks || (durationDaysEdit ? Math.ceil(durationDaysEdit / 7) : null);
+                    const weeksEdit = payload.duration_weeks || durationWeeksEdit || null;
                     const sampleUpdate = {
                         id: payload.id,
                         course_name: payload.title,
