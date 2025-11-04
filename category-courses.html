@@ -574,6 +574,34 @@
             setupFilters();
         });
 
+        // Utils: ensure English digits and proper formatting for price
+        function toEnglishDigits(input) {
+            if (input === null || input === undefined) return '';
+            const s = String(input);
+            const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
+            return s
+                .replace(/[٠-٩]/g, d => String(arabicDigits.indexOf(d)))
+                .replace(/\u066B/g, '.') // Arabic decimal separator
+                .replace(/\u066C/g, ','); // Arabic thousands separator
+        }
+
+        function extractNumeric(input) {
+            const s = toEnglishDigits(input);
+            const cleaned = s.replace(/[^0-9.]/g, '');
+            const n = cleaned ? Number(cleaned) : NaN;
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        function formatPrice(input) {
+            // Preserve currency text (e.g., "ريال") if present, but show digits in English
+            const s = toEnglishDigits(input);
+            const numeric = extractNumeric(s);
+            const currency = s.replace(/[0-9.,\s]/g, '').trim();
+            if (!numeric) return currency ? `— ${currency}` : '—';
+            const formatted = numeric.toLocaleString('en-US');
+            return currency ? `${formatted} ${currency}` : formatted;
+        }
+
         function loadCategoryInfo() {
             const config = categoryConfigs[categoryId];
             if (!config) {
@@ -614,8 +642,7 @@
                     startDate: c.start_date || null,
                     endDate: c.end_date || null,
                     capacity: typeof c.capacity === 'number' ? `${c.capacity} شخص` : (c.capacity || (c.max_students ? `${c.max_students} طالب كحد أقصى` : '—')),
-                    // Keep raw price; we'll format it when rendering
-                    price: (typeof c.price === 'number' ? String(c.price) : (c.price || '')),
+                    price: formatPrice(c.price),
                     details: c.details || ''
                 }));
 
@@ -633,7 +660,7 @@
                         startDate: null,
                         endDate: null,
                         capacity: '—',
-                        price: (typeof s.price === 'number' ? String(s.price) : (s.price || '')),
+                        price: formatPrice(s.price),
                         details: ''
                     }));
                 }
@@ -661,7 +688,7 @@
                         startDate: null,
                         endDate: null,
                         capacity: '—',
-                        price: s.price || '—',
+                        price: formatPrice(s.price),
                         details: ''
                     }));
 
@@ -673,26 +700,6 @@
                     showError('حدث خطأ في تحميل المقررات');
                 }
             }
-        }
-
-        // Helpers for price formatting and sorting
-        function formatPriceDisplay(raw) {
-            const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
-            if (!raw || String(raw).trim() === '') return '—';
-            let cleaned = String(raw).replace(/\bالسعر\s*:\s*/i, '').trim();
-            const hasDollar = /\$|دولار/i.test(cleaned);
-            const num = parseInt(cleaned.replace(/[^0-9]/g, ''), 10);
-            if (!isNaN(num)) {
-                const formattedNum = (lang === 'en' ? num.toLocaleString('en-US') : num.toLocaleString('ar-EG'));
-                return hasDollar ? `${formattedNum} $` : formattedNum;
-            }
-            return cleaned;
-        }
-
-        function getPriceValue(raw) {
-            if (!raw) return 0;
-            const num = parseInt(String(raw).replace(/[^0-9]/g, ''), 10);
-            return isNaN(num) ? 0 : num;
         }
 
         function displayCourses(courses) {
@@ -721,19 +728,17 @@
                                 <i class="fas fa-play"></i>
                                 <strong><span data-ar="البداية:" data-en="Start:">البداية:</span></strong> ${course.startDate ? new Date(course.startDate).toLocaleDateString('ar-EG') : '—'}
                             </div>
-                            ${course.endDate ? `
                             <div class="course-dates">
                                 <i class="fas fa-stop"></i>
-                                <strong><span data-ar="النهاية:" data-en="End:">النهاية:</span></strong> ${new Date(course.endDate).toLocaleDateString('ar-EG')}
+                                <strong><span data-ar="النهاية:" data-en="End:">النهاية:</span></strong> ${course.endDate ? new Date(course.endDate).toLocaleDateString('ar-EG') : '—'}
                             </div>
-                            ` : ''}
                             <div class="course-capacity">
                                 <i class="fas fa-users"></i>
                                 <strong><span data-ar="العدد المستهدف:" data-en="Capacity:">العدد المستهدف:</span></strong> ${course.capacity || '—'}
                             </div>
                             <div class="course-price">
                                 <i class="fas fa-money-bill"></i>
-                                <strong><span data-ar="السعر:" data-en="Price:">السعر:</span></strong> ${formatPriceDisplay(course.price)}
+                                <strong><span data-ar="السعر:" data-en="Price:">السعر:</span></strong> ${course.price}
                             </div>
                         </div>
                         <button class="enroll-btn" onclick="enrollCourse(${course.id})">
@@ -779,10 +784,10 @@
                     filtered.sort((a, b) => a.title.localeCompare(b.title));
                     break;
                 case 'price_low':
-                    filtered.sort((a, b) => getPriceValue(a.price) - getPriceValue(b.price));
+                    filtered.sort((a, b) => extractNumeric(a.price) - extractNumeric(b.price));
                     break;
                 case 'price_high':
-                    filtered.sort((a, b) => getPriceValue(b.price) - getPriceValue(a.price));
+                    filtered.sort((a, b) => extractNumeric(b.price) - extractNumeric(a.price));
                     break;
             }
 
