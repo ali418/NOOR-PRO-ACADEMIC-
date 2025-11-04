@@ -575,6 +575,7 @@
         });
 
         // Utils: ensure English digits and proper formatting for price
+        const DEFAULT_CURRENCY = (localStorage.getItem('currencyLabel') || 'SDG');
         function toEnglishDigits(input) {
             if (input === null || input === undefined) return '';
             const s = String(input);
@@ -593,13 +594,11 @@
         }
 
         function formatPrice(input) {
-            // Preserve currency text (e.g., "ريال") if present, but show digits in English
             const s = toEnglishDigits(input);
             const numeric = extractNumeric(s);
-            const currency = s.replace(/[0-9.,\s]/g, '').trim();
-            if (!numeric) return currency ? `— ${currency}` : '—';
+            if (!numeric) return '—';
             const formatted = numeric.toLocaleString('en-US');
-            return currency ? `${formatted} ${currency}` : formatted;
+            return `${formatted} ${DEFAULT_CURRENCY}`;
         }
 
         function loadCategoryInfo() {
