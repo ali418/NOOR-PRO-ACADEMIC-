@@ -652,9 +652,11 @@
                 
                 // Normalize API courses
                 const normalizedFromApi = apiCourses.map(c => {
-                    // ثابت: السعر المطلوب عرضه بشكل دائم
-                    const priceValue = 75260000;
-                    const priceAmount = priceValue.toLocaleString('en-US');
+                    // صيغة ثابتة: 75 دولار ≈ 260,000 جنيه سوداني
+                    const usdPriceValue = 75;
+                    const sdgPriceValue = 260000;
+                    const usdPriceAmount = usdPriceValue.toLocaleString('en-US');
+                    const sdgPriceAmount = sdgPriceValue.toLocaleString('en-US');
                     return ({
                         id: c.id,
                         title: c.course_name || 'مقرر',
@@ -664,10 +666,16 @@
                         startDate: c.start_date || null,
                         endDate: c.end_date || null,
                         capacity: typeof c.capacity === 'number' ? `${c.capacity} شخص` : (c.capacity || (c.max_students ? `${c.max_students} طالب كحد أقصى` : '—')),
-                        price: `${priceAmount} ${DEFAULT_CURRENCY}`,
-                        priceAmount: priceAmount,
-                        priceCurrency: DEFAULT_CURRENCY,
-                        priceValue: priceValue,
+                        // حقول قديمة للتوافق (لن تُستخدم في العرض)
+                        price: `${sdgPriceAmount} SDG`,
+                        priceAmount: sdgPriceAmount,
+                        priceCurrency: 'SDG',
+                        priceValue: sdgPriceValue,
+                        // حقول العرض الجديدة
+                        priceUSDValue: usdPriceValue,
+                        priceUSDText: `${usdPriceAmount} دولار`,
+                        priceSDGValue: sdgPriceValue,
+                        priceSDGText: `${sdgPriceAmount} جنيه سوداني`,
                         details: c.details || ''
                     });
                 });
@@ -678,9 +686,11 @@
                 if (!Array.isArray(finalCourses) || finalCourses.length === 0) {
                     const samples = sampleCourses[categoryId] || [];
                     finalCourses = samples.map(s => {
-                        // ثابت: السعر المطلوب عرضه بشكل دائم
-                        const priceValue = 75260000;
-                        const priceAmount = priceValue.toLocaleString('en-US');
+                        // صيغة ثابتة: 75 دولار ≈ 260,000 جنيه سوداني
+                        const usdPriceValue = 75;
+                        const sdgPriceValue = 260000;
+                        const usdPriceAmount = usdPriceValue.toLocaleString('en-US');
+                        const sdgPriceAmount = sdgPriceValue.toLocaleString('en-US');
                         return ({
                         id: s.id,
                         title: s.title,
@@ -690,10 +700,16 @@
                         startDate: null,
                         endDate: null,
                         capacity: '—',
-                        price: `${priceAmount} ${DEFAULT_CURRENCY}`,
-                        priceAmount: priceAmount,
-                        priceCurrency: DEFAULT_CURRENCY,
-                        priceValue: priceValue,
+                        // حقول قديمة للتوافق
+                        price: `${sdgPriceAmount} SDG`,
+                        priceAmount: sdgPriceAmount,
+                        priceCurrency: 'SDG',
+                        priceValue: sdgPriceValue,
+                        // حقول العرض الجديدة
+                        priceUSDValue: usdPriceValue,
+                        priceUSDText: `${usdPriceAmount} دولار`,
+                        priceSDGValue: sdgPriceValue,
+                        priceSDGText: `${sdgPriceAmount} جنيه سوداني`,
                         details: ''
                         });
                     });
@@ -773,12 +789,13 @@
                         </div>
                         <div class="price-box" style="margin-top:12px; padding:12px 16px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
                             <div class="price-label" style="display:flex; align-items:center; gap:8px; color:#374151; font-weight:600;">
-                                <i class="fas fa-money-bill" style="color:#10b981;"></i>
-                                <span data-ar="السعر" data-en="Price">السعر</span>
+                                <span style="font-size:1.1rem">💲</span>
+                                <span>السعر</span>
                             </div>
-                            <div class="price-value" style="display:flex; align-items:baseline; gap:6px;">
-                                <span class="price-amount" style="font-size:1.25rem; font-weight:700; color:#111827;">${course.priceAmount}</span>
-                                <span class="price-currency" style="font-size:1rem; font-weight:600; color:#374151;">${course.priceCurrency}</span>
+                            <div class="price-value" style="display:flex; align-items:center; gap:8px; color:#111827;">
+                                <span class="price-usd" style="font-size:1.1rem; font-weight:700;">75 دولار</span>
+                                <span class="price-approx" style="color:#6b7280;">≈</span>
+                                <span class="price-sdg" style="font-size:1.1rem; font-weight:700;">260,000 جنيه سوداني</span>
                             </div>
                         </div>
                         <button class="enroll-btn" onclick="enrollCourse(${course.id})">
