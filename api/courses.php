@@ -60,7 +60,7 @@ function getCourses($db) {
 // إضافة مقرر جديد
 function addCourse($db, $input) {
     try {
-        $required_fields = ['course_code', 'course_name', 'credits'];
+        $required_fields = ['course_code'];
         $errors = validateInput($input, $required_fields);
         
         if (!empty($errors)) {
@@ -77,14 +77,17 @@ function addCourse($db, $input) {
             sendResponse(false, 'رمز المقرر موجود مسبقاً');
         }
         
-        $query = "INSERT INTO courses (course_code, title, description, credits, duration_weeks, instructor_name, max_students, youtube_link, category, price, level_name, start_date, course_icon, badge_text) 
-                  VALUES (:course_code, :title, :description, :credits, :duration_weeks, :instructor_name, :max_students, :youtube_link, :category, :price, :level_name, :start_date, :course_icon, :badge_text)";
+        $query = "INSERT INTO courses (course_code, course_name, title, description, credits, duration_weeks, instructor_name, max_students, youtube_link, category, price, level_name, start_date, end_date, course_icon, badge_text) 
+                  VALUES (:course_code, :course_name, :title, :description, :credits, :duration_weeks, :instructor_name, :max_students, :youtube_link, :category, :price, :level_name, :start_date, :end_date, :course_icon, :badge_text)";
         
         $stmt = $db->prepare($query);
         $stmt->bindParam(':course_code', $input['course_code']);
-        $stmt->bindParam(':title', $input['title'] ?? $input['course_name'] ?? '');
+        $course_name_val = $input['course_name'] ?? ($input['title'] ?? '');
+        $title_val = $input['title'] ?? ($input['course_name'] ?? '');
+        $stmt->bindParam(':course_name', $course_name_val);
+        $stmt->bindParam(':title', $title_val);
         $stmt->bindParam(':description', $input['description'] ?? null);
-        $stmt->bindParam(':credits', $input['credits']);
+        $stmt->bindParam(':credits', $input['credits'] ?? 3);
         $stmt->bindParam(':duration_weeks', $input['duration_weeks'] ?? 16);
         $stmt->bindParam(':instructor_name', $input['instructor_name'] ?? null);
         $stmt->bindParam(':max_students', $input['max_students'] ?? 30);
@@ -93,6 +96,7 @@ function addCourse($db, $input) {
         $stmt->bindParam(':price', $input['price'] ?? '0');
         $stmt->bindParam(':level_name', $input['level_name'] ?? 'مبتدئ');
         $stmt->bindParam(':start_date', $input['start_date'] ?? null);
+        $stmt->bindParam(':end_date', $input['end_date'] ?? null);
         $stmt->bindParam(':course_icon', $input['course_icon'] ?? 'fas fa-book');
         $stmt->bindParam(':badge_text', $input['badge_text'] ?? null);
         
@@ -115,7 +119,7 @@ function updateCourse($db, $input) {
             sendResponse(false, 'معرف المقرر مطلوب');
         }
         
-        $required_fields = ['title'];
+        $required_fields = ['id'];
         $errors = validateInput($input, $required_fields);
         
         if (!empty($errors)) {
@@ -133,6 +137,7 @@ function updateCourse($db, $input) {
         }
         
         $query = "UPDATE courses SET 
+                  course_name = :course_name,
                   title = :title,
                   description = :description,
                   credits = :credits,
@@ -145,15 +150,19 @@ function updateCourse($db, $input) {
                   price = :price,
                   level_name = :level_name,
                   start_date = :start_date,
+                  end_date = :end_date,
                   course_icon = :course_icon,
                   badge_text = :badge_text
                   WHERE id = :id";
         
         $stmt = $db->prepare($query);
         $stmt->bindParam(':id', $input['id']);
-        $stmt->bindParam(':title', $input['title'] ?? $input['course_name'] ?? '');
+        $course_name_upd = $input['course_name'] ?? ($input['title'] ?? '');
+        $title_upd = $input['title'] ?? ($input['course_name'] ?? '');
+        $stmt->bindParam(':course_name', $course_name_upd);
+        $stmt->bindParam(':title', $title_upd);
         $stmt->bindParam(':description', $input['description'] ?? null);
-        $stmt->bindParam(':credits', $input['credits']);
+        $stmt->bindParam(':credits', $input['credits'] ?? 3);
         $stmt->bindParam(':duration_weeks', $input['duration_weeks'] ?? 16);
         $stmt->bindParam(':instructor_name', $input['instructor_name'] ?? null);
         $stmt->bindParam(':max_students', $input['max_students'] ?? 30);
@@ -163,6 +172,7 @@ function updateCourse($db, $input) {
         $stmt->bindParam(':price', $input['price'] ?? '0');
         $stmt->bindParam(':level_name', $input['level_name'] ?? 'مبتدئ');
         $stmt->bindParam(':start_date', $input['start_date'] ?? null);
+        $stmt->bindParam(':end_date', $input['end_date'] ?? null);
         $stmt->bindParam(':course_icon', $input['course_icon'] ?? 'fas fa-book');
         $stmt->bindParam(':badge_text', $input['badge_text'] ?? null);
         
