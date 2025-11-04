@@ -997,9 +997,15 @@
             if (!isAdmin) return;
             if (!confirm('هل تريد حذف هذا المقرر؟')) return;
             try {
-                const res = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-                const result = await res.json();
-                if (!res.ok || result.success === false) throw new Error(result.message || 'فشل الحذف');
+                // المحاولة الأولى: حذف من API الرئيسي
+                let res = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                let result = await res.json();
+                if (!res.ok || result.success === false) {
+                    // مسار بديل: حذف من بيانات العينات على الخادم
+                    res = await fetch(`/api/courses-sample?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                    result = await res.json();
+                    if (!res.ok || result.success === false) throw new Error(result.message || 'فشل الحذف (المسار البديل)');
+                }
                 await loadCourses();
             } catch (err) {
                 alert('حدث خطأ أثناء الحذف: ' + err.message);
