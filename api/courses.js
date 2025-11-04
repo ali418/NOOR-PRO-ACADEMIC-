@@ -43,6 +43,20 @@ async function createConnection() {
     }
 }
 
+// Check if a column exists in a table (MySQL)
+async function columnExists(connection, tableName, columnName) {
+    try {
+        const [rows] = await connection.execute(
+            'SELECT COUNT(*) AS cnt FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ? LIMIT 1',
+            [tableName, columnName]
+        );
+        return (rows[0] && Number(rows[0].cnt) > 0);
+    } catch (e) {
+        // If information_schema is unavailable for any reason, assume missing to be safe
+        return false;
+    }
+}
+
 // Get all courses
 async function getCourses(req, res) {
     try {
@@ -167,31 +181,59 @@ async function addCourse(req, res) {
             }
         }
 
-        const query = `INSERT INTO courses (
-            course_code, title, description, credits, duration_weeks, duration,
-            instructor_name, max_students, youtube_link, category, 
-            price, level_name, start_date, end_date, course_icon, badge_text, category_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        
-        const params = [
-            course_code,
-            courseTitle,
-            description || null,
-            credits || 3,
-            duration_weeks || 16,
-            duration || null,
-            instructor_name || null,
-            max_students || 30,
-            youtube_link || null,
-            category || 'general',
-            price || '0',
-            level_name || 'مبتدئ',
-            start_date || null,
-            end_date || null,
-            course_icon || 'fas fa-book',
-            badge_text || null,
-            resolvedCategoryId || null
-        ];
+        const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
+        let query, params;
+        if (hasCategoryId) {
+            query = `INSERT INTO courses (
+                course_code, title, description, credits, duration_weeks, duration,
+                instructor_name, max_students, youtube_link, category, 
+                price, level_name, start_date, end_date, course_icon, badge_text, category_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            params = [
+                course_code,
+                courseTitle,
+                description || null,
+                credits || 3,
+                duration_weeks || 16,
+                duration || null,
+                instructor_name || null,
+                max_students || 30,
+                youtube_link || null,
+                category || 'general',
+                price || '0',
+                level_name || 'مبتدئ',
+                start_date || null,
+                end_date || null,
+                course_icon || 'fas fa-book',
+                badge_text || null,
+                resolvedCategoryId || null
+            ];
+        } else {
+            // Fallback for databases without category_id column
+            query = `INSERT INTO courses (
+                course_code, title, description, credits, duration_weeks, duration,
+                instructor_name, max_students, youtube_link, category, 
+                price, level_name, start_date, end_date, course_icon, badge_text
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            params = [
+                course_code,
+                courseTitle,
+                description || null,
+                credits || 3,
+                duration_weeks || 16,
+                duration || null,
+                instructor_name || null,
+                max_students || 30,
+                youtube_link || null,
+                category || 'general',
+                price || '0',
+                level_name || 'مبتدئ',
+                start_date || null,
+                end_date || null,
+                course_icon || 'fas fa-book',
+                badge_text || null
+            ];
+        }
         
         const [result] = await connection.execute(query, params);
         await connection.end();
@@ -327,33 +369,62 @@ async function updateCourse(req, res) {
             }
         }
 
-        const query = `UPDATE courses SET 
-            title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
-            instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
-            category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
-            course_icon = ?, badge_text = ?, category_id = ?
-            WHERE id = ?`;
-        
-        const params = [
-            courseTitle,
-            description || null,
-            credits || 3,
-            duration_weeks || 16,
-            duration || null,
-            instructor_name || null,
-            max_students || 30,
-            status || 'active',
-            youtube_link || null,
-            category || 'general',
-            price || '0',
-            level_name || 'مبتدئ',
-            start_date || null,
-            end_date || null,
-            course_icon || 'fas fa-book',
-            badge_text || null,
-            resolvedCategoryId || null,
-            id
-        ];
+        const hasCategoryIdUpdate = await columnExists(connection, 'courses', 'category_id');
+        let query, params;
+        if (hasCategoryIdUpdate) {
+            query = `UPDATE courses SET 
+                title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
+                instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
+                category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
+                course_icon = ?, badge_text = ?, category_id = ?
+                WHERE id = ?`;
+            params = [
+                courseTitle,
+                description || null,
+                credits || 3,
+                duration_weeks || 16,
+                duration || null,
+                instructor_name || null,
+                max_students || 30,
+                status || 'active',
+                youtube_link || null,
+                category || 'general',
+                price || '0',
+                level_name || 'مبتدئ',
+                start_date || null,
+                end_date || null,
+                course_icon || 'fas fa-book',
+                badge_text || null,
+                resolvedCategoryId || null,
+                id
+            ];
+        } else {
+            query = `UPDATE courses SET 
+                title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
+                instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
+                category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
+                course_icon = ?, badge_text = ?
+                WHERE id = ?`;
+            params = [
+                courseTitle,
+                description || null,
+                credits || 3,
+                duration_weeks || 16,
+                duration || null,
+                instructor_name || null,
+                max_students || 30,
+                status || 'active',
+                youtube_link || null,
+                category || 'general',
+                price || '0',
+                level_name || 'مبتدئ',
+                start_date || null,
+                end_date || null,
+                course_icon || 'fas fa-book',
+                badge_text || null,
+                id
+            ];
+        }
         
         await connection.execute(query, params);
         await connection.end();
