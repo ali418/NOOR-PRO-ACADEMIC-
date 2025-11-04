@@ -674,11 +674,38 @@ class CoursesManager {
             this.lessons = []; // Reset lessons
             this.renderLessonsList();
             
+            // Populate categories
+            this.populateCategories('addCourseCategory');
+
             // Focus first input
             const firstInput = modal.querySelector('input');
             if (firstInput) {
                 setTimeout(() => firstInput.focus(), 100);
             }
+        }
+    }
+
+    async populateCategories(selectId) {
+        try {
+            const response = await fetch('/api/categories');
+            const data = await response.json();
+
+            if (data.success) {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    select.innerHTML = '<option value="">اختر الفئة</option>'; // Default option
+                    data.data.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        select.appendChild(option);
+                    });
+                }
+            } else {
+                console.error('Failed to load categories:', data.message);
+            }
+        } catch (error) {
+            console.error('Error loading categories:', error);
         }
     }
 
@@ -695,7 +722,7 @@ class CoursesManager {
             course_code: `CRS${(this.courses.length + 1).toString().padStart(3, '0')}`,
             course_name: formData.get('courseName'),
             description: formData.get('description'),
-            category: formData.get('category'),
+            category_id: formData.get('category'),
             level: formData.get('level'),
             status: formData.get('status') || 'draft',
             duration: formData.get('duration') || '',
