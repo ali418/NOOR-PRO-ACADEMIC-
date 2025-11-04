@@ -207,16 +207,16 @@ async function getCoursesByCategory(req, res) {
             const categoriesList = (categoriesJson && categoriesJson.data) ? categoriesJson.data : [];
             const categoryObj = categoriesList.find(c => String(c.id) === String(categoryId));
 
-            // Build a mapping from category id to legacy textual keys
-            const idToKey = {
-                1: 'english',
-                2: 'hr',
-                3: 'technical',
-                4: 'speaking',
-                5: 'grammar',
-                6: 'hr diplomas'
+            // Build a mapping from category id to legacy textual keys (supporting synonyms)
+            const idToKeys = {
+                1: ['english', 'english-language', 'english_language'],
+                2: ['hr', 'human-resources', 'human_resources'],
+                3: ['technical', 'technology', 'tech'],
+                4: ['speaking', 'speaking-skills', 'english-speaking'],
+                5: ['grammar', 'english-grammar', 'english_grammar'],
+                6: ['hr diplomas', 'hr-diplomas', 'hr_diplomas']
             };
-            const legacyKey = idToKey[Number(categoryId)] || null;
+            const legacyKeys = idToKeys[Number(categoryId)] || [];
 
             // Load sample courses
             const samplePath = path.join(__dirname, '..', 'sample-courses.json');
@@ -224,8 +224,8 @@ async function getCoursesByCategory(req, res) {
             const sampleCourses = JSON.parse(sampleRaw);
 
             // Filter by textual category if available; otherwise return empty list
-            const filtered = legacyKey
-                ? sampleCourses.filter(c => String(c.category).toLowerCase() === legacyKey)
+            const filtered = legacyKeys.length > 0
+                ? sampleCourses.filter(c => legacyKeys.includes(String(c.category).toLowerCase()))
                 : [];
 
             // Compose minimal category data for frontend
