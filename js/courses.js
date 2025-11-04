@@ -15,7 +15,7 @@ class CoursesManager {
             status: ''
         };
         this.lessons = [];
-        this.apiUrl = '/api/courses-sample';
+        this.apiUrl = '/api/courses';
         
         this.init();
     }
