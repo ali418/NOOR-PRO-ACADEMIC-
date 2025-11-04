@@ -1,14 +1,34 @@
 const mysql = require('mysql2/promise');
 
-// Database configuration
-const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASS || '',
-    database: process.env.DB_NAME || 'noor_pro_academic',
-    port: process.env.DB_PORT || 3306,
-    charset: 'utf8mb4'
-};
+// Resolve database configuration from env vars or DATABASE_URL
+function resolveDbConfig() {
+    const url = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.RAILWAY_DATABASE_URL;
+    if (url) {
+        try {
+            const u = new URL(url);
+            return {
+                host: u.hostname || 'localhost',
+                user: decodeURIComponent(u.username || 'root'),
+                password: decodeURIComponent(u.password || ''),
+                database: (u.pathname || '').replace(/^\//, '') || (process.env.MYSQLDATABASE || process.env.DB_NAME || 'noor_pro_academic'),
+                port: Number(u.port || process.env.MYSQLPORT || process.env.DB_PORT || 3306),
+                charset: 'utf8mb4'
+            };
+        } catch (e) {
+            // fall through to env-based config
+        }
+    }
+    return {
+        host: process.env.DB_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || 'localhost',
+        user: process.env.DB_USER || process.env.MYSQLUSER || process.env.MYSQL_USER || 'root',
+        password: process.env.DB_PASS || process.env.MYSQLPASSWORD || process.env.MYSQL_PASSWORD || '',
+        database: process.env.DB_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DB || 'noor_pro_academic',
+        port: Number(process.env.DB_PORT || process.env.MYSQLPORT || process.env.MYSQL_PORT || 3306),
+        charset: 'utf8mb4'
+    };
+}
+
+const dbConfig = resolveDbConfig();
 
 // Create database connection
 async function createConnection() {
@@ -27,6 +47,7 @@ async function getCategories(req, res) {
     try {
         connection = await createConnection();
         
+        // Count both relational category_id and legacy textual category matches to keep counts consistent
         const query = `
             SELECT 
                 cc.id,
@@ -37,11 +58,16 @@ async function getCategories(req, res) {
                 cc.color,
                 cc.display_order,
                 cc.is_active,
-                COUNT(c.id) as courses_count
+                (
+                    SELECT COUNT(*) FROM courses c
+                    WHERE c.status = 'active'
+                      AND (
+                        c.category_id = cc.id
+                        OR LOWER(c.category) IN (LOWER(cc.category_name), LOWER(cc.category_name_ar))
+                      )
+                ) AS courses_count
             FROM course_categories cc
-            LEFT JOIN courses c ON cc.id = c.category_id AND c.status = 'active'
             WHERE cc.is_active = 1
-            GROUP BY cc.id
             ORDER BY cc.display_order ASC, cc.category_name_ar ASC
         `;
         

@@ -31,21 +31,53 @@ const splitSqlCommands = (sqlContent) => {
     .filter(command => command.length > 0);
 };
 
-// إنشاء اتصال بقاعدة البيانات
-const createConnection = async () => {
-  // استخدام متغيرات البيئة من Railway أو المتغيرات المحلية
-  const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASS || '',
-    port: process.env.DB_PORT || 3306,
+// استخراج إعدادات قاعدة البيانات من متغيرات البيئة أو DATABASE_URL
+function resolveDbConfig() {
+  const url = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.RAILWAY_DATABASE_URL;
+  if (url) {
+    try {
+      const u = new URL(url);
+      return {
+        host: u.hostname || 'localhost',
+        user: decodeURIComponent(u.username || 'root'),
+        password: decodeURIComponent(u.password || ''),
+        database: (u.pathname || '').replace(/^\//, '') || (process.env.MYSQLDATABASE || process.env.DB_NAME || 'noor_pro_academic'),
+        port: Number(u.port || process.env.MYSQLPORT || process.env.DB_PORT || 3306),
+        multipleStatements: true
+      };
+    } catch (e) {
+      // fall through to env-based config
+    }
+  }
+  return {
+    host: process.env.DB_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || 'localhost',
+    user: process.env.DB_USER || process.env.MYSQLUSER || process.env.MYSQL_USER || 'root',
+    password: process.env.DB_PASS || process.env.MYSQLPASSWORD || process.env.MYSQL_PASSWORD || '',
+    database: process.env.DB_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DB || 'noor_pro_academic',
+    port: Number(process.env.DB_PORT || process.env.MYSQLPORT || process.env.MYSQL_PORT || 3306),
     multipleStatements: true
   };
+}
 
+// إنشاء اتصال بقاعدة البيانات وتحديد قاعدة البيانات للاستخدام
+const createConnection = async () => {
+  const cfg = resolveDbConfig();
   try {
-    // إنشاء اتصال بالخادم بدون تحديد قاعدة بيانات
-    const connection = await mysql.createConnection(dbConfig);
+    // الاتصال بالخادم
+    const connection = await mysql.createConnection({
+      host: cfg.host,
+      user: cfg.user,
+      password: cfg.password,
+      port: cfg.port,
+      multipleStatements: true
+    });
     console.log('تم الاتصال بخادم قاعدة البيانات بنجاح');
+
+    // إنشاء قاعدة البيانات إذا لم تكن موجودة ثم استخدامها
+    const dbName = cfg.database;
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+    await connection.query(`USE \`${dbName}\``);
+
     return connection;
   } catch (error) {
     console.error('خطأ في الاتصال بقاعدة البيانات:', error);

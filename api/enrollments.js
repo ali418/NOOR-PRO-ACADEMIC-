@@ -3,15 +3,35 @@ const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 
-// Database config (aligned with courses.js)
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASS || '',
-  database: process.env.DB_NAME || 'noor_pro_academic',
-  port: process.env.DB_PORT || 3306,
-  charset: 'utf8mb4'
-};
+// Resolve database configuration from env vars or DATABASE_URL
+function resolveDbConfig() {
+  const url = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.RAILWAY_DATABASE_URL;
+  if (url) {
+    try {
+      const u = new URL(url);
+      return {
+        host: u.hostname || 'localhost',
+        user: decodeURIComponent(u.username || 'root'),
+        password: decodeURIComponent(u.password || ''),
+        database: (u.pathname || '').replace(/^\//, '') || (process.env.MYSQLDATABASE || process.env.DB_NAME || 'noor_pro_academic'),
+        port: Number(u.port || process.env.MYSQLPORT || process.env.DB_PORT || 3306),
+        charset: 'utf8mb4'
+      };
+    } catch (e) {
+      // fall through to env-based config
+    }
+  }
+  return {
+    host: process.env.DB_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || 'localhost',
+    user: process.env.DB_USER || process.env.MYSQLUSER || process.env.MYSQL_USER || 'root',
+    password: process.env.DB_PASS || process.env.MYSQLPASSWORD || process.env.MYSQL_PASSWORD || '',
+    database: process.env.DB_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DB || 'noor_pro_academic',
+    port: Number(process.env.DB_PORT || process.env.MYSQLPORT || process.env.MYSQL_PORT || 3306),
+    charset: 'utf8mb4'
+  };
+}
+
+const dbConfig = resolveDbConfig();
 
 async function createConnection() {
   const connection = await mysql.createConnection(dbConfig);
