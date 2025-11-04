@@ -601,6 +601,16 @@
             return `${formatted} ${DEFAULT_CURRENCY}`;
         }
 
+        function formatDateDisplay(dateStr) {
+            if (!dateStr) return '—';
+            try {
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+            } catch (e) {
+                return '—';
+            }
+        }
+
         function loadCategoryInfo() {
             const config = categoryConfigs[categoryId];
             if (!config) {
@@ -725,19 +735,24 @@
                             </div>
                             <div class="course-dates">
                                 <i class="fas fa-play"></i>
-                                <strong><span data-ar="البداية:" data-en="Start:">البداية:</span></strong> ${course.startDate ? new Date(course.startDate).toLocaleDateString('ar-EG') : '—'}
+                                <strong><span data-ar="البداية:" data-en="Start:">البداية:</span></strong> ${formatDateDisplay(course.startDate)}
                             </div>
                             <div class="course-dates">
                                 <i class="fas fa-stop"></i>
-                                <strong><span data-ar="النهاية:" data-en="End:">النهاية:</span></strong> ${course.endDate ? new Date(course.endDate).toLocaleDateString('ar-EG') : '—'}
+                                <strong><span data-ar="النهاية:" data-en="End:">النهاية:</span></strong> ${formatDateDisplay(course.endDate)}
                             </div>
                             <div class="course-capacity">
                                 <i class="fas fa-users"></i>
                                 <strong><span data-ar="العدد المستهدف:" data-en="Capacity:">العدد المستهدف:</span></strong> ${course.capacity || '—'}
                             </div>
-                            <div class="course-price">
-                                <i class="fas fa-money-bill"></i>
-                                <strong><span data-ar="السعر:" data-en="Price:">السعر:</span></strong> ${course.price}
+                        </div>
+                        <div class="price-box" style="margin-top:12px; padding:12px 16px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                            <div class="price-label" style="display:flex; align-items:center; gap:8px; color:#374151; font-weight:600;">
+                                <i class="fas fa-money-bill" style="color:#10b981;"></i>
+                                <span data-ar="السعر" data-en="Price">السعر</span>
+                            </div>
+                            <div class="price-value" style="display:flex; align-items:baseline; gap:6px;">
+                                <span class="price-amount" style="font-size:1.25rem; font-weight:700; color:#111827;">${course.price}</span>
                             </div>
                         </div>
                         <button class="enroll-btn" onclick="enrollCourse(${course.id})">
