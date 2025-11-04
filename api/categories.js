@@ -194,56 +194,11 @@ async function getCoursesByCategory(req, res) {
         
     } catch (error) {
         console.error('Error fetching courses by category:', error);
-        // Graceful fallback to sample data if DB connection fails
-        try {
-            const fs = require('fs');
-            const path = require('path');
-            const samplePath = path.join(__dirname, '..', 'sample-courses.json');
-            const raw = fs.readFileSync(samplePath, 'utf8');
-            const sampleCourses = JSON.parse(raw);
-
-            // Static category mapping fallback (mirrors database.sql inserts)
-            const categoryMap = {
-                1: { id: 1, category_name: 'english', category_name_ar: 'اللغة الإنجليزية', icon: 'fas fa-language', color: '#28a745' },
-                2: { id: 2, category_name: 'speaking', category_name_ar: 'المخاطبة', icon: 'fas fa-microphone', color: '#17a2b8' },
-                3: { id: 3, category_name: 'grammar', category_name_ar: 'القواعد', icon: 'fas fa-book', color: '#6f42c1' },
-                4: { id: 4, category_name: 'hr_diploma', category_name_ar: 'دبلومات الموارد البشرية', icon: 'fas fa-graduation-cap', color: '#fd7e14' },
-                5: { id: 5, category_name: 'hr_short', category_name_ar: 'دورات الموارد البشرية القصيرة', icon: 'fas fa-briefcase', color: '#20c997' },
-                6: { id: 6, category_name: 'programming', category_name_ar: 'البرمجة', icon: 'fas fa-code', color: '#007bff' },
-                7: { id: 7, category_name: 'web_development', category_name_ar: 'تطوير المواقع', icon: 'fas fa-globe', color: '#dc3545' },
-                8: { id: 8, category_name: 'database', category_name_ar: 'قواعد البيانات', icon: 'fas fa-database', color: '#6c757d' },
-                9: { id: 9, category_name: 'ai', category_name_ar: 'الذكاء الاصطناعي', icon: 'fas fa-robot', color: '#e83e8c' },
-                10: { id: 10, category_name: 'security', category_name_ar: 'أمن المعلومات', icon: 'fas fa-shield-alt', color: '#343a40' }
-            };
-
-            const cid = parseInt(req.params.id, 10);
-            const categoryInfo = categoryMap[cid];
-
-            if (!categoryInfo) {
-                return res.status(404).json({ success: false, message: 'التصنيف غير موجود (وضع تجريبي)' });
-            }
-
-            const filtered = sampleCourses.filter(c => {
-                const cat = (c.category || '').toLowerCase();
-                return cat === categoryInfo.category_name.toLowerCase() || cat === (categoryInfo.category_name_ar || '').toLowerCase();
-            });
-
-            return res.json({
-                success: true,
-                data: {
-                    category: categoryInfo,
-                    courses: filtered
-                },
-                message: 'تم جلب المقررات (بيانات تجريبية بسبب مشكلة قاعدة البيانات)'
-            });
-        } catch (fallbackErr) {
-            console.error('Fallback failed for categories API:', fallbackErr);
-            res.status(500).json({
-                success: false,
-                message: 'خطأ في جلب المقررات',
-                error: error.message
-            });
-        }
+        res.status(500).json({
+            success: false,
+            message: 'خطأ في جلب المقررات',
+            error: error.message
+        });
     } finally {
         if (connection) {
             await connection.end();
