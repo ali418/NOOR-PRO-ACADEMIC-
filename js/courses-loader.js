@@ -14,7 +14,7 @@ class CourseLoader {
         try {
             this.showLoading();
             // Use sample data for testing while database is being set up
-            const response = await fetch('/api/courses-sample');
+            const response = await fetch('/api/courses');
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
