@@ -614,7 +614,8 @@
                     startDate: c.start_date || null,
                     endDate: c.end_date || null,
                     capacity: typeof c.capacity === 'number' ? `${c.capacity} شخص` : (c.capacity || (c.max_students ? `${c.max_students} طالب كحد أقصى` : '—')),
-                    price: c.price || '—',
+                    // Keep raw price; we'll format it when rendering
+                    price: (typeof c.price === 'number' ? String(c.price) : (c.price || '')),
                     details: c.details || ''
                 }));
 
@@ -632,7 +633,7 @@
                         startDate: null,
                         endDate: null,
                         capacity: '—',
-                        price: s.price || '—',
+                        price: (typeof s.price === 'number' ? String(s.price) : (s.price || '')),
                         details: ''
                     }));
                 }
@@ -674,6 +675,26 @@
             }
         }
 
+        // Helpers for price formatting and sorting
+        function formatPriceDisplay(raw) {
+            const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
+            if (!raw || String(raw).trim() === '') return '—';
+            let cleaned = String(raw).replace(/\bالسعر\s*:\s*/i, '').trim();
+            const hasDollar = /\$|دولار/i.test(cleaned);
+            const num = parseInt(cleaned.replace(/[^0-9]/g, ''), 10);
+            if (!isNaN(num)) {
+                const formattedNum = (lang === 'en' ? num.toLocaleString('en-US') : num.toLocaleString('ar-EG'));
+                return hasDollar ? `${formattedNum} $` : formattedNum;
+            }
+            return cleaned;
+        }
+
+        function getPriceValue(raw) {
+            if (!raw) return 0;
+            const num = parseInt(String(raw).replace(/[^0-9]/g, ''), 10);
+            return isNaN(num) ? 0 : num;
+        }
+
         function displayCourses(courses) {
             const grid = document.getElementById('coursesGrid');
             
@@ -700,17 +721,19 @@
                                 <i class="fas fa-play"></i>
                                 <strong><span data-ar="البداية:" data-en="Start:">البداية:</span></strong> ${course.startDate ? new Date(course.startDate).toLocaleDateString('ar-EG') : '—'}
                             </div>
+                            ${course.endDate ? `
                             <div class="course-dates">
                                 <i class="fas fa-stop"></i>
-                                <strong><span data-ar="النهاية:" data-en="End:">النهاية:</span></strong> ${course.endDate ? new Date(course.endDate).toLocaleDateString('ar-EG') : '—'}
+                                <strong><span data-ar="النهاية:" data-en="End:">النهاية:</span></strong> ${new Date(course.endDate).toLocaleDateString('ar-EG')}
                             </div>
+                            ` : ''}
                             <div class="course-capacity">
                                 <i class="fas fa-users"></i>
                                 <strong><span data-ar="العدد المستهدف:" data-en="Capacity:">العدد المستهدف:</span></strong> ${course.capacity || '—'}
                             </div>
                             <div class="course-price">
                                 <i class="fas fa-money-bill"></i>
-                                <strong><span data-ar="السعر:" data-en="Price:">السعر:</span></strong> ${course.price}
+                                <strong><span data-ar="السعر:" data-en="Price:">السعر:</span></strong> ${formatPriceDisplay(course.price)}
                             </div>
                         </div>
                         <button class="enroll-btn" onclick="enrollCourse(${course.id})">
@@ -756,10 +779,10 @@
                     filtered.sort((a, b) => a.title.localeCompare(b.title));
                     break;
                 case 'price_low':
-                    filtered.sort((a, b) => parseInt(a.price) - parseInt(b.price));
+                    filtered.sort((a, b) => getPriceValue(a.price) - getPriceValue(b.price));
                     break;
                 case 'price_high':
-                    filtered.sort((a, b) => parseInt(b.price) - parseInt(a.price));
+                    filtered.sort((a, b) => getPriceValue(b.price) - getPriceValue(a.price));
                     break;
             }
 
