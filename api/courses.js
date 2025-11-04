@@ -184,13 +184,15 @@ async function addCourse(req, res) {
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
         let query, params;
         if (hasCategoryId) {
+            // تضمين course_name لتفادي قيود NOT NULL في بعض المخططات
             query = `INSERT INTO courses (
-                course_code, title, description, credits, duration_weeks, duration,
+                course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, youtube_link, category, 
                 price, level_name, start_date, end_date, course_icon, badge_text, category_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
             params = [
                 course_code,
+                courseTitle, // course_name
                 courseTitle,
                 description || null,
                 credits || 3,
@@ -211,12 +213,13 @@ async function addCourse(req, res) {
         } else {
             // Fallback for databases without category_id column
             query = `INSERT INTO courses (
-                course_code, title, description, credits, duration_weeks, duration,
+                course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, youtube_link, category, 
                 price, level_name, start_date, end_date, course_icon, badge_text
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
             params = [
                 course_code,
+                courseTitle, // course_name
                 courseTitle,
                 description || null,
                 credits || 3,
@@ -372,13 +375,15 @@ async function updateCourse(req, res) {
         const hasCategoryIdUpdate = await columnExists(connection, 'courses', 'category_id');
         let query, params;
         if (hasCategoryIdUpdate) {
+            // تحديث course_name بالإضافة إلى title
             query = `UPDATE courses SET 
-                title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
+                course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
                 instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
                 category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
                 course_icon = ?, badge_text = ?, category_id = ?
                 WHERE id = ?`;
             params = [
+                courseTitle, // course_name
                 courseTitle,
                 description || null,
                 credits || 3,
@@ -400,12 +405,13 @@ async function updateCourse(req, res) {
             ];
         } else {
             query = `UPDATE courses SET 
-                title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
+                course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
                 instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
                 category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
                 course_icon = ?, badge_text = ?
                 WHERE id = ?`;
             params = [
+                courseTitle, // course_name
                 courseTitle,
                 description || null,
                 credits || 3,
