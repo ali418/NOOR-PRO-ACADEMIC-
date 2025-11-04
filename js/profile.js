@@ -254,7 +254,7 @@ class ProfileManager {
             const courses = userItems.map(i => ({
                 id: i.id,
                 title: i.courseName || 'مقرر',
-                description: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `السعر: ${i.notes.coursePrice || '—'} - الدفع: ${i.notes.paymentMethod || '—'}` : '',
+                description: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `السعر: ${parseFloat(i.notes.coursePrice) || '—'} - الدفع: ${i.notes.paymentMethod || '—'}` : '',
                 status: (i.status === 'approved' || i.status === 'completed' || i.status === 'pending') ? i.status : 'pending',
                 progress: i.status === 'completed' ? 100 : 0,
                 instructor: '',
