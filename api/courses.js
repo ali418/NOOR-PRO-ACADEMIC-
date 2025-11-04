@@ -537,7 +537,22 @@ async function deleteCourse(req, res) {
         
         await connection.execute('DELETE FROM courses WHERE id = ?', [id]);
         await connection.end();
-        
+
+        // Mirror deletion into sample data to keep fallback consistent
+        try {
+            const samplePath = path.join(__dirname, '..', 'sample-courses.json');
+            const raw = fs.readFileSync(samplePath, 'utf8');
+            const sampleCourses = JSON.parse(raw);
+            const idx = sampleCourses.findIndex(c => String(c.id) === String(id));
+            if (idx !== -1) {
+                sampleCourses.splice(idx, 1);
+                fs.writeFileSync(samplePath, JSON.stringify(sampleCourses, null, 2));
+            }
+        } catch (mirrorErr) {
+            // Non-fatal: log and continue
+            console.warn('Mirror delete to sample failed:', mirrorErr.message || mirrorErr);
+        }
+
         res.json({
             success: true,
             message: 'تم حذف المقرر بنجاح'
