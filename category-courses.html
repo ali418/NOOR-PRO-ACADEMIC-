@@ -607,17 +607,21 @@
             // ISO or YYYY-MM-DD
             if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
                 const d = new Date(s);
-                return Number.isNaN(d.getTime()) ? s : d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+                if (Number.isNaN(d.getTime())) return toEnglishDigits(s);
+                const out = d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+                return toEnglishDigits(out);
             }
             // DD/MM/YYYY or DD-MM-YYYY
             const m = s.match(/^([0-3]?\d)[-/]([0-1]?\d)[-/](\d{4})$/);
             if (m) {
                 const [_, dd, mm, yyyy] = m;
                 const d = new Date(`${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`);
-                return Number.isNaN(d.getTime()) ? `${dd}/${mm}/${yyyy}` : d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+                if (Number.isNaN(d.getTime())) return toEnglishDigits(`${dd}/${mm}/${yyyy}`);
+                const out = d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+                return toEnglishDigits(out);
             }
-            // Fallback: show as-is
-            return s;
+            // Fallback: show as-is (digits enforced to English)
+            return toEnglishDigits(s);
         }
 
         function loadCategoryInfo() {
@@ -659,13 +663,15 @@
                     const sdgPriceAmount = sdgPriceValue.toLocaleString('en-US');
                     return ({
                         id: c.id,
-                        title: c.course_name || 'مقرر',
-                        description: c.description || '',
+                        title: c.title || c.course_name || 'مقرر',
+                        description: c.description || c.details || '',
                         level: levelMap[c.level_name] || c.level_name || '',
-                        duration: c.duration || (c.duration_weeks ? `${c.duration_weeks} أسبوع` : '—'),
+                        duration: c.duration || (c.duration_weeks ? `${Number(c.duration_weeks).toLocaleString('en-US')} أسبوع` : '—'),
                         startDate: c.start_date || null,
                         endDate: c.end_date || null,
-                        capacity: typeof c.capacity === 'number' ? `${c.capacity} شخص` : (c.capacity || (c.max_students ? `${c.max_students} طالب كحد أقصى` : '—')),
+                        capacity: (typeof c.capacity === 'number')
+                            ? `${Number(c.capacity).toLocaleString('en-US')} شخص`
+                            : (c.capacity || (c.max_students ? `${Number(c.max_students).toLocaleString('en-US')} طالب كحد أقصى` : '—')),
                         // حقول قديمة للتوافق (لن تُستخدم في العرض)
                         price: `${sdgPriceAmount} SDG`,
                         priceAmount: sdgPriceAmount,
@@ -696,7 +702,7 @@
                         title: s.title,
                         description: s.description || '',
                         level: s.level || '',
-                        duration: s.duration || '—',
+                        duration: s.duration ? toEnglishDigits(s.duration) : '—',
                         startDate: null,
                         endDate: null,
                         capacity: '—',
