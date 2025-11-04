@@ -52,7 +52,9 @@ app.get('/api/courses-sample', (req, res) => {
           duration: course.duration_weeks,
           instructor: course.instructor_name,
           price: course.price,
-          youtube_link: course.youtube_link
+          youtube_link: course.youtube_link,
+          start_date: course.start_date || null,
+          end_date: course.end_date || null
         }))
       });
     } else {
@@ -99,7 +101,8 @@ app.post('/api/courses-sample', (req, res) => {
       category: newCourse.category || 'language',
       price: newCourse.price || '299',
       level_name: newCourse.level || 'متوسط',
-      start_date: new Date().toISOString().split('T')[0],
+      start_date: newCourse.start_date || new Date().toISOString().split('T')[0],
+      end_date: newCourse.end_date || null,
       course_icon: 'fas fa-book',
       badge_text: 'جديد',
       youtube_link: newCourse.youtube_link || ''
@@ -164,7 +167,9 @@ app.put('/api/courses-sample', (req, res) => {
       duration_weeks: parseInt(updatedCourse.duration),
       price: updatedCourse.price,
       instructor_name: updatedCourse.instructor,
-      youtube_link: typeof updatedCourse.youtube_link !== 'undefined' ? updatedCourse.youtube_link : sampleCourses[courseIndex].youtube_link
+      youtube_link: typeof updatedCourse.youtube_link !== 'undefined' ? updatedCourse.youtube_link : sampleCourses[courseIndex].youtube_link,
+      start_date: typeof updatedCourse.start_date !== 'undefined' ? updatedCourse.start_date : sampleCourses[courseIndex].start_date,
+      end_date: typeof updatedCourse.end_date !== 'undefined' ? updatedCourse.end_date : sampleCourses[courseIndex].end_date
     };
     
     // حفظ التغييرات في الملف

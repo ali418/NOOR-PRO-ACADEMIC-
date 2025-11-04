@@ -64,9 +64,27 @@ class LanguageManager {
         const elements = document.querySelectorAll('[data-ar][data-en]');
         elements.forEach(element => {
             const text = element.getAttribute(`data-${lang}`);
-            if (text) {
-                element.textContent = text;
+            if (!text) return;
+
+            // Preserve nested content (e.g., account numbers inside <strong>)
+            // in payment details labels: .account-info span contains label + <strong>
+            if (element.matches('.account-info span')) {
+                const strongChild = element.querySelector('strong');
+                if (strongChild) {
+                    // Update only the leading text node (label), keep the <strong> as-is
+                    const firstNode = element.firstChild;
+                    if (firstNode && firstNode.nodeType === 3) { // TEXT_NODE
+                        firstNode.textContent = text;
+                    } else {
+                        // If no text node exists, insert label before the strong
+                        element.insertBefore(document.createTextNode(text + ' '), strongChild);
+                    }
+                    return;
+                }
             }
+
+            // Default behavior for regular elements
+            element.textContent = text;
         });
 
         // Update placeholders (support both naming conventions)
@@ -320,6 +338,18 @@ class ModalManager {
                 this.closeModal(e.target.id);
             }
         });
+
+        // About Learn More modal triggers
+        const aboutLearnMoreBtn = document.getElementById('aboutLearnMoreBtn');
+        if (aboutLearnMoreBtn) {
+            aboutLearnMoreBtn.addEventListener('click', () => this.openModal('aboutModal'));
+        }
+
+        // Hero "تعرف على المزيد" button opens the same modal
+        const heroLearnMoreBtn = document.querySelector('.hero .btn-secondary');
+        if (heroLearnMoreBtn) {
+            heroLearnMoreBtn.addEventListener('click', () => this.openModal('aboutModal'));
+        }
 
         // Form submissions
         this.bindFormEvents();

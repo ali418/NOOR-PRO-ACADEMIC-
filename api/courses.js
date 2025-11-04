@@ -101,6 +101,7 @@ async function addCourse(req, res) {
             price,
             level_name,
             start_date,
+            end_date,
             course_icon,
             badge_text
         } = req.body;
@@ -148,8 +149,8 @@ async function addCourse(req, res) {
         const query = `INSERT INTO courses (
             course_code, title, description, credits, duration_weeks, 
             instructor_name, max_students, youtube_link, category, 
-            price, level_name, start_date, course_icon, badge_text, category_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            price, level_name, start_date, end_date, course_icon, badge_text, category_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
         const params = [
             course_code,
@@ -164,6 +165,7 @@ async function addCourse(req, res) {
             price || '0',
             level_name || 'مبتدئ',
             start_date || null,
+            end_date || null,
             course_icon || 'fas fa-book',
             badge_text || null,
             resolvedCategoryId || null
@@ -215,7 +217,8 @@ async function addCourse(req, res) {
                 start_date: start_date || new Date().toISOString().split('T')[0],
                 course_icon: course_icon || 'fas fa-book',
                 badge_text: badge_text || null,
-                youtube_link: youtube_link || ''
+                youtube_link: youtube_link || '',
+                end_date: end_date || null
             };
             sampleCourses.push(courseToAdd);
             fs.writeFileSync(samplePath, JSON.stringify(sampleCourses, null, 2));
@@ -247,6 +250,7 @@ async function updateCourse(req, res) {
             price,
             level_name,
             start_date,
+            end_date,
             course_icon,
             badge_text
         } = req.body;
@@ -303,7 +307,7 @@ async function updateCourse(req, res) {
         const query = `UPDATE courses SET 
             title = ?, description = ?, credits = ?, duration_weeks = ?,
             instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
-            category = ?, price = ?, level_name = ?, start_date = ?,
+            category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
             course_icon = ?, badge_text = ?, category_id = ?
             WHERE id = ?`;
         
@@ -320,6 +324,7 @@ async function updateCourse(req, res) {
             price || '0',
             level_name || 'مبتدئ',
             start_date || null,
+            end_date || null,
             course_icon || 'fas fa-book',
             badge_text || null,
             resolvedCategoryId || null,
@@ -374,6 +379,7 @@ async function updateCourse(req, res) {
                 price: price ?? sampleCourses[idx].price,
                 level_name: level_name ?? sampleCourses[idx].level_name,
                 start_date: start_date ?? sampleCourses[idx].start_date,
+                end_date: end_date ?? sampleCourses[idx].end_date,
                 course_icon: course_icon ?? sampleCourses[idx].course_icon,
                 badge_text: badge_text ?? sampleCourses[idx].badge_text
             };

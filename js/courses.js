@@ -64,6 +64,8 @@ class CoursesManager {
                     lessonsCount: course.lessons_count || 0,
                     instructor: course.instructor,
                     createdDate: course.created_at || course.start_date || new Date().toISOString(),
+                    start_date: course.start_date || null,
+                    end_date: course.end_date || null,
                     image: `https://via.placeholder.com/300x180/4F46E5/FFFFFF?text=${encodeURIComponent(course.course_name)}`,
                     allowEnrollment: course.allow_enrollment === 1,
                     requireApproval: course.require_approval === 1,
@@ -959,6 +961,17 @@ class CoursesManager {
                                 <input type="number" id="edit-course-price" value="${course.price}" min="0" required>
                             </div>
                         </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-course-start-date">تاريخ البداية</label>
+                                <input type="date" id="edit-course-start-date" value="${(course.start_date || '').toString()}">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-course-end-date">تاريخ النهاية</label>
+                                <input type="date" id="edit-course-end-date" value="${(course.end_date || '').toString()}">
+                            </div>
+                        </div>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -1018,19 +1031,21 @@ class CoursesManager {
             e.preventDefault();
             
             // جمع بيانات النموذج
-            const updatedCourse = {
-                id: document.getElementById('edit-course-id').value,
-                course_code: document.getElementById('edit-course-code').value,
-                course_name: document.getElementById('edit-course-name').value,
-                description: document.getElementById('edit-course-description').value,
-                category: document.getElementById('edit-course-category').value,
-                level: document.getElementById('edit-course-level').value,
-                duration: document.getElementById('edit-course-duration').value,
-                price: document.getElementById('edit-course-price').value,
-                instructor: document.getElementById('edit-course-instructor').value,
-                status: document.getElementById('edit-course-status').value,
-                youtube_link: document.getElementById('edit-course-youtube').value || ''
-            };
+                const updatedCourse = {
+                    id: document.getElementById('edit-course-id').value,
+                    course_code: document.getElementById('edit-course-code').value,
+                    course_name: document.getElementById('edit-course-name').value,
+                    description: document.getElementById('edit-course-description').value,
+                    category: document.getElementById('edit-course-category').value,
+                    level: document.getElementById('edit-course-level').value,
+                    duration: document.getElementById('edit-course-duration').value,
+                    price: document.getElementById('edit-course-price').value,
+                    instructor: document.getElementById('edit-course-instructor').value,
+                    status: document.getElementById('edit-course-status').value,
+                    youtube_link: document.getElementById('edit-course-youtube').value || '',
+                    start_date: document.getElementById('edit-course-start-date').value || null,
+                    end_date: document.getElementById('edit-course-end-date').value || null
+                };
             
             // إرسال البيانات إلى API
             this.showLoading(true);
