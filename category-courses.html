@@ -624,6 +624,26 @@
             return toEnglishDigits(s);
         }
 
+        // Helpers for duration/end-date
+        function parseDaysFromDurationText(input) {
+            if (!input) return 0;
+            const n = extractNumeric(input);
+            return Number.isFinite(n) && n > 0 ? n : 0;
+        }
+
+        function addDaysToDate(startDateStr, days) {
+            try {
+                if (!startDateStr || !days || days <= 0) return null;
+                const d = new Date(String(startDateStr));
+                if (Number.isNaN(d.getTime())) return null;
+                d.setDate(d.getDate() + Number(days));
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            } catch (_) { return null; }
+        }
+
         function loadCategoryInfo() {
             const config = categoryConfigs[categoryId];
             if (!config) {
@@ -661,14 +681,25 @@
                     const sdgPriceValue = 260000;
                     const usdPriceAmount = usdPriceValue.toLocaleString('en-US');
                     const sdgPriceAmount = sdgPriceValue.toLocaleString('en-US');
+                    // حساب الأيام من النص أو من الأسابيع
+                    const daysFromText = parseDaysFromDurationText(c.duration);
+                    const daysFromWeeks = c.duration_weeks ? Number(c.duration_weeks) * 7 : 0;
+                    const durationDays = daysFromText > 0 ? daysFromText : (daysFromWeeks > 0 ? daysFromWeeks : 0);
+
+                    const startDateRaw = c.start_date || null;
+                    const endDateRaw = c.end_date || null;
+                    const computedEndDate = (!endDateRaw && startDateRaw && durationDays > 0)
+                        ? addDaysToDate(startDateRaw, durationDays)
+                        : endDateRaw;
+
                     return ({
                         id: c.id,
                         title: c.title || c.course_name || 'مقرر',
                         description: c.description || c.details || '',
                         level: levelMap[c.level_name] || c.level_name || '',
-                        duration: c.duration || (c.duration_weeks ? `${Number(c.duration_weeks).toLocaleString('en-US')} أسبوع` : '—'),
-                        startDate: c.start_date || null,
-                        endDate: c.end_date || null,
+                        duration: durationDays > 0 ? `${Number(durationDays).toLocaleString('en-US')} يوم` : '—',
+                        startDate: startDateRaw,
+                        endDate: computedEndDate || null,
                         capacity: (typeof c.capacity === 'number')
                             ? `${Number(c.capacity).toLocaleString('en-US')} شخص`
                             : (c.capacity || (c.max_students ? `${Number(c.max_students).toLocaleString('en-US')} طالب كحد أقصى` : '—')),
@@ -702,9 +733,13 @@
                         title: s.title,
                         description: s.description || '',
                         level: s.level || '',
-                        duration: s.duration ? toEnglishDigits(s.duration) : '—',
-                        startDate: null,
-                        endDate: null,
+                        duration: (s.duration_weeks && Number(s.duration_weeks) > 0)
+                            ? `${Number(s.duration_weeks * 7).toLocaleString('en-US')} يوم`
+                            : (s.duration ? `${parseDaysFromDurationText(s.duration)} يوم` : '—'),
+                        startDate: s.start_date || null,
+                        endDate: (s.end_date
+                            ? s.end_date
+                            : (s.start_date && s.duration_weeks ? addDaysToDate(s.start_date, Number(s.duration_weeks) * 7) : null)),
                         capacity: '—',
                         // حقول قديمة للتوافق
                         price: `${sdgPriceAmount} SDG`,
@@ -740,9 +775,13 @@
                         title: s.title,
                         description: s.description || '',
                         level: s.level || '',
-                        duration: s.duration || '—',
-                        startDate: null,
-                        endDate: null,
+                        duration: (s.duration_weeks && Number(s.duration_weeks) > 0)
+                            ? `${Number(s.duration_weeks * 7).toLocaleString('en-US')} يوم`
+                            : (s.duration ? `${parseDaysFromDurationText(s.duration)} يوم` : '—'),
+                        startDate: s.start_date || null,
+                        endDate: (s.end_date
+                            ? s.end_date
+                            : (s.start_date && s.duration_weeks ? addDaysToDate(s.start_date, Number(s.duration_weeks) * 7) : null)),
                         capacity: '—',
                         price: formatPrice(s.price),
                         details: ''

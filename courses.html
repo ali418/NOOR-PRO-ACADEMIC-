@@ -755,13 +755,38 @@
                     end_date: document.getElementById('addEndDate').value || null,
                     max_students: parseInt(document.getElementById('addMaxStudents').value) || null
                 };
-                            const res = await fetch(API_URL, {
+                            let res = await fetch(API_URL, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
                             });
-                            const result = await res.json();
-                            if (!res.ok || result.success === false) throw new Error(result.message || 'فشل إضافة المقرر');
+                            let result = await res.json();
+                            if (!res.ok || result.success === false) {
+                                // مسار بديل: حفظ في البيانات التجريبية
+                                const weeks = payload.duration_weeks || (durationDays ? Math.ceil(durationDays / 7) : null);
+                                const samplePayload = {
+                                    course_name: payload.title,
+                                    description: payload.description,
+                                    category: payload.category,
+                                    level: payload.level_name,
+                                    duration: weeks,
+                                    price: payload.price,
+                                    instructor: payload.instructor_name,
+                                    youtube_link: payload.youtube_link,
+                                    start_date: payload.start_date,
+                                    end_date: payload.end_date,
+                                    icon: payload.course_icon,
+                                    badge_text: payload.badge_text,
+                                    capacity: payload.max_students
+                                };
+                                res = await fetch('/api/courses-sample', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(samplePayload)
+                                });
+                                result = await res.json();
+                                if (!res.ok || result.success === false) throw new Error(result.message || 'فشل إضافة المقرر (المسار البديل)');
+                            }
                             bootstrap.Modal.getInstance(document.getElementById('addCourseModal')).hide();
                             await loadCourses();
                         } catch (err) {
@@ -1007,13 +1032,39 @@
                     end_date: document.getElementById('editEndDate').value || null,
                     max_students: parseInt(document.getElementById('editMaxStudents').value) || null
                 };
-                const res = await fetch(API_URL, {
+                let res = await fetch(API_URL, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const result = await res.json();
-                if (!res.ok || result.success === false) throw new Error(result.message || 'فشل التعديل');
+                let result = await res.json();
+                if (!res.ok || result.success === false) {
+                    // مسار بديل: حفظ في البيانات التجريبية
+                    const weeksEdit = payload.duration_weeks || (durationDaysEdit ? Math.ceil(durationDaysEdit / 7) : null);
+                    const sampleUpdate = {
+                        id: payload.id,
+                        course_name: payload.title,
+                        description: payload.description,
+                        category: payload.category,
+                        level: payload.level_name,
+                        duration: weeksEdit,
+                        price: payload.price,
+                        instructor: payload.instructor_name,
+                        youtube_link: payload.youtube_link,
+                        start_date: payload.start_date,
+                        end_date: payload.end_date,
+                        icon: payload.course_icon,
+                        badge_text: payload.badge_text,
+                        capacity: payload.max_students
+                    };
+                    res = await fetch('/api/courses-sample', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(sampleUpdate)
+                    });
+                    result = await res.json();
+                    if (!res.ok || result.success === false) throw new Error(result.message || 'فشل التعديل (المسار البديل)');
+                }
                 bootstrap.Modal.getInstance(document.getElementById('editCourseModal')).hide();
                 await loadCourses();
             } catch (err) {
