@@ -489,78 +489,7 @@
             }
         };
 
-        // Sample courses data
-        const sampleCourses = {
-            1: [
-                {
-                    id: 1,
-                    title: 'English for Beginners',
-                    description: 'تعلم أساسيات اللغة الإنجليزية من الصفر مع التركيز على المحادثة والقواعد الأساسية',
-                    price: '299 ريال',
-                    duration: '8 أسابيع',
-                    level: 'مبتدئ',
-                    image: 'fas fa-book-open'
-                },
-                {
-                    id: 2,
-                    title: 'Business English',
-                    description: 'تطوير مهارات اللغة الإنجليزية في بيئة العمل والمراسلات التجارية',
-                    price: '499 $',
-                    duration: '12 أسبوع',
-                    level: 'متوسط',
-                    image: 'fas fa-briefcase'
-                },
-                {
-                    id: 3,
-                    title: 'IELTS Preparation',
-                    description: 'التحضير الشامل لامتحان IELTS مع التدريب على جميع المهارات',
-                    price: '699 $',
-                    duration: '16 أسبوع',
-                    level: 'متقدم',
-                    image: 'fas fa-certificate'
-                }
-            ],
-            2: [
-                {
-                    id: 4,
-                    title: 'إدارة الموارد البشرية',
-                    description: 'دورة شاملة في إدارة الموارد البشرية والتوظيف والتطوير',
-                    price: '599 $',
-                    duration: '10 أسابيع',
-                    level: 'متوسط',
-                    image: 'fas fa-users-cog'
-                },
-                {
-                    id: 5,
-                    title: 'القيادة الفعالة',
-                    description: 'تطوير مهارات القيادة والإدارة الحديثة في بيئة العمل',
-                    price: '449 ريال',
-                    duration: '8 أسابيع',
-                    level: 'متقدم',
-                    image: 'fas fa-crown'
-                }
-            ],
-            3: [
-                {
-                    id: 6,
-                    title: 'تطوير المواقع',
-                    description: 'تعلم تطوير المواقع الإلكترونية باستخدام HTML, CSS, JavaScript',
-                    price: '799 ريال',
-                    duration: '14 أسبوع',
-                    level: 'مبتدئ',
-                    image: 'fas fa-code'
-                },
-                {
-                    id: 7,
-                    title: 'الذكاء الاصطناعي',
-                    description: 'مقدمة في الذكاء الاصطناعي وتعلم الآلة والتطبيقات العملية',
-                    price: '999 ريال',
-                    duration: '20 أسبوع',
-                    level: 'متقدم',
-                    image: 'fas fa-robot'
-                }
-            ]
-        };
+        // تم إزالة بيانات العينات المحلية لضمان اعتماد الصفحة على API فقط
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -733,44 +662,8 @@
                     });
                 });
 
-                // If API returned empty or failed, fallback to sample courses
-                let finalCourses = normalizedFromApi;
-
-                if (!Array.isArray(finalCourses) || finalCourses.length === 0) {
-                    const samples = sampleCourses[categoryId] || [];
-                    finalCourses = samples.map(s => {
-                        // صيغة ثابتة: 75 دولار ≈ 260,000 جنيه سوداني
-                        const usdPriceValue = 75;
-                        const sdgPriceValue = 260000;
-                        const usdPriceAmount = usdPriceValue.toLocaleString('en-US');
-                        const sdgPriceAmount = sdgPriceValue.toLocaleString('en-US');
-                        return ({
-                        id: s.id,
-                        title: s.title,
-                        description: s.description || '',
-                        level: s.level || '',
-                        duration: (s.duration_weeks && Number(s.duration_weeks) > 0)
-                            ? `${Number(s.duration_weeks * 7).toLocaleString('en-US')} يوم`
-                            : (s.duration ? `${parseDaysFromDurationText(s.duration)} يوم` : '—'),
-                        startDate: s.start_date || null,
-                        endDate: (s.end_date
-                            ? s.end_date
-                            : (s.start_date && s.duration_weeks ? addDaysToDate(s.start_date, Number(s.duration_weeks) * 7) : null)),
-                        capacity: '—',
-                        // حقول قديمة للتوافق
-                        price: `${sdgPriceAmount} SDG`,
-                        priceAmount: sdgPriceAmount,
-                        priceCurrency: 'SDG',
-                        priceValue: sdgPriceValue,
-                        // حقول العرض الجديدة
-                        priceUSDValue: usdPriceValue,
-                        priceUSDText: `${usdPriceAmount} دولار`,
-                        priceSDGValue: sdgPriceValue,
-                        priceSDGText: `${sdgPriceAmount} جنيه سوداني`,
-                        details: ''
-                        });
-                    });
-                }
+                // اعتمد فقط على نتائج الـ API بدون أي عينات محلية
+                const finalCourses = normalizedFromApi;
 
                 allCourses = finalCourses;
                 filteredCourses = [...finalCourses];
@@ -783,33 +676,11 @@
                 }
             } catch (error) {
                 console.error('Error loading category courses:', error);
-                // Fallback to samples on error
-                const samples = sampleCourses[categoryId] || [];
-                if (samples.length > 0) {
-                    const finalCourses = samples.map(s => ({
-                        id: s.id,
-                        title: s.title,
-                        description: s.description || '',
-                        level: s.level || '',
-                        duration: (s.duration_weeks && Number(s.duration_weeks) > 0)
-                            ? `${Number(s.duration_weeks * 7).toLocaleString('en-US')} يوم`
-                            : (s.duration ? `${parseDaysFromDurationText(s.duration)} يوم` : '—'),
-                        startDate: s.start_date || null,
-                        endDate: (s.end_date
-                            ? s.end_date
-                            : (s.start_date && s.duration_weeks ? addDaysToDate(s.start_date, Number(s.duration_weeks) * 7) : null)),
-                        capacity: '—',
-                        price: formatPrice(s.price),
-                        details: ''
-                    }));
-
-                    allCourses = finalCourses;
-                    filteredCourses = [...finalCourses];
-                    updateCoursesCount(finalCourses.length);
-                    displayCourses(finalCourses);
-                } else {
-                    showError('حدث خطأ في تحميل المقررات');
-                }
+                // لا تستخدم عينات محلية؛ اعرض حالة خطأ/فراغ حتى يعود الـ API
+                allCourses = [];
+                filteredCourses = [];
+                updateCoursesCount(0);
+                showEmpty();
             }
         }
 
