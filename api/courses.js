@@ -113,6 +113,7 @@ async function addCourse(req, res) {
             description,
             credits,
             duration_weeks,
+            duration,
             instructor_name,
             max_students,
             youtube_link,
@@ -167,10 +168,10 @@ async function addCourse(req, res) {
         }
 
         const query = `INSERT INTO courses (
-            course_code, title, description, credits, duration_weeks, 
+            course_code, title, description, credits, duration_weeks, duration,
             instructor_name, max_students, youtube_link, category, 
             price, level_name, start_date, end_date, course_icon, badge_text, category_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
         const params = [
             course_code,
@@ -178,6 +179,7 @@ async function addCourse(req, res) {
             description || null,
             credits || 3,
             duration_weeks || 16,
+            duration || null,
             instructor_name || null,
             max_students || 30,
             youtube_link || null,
@@ -261,6 +263,7 @@ async function updateCourse(req, res) {
             description,
             credits,
             duration_weeks,
+            duration,
             instructor_name,
             max_students,
             status,
@@ -325,7 +328,7 @@ async function updateCourse(req, res) {
         }
 
         const query = `UPDATE courses SET 
-            title = ?, description = ?, credits = ?, duration_weeks = ?,
+            title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
             instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
             category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
             course_icon = ?, badge_text = ?, category_id = ?
@@ -336,6 +339,7 @@ async function updateCourse(req, res) {
             description || null,
             credits || 3,
             duration_weeks || 16,
+            duration || null,
             instructor_name || null,
             max_students || 30,
             status || 'active',

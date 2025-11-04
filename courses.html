@@ -555,12 +555,12 @@
                   </select>
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">المدة (أسابيع)</label>
-                  <input type="number" class="form-control" id="addDuration" min="1" />
+                  <label class="form-label">المدة (أيام)</label>
+                  <input type="text" class="form-control" id="addDuration" placeholder="مثال: 30 يوم" />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">السعر (دولار)</label>
-                  <input type="number" class="form-control" id="addPrice" min="0" />
+                  <label class="form-label">السعر</label>
+                  <input type="text" class="form-control" id="addPrice" placeholder="مثال: 75 دولار ≈ 260,000 جنيه سوداني" />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">المدرس</label>
@@ -569,6 +569,14 @@
                 <div class="col-md-6">
                   <label class="form-label">رابط يوتيوب (اختياري)</label>
                   <input type="url" class="form-control" id="addYoutube" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">تاريخ النهاية</label>
+                  <input type="date" class="form-control" id="addEndDate" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">👥 العدد المستهدف</label>
+                  <input type="number" class="form-control" id="addMaxStudents" min="1" placeholder="مثال: 20" />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">أيقونة المقرر (Font Awesome)</label>
@@ -629,12 +637,12 @@
                   </select>
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">المدة (أسابيع)</label>
-                  <input type="number" class="form-control" id="editDuration" min="1" />
+                  <label class="form-label">المدة (أيام)</label>
+                  <input type="text" class="form-control" id="editDuration" placeholder="مثال: 30 يوم" />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">السعر (دولار)</label>
-                  <input type="number" class="form-control" id="editPrice" min="0" />
+                  <label class="form-label">السعر</label>
+                  <input type="text" class="form-control" id="editPrice" placeholder="مثال: 75 دولار ≈ 260,000 جنيه سوداني" />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">المدرس</label>
@@ -643,6 +651,14 @@
                 <div class="col-md-6">
                   <label class="form-label">رابط يوتيوب (اختياري)</label>
                   <input type="url" class="form-control" id="editYoutube" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">تاريخ النهاية</label>
+                  <input type="date" class="form-control" id="editEndDate" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">👥 العدد المستهدف</label>
+                  <input type="number" class="form-control" id="editMaxStudents" min="1" placeholder="مثال: 20" />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">أيقونة المقرر (Font Awesome)</label>
@@ -712,19 +728,24 @@
                     addForm.addEventListener('submit', async (e) => {
                         e.preventDefault();
                         try {
-                            const payload = {
-                                course_code: `CRS-${Date.now()}`,
-                                title: document.getElementById('addTitle').value.trim(),
-                                description: document.getElementById('addDescription').value.trim(),
-                                category: document.getElementById('addCategory').value,
-                                level_name: document.getElementById('addLevel').value,
-                                duration_weeks: parseInt(document.getElementById('addDuration').value) || null,
-                                price: document.getElementById('addPrice').value ? String(document.getElementById('addPrice').value) : null,
-                                instructor_name: document.getElementById('addInstructor').value.trim(),
-                                youtube_link: document.getElementById('addYoutube').value.trim(),
-                                course_icon: document.getElementById('addIcon').value.trim(),
-                                badge_text: document.getElementById('addBadge').value.trim()
-                            };
+                const durationText = document.getElementById('addDuration').value.trim();
+                const durationDays = parseInt(durationText.replace(/[^0-9]/g,'')) || null;
+                const payload = {
+                    course_code: `CRS-${Date.now()}`,
+                    title: document.getElementById('addTitle').value.trim(),
+                    description: document.getElementById('addDescription').value.trim(),
+                    category: document.getElementById('addCategory').value,
+                    level_name: document.getElementById('addLevel').value,
+                    duration: durationText || null,
+                    duration_weeks: durationDays ? Math.ceil(durationDays / 7) : null,
+                    price: document.getElementById('addPrice').value ? String(document.getElementById('addPrice').value) : null,
+                    instructor_name: document.getElementById('addInstructor').value.trim(),
+                    youtube_link: document.getElementById('addYoutube').value.trim(),
+                    course_icon: document.getElementById('addIcon').value.trim(),
+                    badge_text: document.getElementById('addBadge').value.trim(),
+                    end_date: document.getElementById('addEndDate').value || null,
+                    max_students: parseInt(document.getElementById('addMaxStudents').value) || null
+                };
                             const res = await fetch(API_URL, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
@@ -753,13 +774,15 @@
                     id: c.id,
                     title: c.title || c.course_name || 'مقرر',
                     description: c.description || '',
-                    price: (typeof c.price === 'number' ? `${c.price} $` : (c.price ? `${parseInt(String(c.price).replace(/[^0-9]/g,'')) || c.price} $` : '—')),
-                    duration: c.duration_weeks ? `${c.duration_weeks}` : '—',
+                    price: c.price ? String(c.price) : '—',
+                    duration: c.duration ? String(c.duration) : (c.duration_weeks ? `${c.duration_weeks} أسبوع` : '—'),
                     level: levelMap[c.level_name] || c.level_name || '',
                     category: c.category,
                     categoryName: (categoryMap[c.category] || { name: c.category || 'عام' }).name,
                     image: c.course_icon || (categoryMap[c.category] || { icon: 'fas fa-graduation-cap' }).icon,
-                    background: (categoryMap[c.category] || { bg: 'general-bg' }).bg
+                    background: (categoryMap[c.category] || { bg: 'general-bg' }).bg,
+                    max_students: c.max_students || null,
+                    end_date: c.end_date || null
                 }));
 
                 filteredCourses = [...allCourses];
@@ -938,12 +961,14 @@
             document.getElementById('editDescription').value = course.description || '';
             document.getElementById('editCategory').value = course.category || 'english';
             document.getElementById('editLevel').value = course.level || 'مبتدئ';
-            document.getElementById('editDuration').value = (course.duration && course.duration !== '—') ? parseInt(course.duration) : '';
-            document.getElementById('editPrice').value = (course.price && course.price !== '—') ? parseInt(course.price) : '';
+            document.getElementById('editDuration').value = (course.duration && course.duration !== '—') ? String(course.duration) : '';
+            document.getElementById('editPrice').value = (course.price && course.price !== '—') ? String(course.price) : '';
             document.getElementById('editInstructor').value = course.instructor || '';
             document.getElementById('editYoutube').value = course.youtube_link || '';
             document.getElementById('editIcon').value = (course.image && course.image.startsWith('fa')) ? course.image : '';
             document.getElementById('editBadge').value = course.badge_text || '';
+            document.getElementById('editEndDate').value = course.end_date || '';
+            document.getElementById('editMaxStudents').value = course.max_students || '';
             const modal = new bootstrap.Modal(document.getElementById('editCourseModal'));
             modal.show();
         }
@@ -952,18 +977,23 @@
             e.preventDefault();
             if (!isAdmin) return;
             try {
+                const durationTextEdit = document.getElementById('editDuration').value.trim();
+                const durationDaysEdit = parseInt(durationTextEdit.replace(/[^0-9]/g,'')) || null;
                 const payload = {
                     id: parseInt(document.getElementById('editId').value),
                     title: document.getElementById('editTitle').value.trim(),
                     description: document.getElementById('editDescription').value.trim(),
                     category: document.getElementById('editCategory').value,
                     level_name: document.getElementById('editLevel').value,
-                    duration_weeks: parseInt(document.getElementById('editDuration').value) || null,
+                    duration: durationTextEdit || null,
+                    duration_weeks: durationDaysEdit ? Math.ceil(durationDaysEdit / 7) : null,
                     price: document.getElementById('editPrice').value ? String(document.getElementById('editPrice').value) : null,
                     instructor_name: document.getElementById('editInstructor').value.trim(),
                     youtube_link: document.getElementById('editYoutube').value.trim(),
                     course_icon: document.getElementById('editIcon').value.trim(),
-                    badge_text: document.getElementById('editBadge').value.trim()
+                    badge_text: document.getElementById('editBadge').value.trim(),
+                    end_date: document.getElementById('editEndDate').value || null,
+                    max_students: parseInt(document.getElementById('editMaxStudents').value) || null
                 };
                 const res = await fetch(API_URL, {
                     method: 'PUT',
