@@ -194,11 +194,89 @@ async function getCoursesByCategory(req, res) {
         
     } catch (error) {
         console.error('Error fetching courses by category:', error);
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في جلب المقررات',
-            error: error.message
-        });
+        // Fallback to sample data to keep category page functional if DB fails
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const categoryId = req.params.id;
+
+            // Load categories JSON to build a minimal category object and name mapping
+            const categoriesPath = path.join(__dirname, 'categories.json');
+            const categoriesRaw = fs.readFileSync(categoriesPath, 'utf8');
+            const categoriesJson = JSON.parse(categoriesRaw);
+            const categoriesList = (categoriesJson && categoriesJson.data) ? categoriesJson.data : [];
+            const categoryObj = categoriesList.find(c => String(c.id) === String(categoryId));
+
+            // Build a mapping from category id to legacy textual keys
+            const idToKey = {
+                1: 'english',
+                2: 'hr',
+                3: 'technical',
+                4: 'speaking',
+                5: 'grammar',
+                6: 'hr diplomas'
+            };
+            const legacyKey = idToKey[Number(categoryId)] || null;
+
+            // Load sample courses
+            const samplePath = path.join(__dirname, '..', 'sample-courses.json');
+            const sampleRaw = fs.readFileSync(samplePath, 'utf8');
+            const sampleCourses = JSON.parse(sampleRaw);
+
+            // Filter by textual category if available; otherwise return empty list
+            const filtered = legacyKey
+                ? sampleCourses.filter(c => String(c.category).toLowerCase() === legacyKey)
+                : [];
+
+            // Compose minimal category data for frontend
+            const fallbackCategory = categoryObj ? {
+                id: categoryObj.id,
+                category_name: categoryObj.category_name_en || categoryObj.category_name_ar || 'Category',
+                category_name_ar: categoryObj.category_name_ar || categoryObj.category_name_en || 'تصنيف',
+                description: categoryObj.description || null,
+                icon: categoryObj.icon || null,
+                color: categoryObj.color || null
+            } : { id: Number(categoryId), category_name: 'Category', category_name_ar: 'تصنيف' };
+
+            // Normalize sample format to match SQL response
+            const normalizedCourses = filtered.map(c => ({
+                id: c.id,
+                course_code: c.course_code,
+                course_name: c.title,
+                description: c.description,
+                credits: c.credits || 3,
+                duration_weeks: c.duration_weeks || null,
+                duration: c.duration || null,
+                start_date: c.start_date || null,
+                end_date: c.end_date || null,
+                capacity: c.max_students || null,
+                price: c.price || '0',
+                level_name: c.level_name || null,
+                details: c.details || null,
+                instructor_name: c.instructor_name || null,
+                max_students: c.max_students || null,
+                youtube_link: c.youtube_link || null,
+                status: 'active',
+                created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                enrolled_students: 0
+            }));
+
+            return res.json({
+                success: true,
+                data: {
+                    category: fallbackCategory,
+                    courses: normalizedCourses
+                },
+                message: 'تم جلب المقررات من بيانات تجريبية'
+            });
+        } catch (fallbackErr) {
+            console.error('Category courses fallback failed:', fallbackErr);
+            return res.status(500).json({
+                success: false,
+                message: 'خطأ في جلب المقررات',
+                error: error.message
+            });
+        }
     } finally {
         if (connection) {
             await connection.end();

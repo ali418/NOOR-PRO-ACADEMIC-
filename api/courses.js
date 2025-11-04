@@ -182,6 +182,23 @@ async function addCourse(req, res) {
             }
         }
 
+        // Determine textual category for legacy compatibility (used when category_id column is missing, and to keep data consistent)
+        let categoryText = category || null;
+        if (!categoryText && resolvedCategoryId) {
+            try {
+                const [catInfo] = await connection.execute(
+                    'SELECT category_name, category_name_ar FROM course_categories WHERE id = ? LIMIT 1',
+                    [resolvedCategoryId]
+                );
+                if (catInfo.length > 0) {
+                    categoryText = catInfo[0].category_name || catInfo[0].category_name_ar || null;
+                }
+            } catch (_) {
+                // ignore, fallback to general later
+            }
+        }
+        if (!categoryText) categoryText = 'general';
+
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
         let query, params;
         if (hasCategoryId) {
@@ -190,7 +207,7 @@ async function addCourse(req, res) {
                 course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, status, youtube_link, category, 
                 price, level_name, start_date, end_date, course_icon, badge_text, category_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
             params = [
                 course_code,
                 courseTitle, // course_name
@@ -203,7 +220,7 @@ async function addCourse(req, res) {
                 max_students || 30,
                 status || 'active',
                 youtube_link || null,
-                category || 'general',
+                categoryText,
                 price || '0',
                 level_name || 'مبتدئ',
                 start_date || null,
@@ -231,7 +248,7 @@ async function addCourse(req, res) {
                 max_students || 30,
                 status || 'active',
                 youtube_link || null,
-                category || 'general',
+                categoryText,
                 price || '0',
                 level_name || 'مبتدئ',
                 start_date || null,
