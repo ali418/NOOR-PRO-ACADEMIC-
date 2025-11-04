@@ -1,4 +1,29 @@
 // Profile Page JavaScript
+function extractNumeric(price) {
+    if (typeof price === 'number') {
+        return price;
+    }
+    if (typeof price === 'string') {
+        // Use a regular expression to find all numbers in the string
+        const numbers = price.match(/\d+(\.\d+)?/g);
+        if (numbers) {
+            // Join the numbers and parse them as a float
+            return parseFloat(numbers.join(''));
+        }
+    }
+    return 0; // Return 0 if no numbers are found
+}
+
+function formatPrice(price) {
+    const numericPrice = extractNumeric(price);
+    if (numericPrice > 0) {
+        const usdPrice = numericPrice;
+        const sdgPrice = Math.round(usdPrice * 1500); // Assuming a fixed conversion rate
+        return `${usdPrice} دولار ≈ ${sdgPrice} جنيه سوداني`;
+    }
+    return 'مجاني';
+}
+
 class ProfileManager {
     constructor() {
         this.currentUser = null;
@@ -254,7 +279,7 @@ class ProfileManager {
             const courses = userItems.map(i => ({
                 id: i.id,
                 title: i.courseName || 'مقرر',
-                description: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `السعر: ${parseFloat(i.notes.coursePrice) || '—'} - الدفع: ${i.notes.paymentMethod || '—'}` : '',
+                priceDescription: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `${formatPrice(i.notes.coursePrice)} - الدفع: ${i.notes.paymentMethod || '—'}` : 'مجاني',
                 status: (i.status === 'approved' || i.status === 'completed' || i.status === 'pending') ? i.status : 'pending',
                 progress: i.status === 'completed' ? 100 : 0,
                 instructor: '',
@@ -283,7 +308,7 @@ class ProfileManager {
                 const courses = userItems.map(i => ({
                     id: i.id,
                     title: i.courseName || 'مقرر',
-                    description: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `السعر: ${i.notes.coursePrice || '—'} - الدفع: ${i.notes.paymentMethod || '—'}` : '',
+                    priceDescription: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `${formatPrice(i.notes.coursePrice)} - الدفع: ${i.notes.paymentMethod || '—'}` : 'مجاني',
                     status: (i.status === 'approved' || i.status === 'completed' || i.status === 'pending') ? i.status : 'pending',
                     progress: i.status === 'completed' ? 100 : 0,
                     instructor: '',
@@ -387,7 +412,7 @@ class ProfileManager {
         card.innerHTML = `
             <div class="course-status ${course.status}">${statusText[course.status]}</div>
             <h4>${course.title}</h4>
-            <p>${course.description}</p>
+            <p>${course.priceDescription}</p>
             <div class="course-progress">
                 <div class="progress-label">
                     <span>التقدم</span>

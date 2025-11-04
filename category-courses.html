@@ -621,7 +621,7 @@
                 
                 // Normalize API courses
                 const normalizedFromApi = apiCourses.map(c => {
-                    const usdPriceValue = parseFloat(c.price) || 0;
+                    const usdPriceValue = extractNumeric(c.price);
                     const sdgPriceValue = usdPriceValue * 1500; // Assuming a fixed rate for now, should be dynamic
                     const usdPriceAmount = usdPriceValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     const sdgPriceAmount = sdgPriceValue.toLocaleString('en-US');
@@ -718,7 +718,7 @@
                                 <strong><span data-ar="العدد المستهدف:" data-en="Capacity:">العدد المستهدف:</span></strong> ${course.capacity || '—'}
                             </div>
                         </div>
-                        <div class="price-box" style="margin-top:12px; padding:12px 16px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; display:none; align-items:center; justify-content:space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                        <div class="price-box" style="margin-top:12px; padding:12px 16px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
                             <div class="price-label" style="display:flex; align-items:center; gap:8px; color:#374151; font-weight:600;">
                                 <span style="font-size:1.1rem">💲</span>
                                 <span>السعر</span>
