@@ -603,12 +603,21 @@
 
         function formatDateDisplay(dateStr) {
             if (!dateStr) return '—';
-            try {
-                const d = new Date(dateStr);
-                return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
-            } catch (e) {
-                return '—';
+            const s = String(dateStr).trim();
+            // ISO or YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+                const d = new Date(s);
+                return Number.isNaN(d.getTime()) ? s : d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
             }
+            // DD/MM/YYYY or DD-MM-YYYY
+            const m = s.match(/^([0-3]?\d)[-/]([0-1]?\d)[-/](\d{4})$/);
+            if (m) {
+                const [_, dd, mm, yyyy] = m;
+                const d = new Date(`${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`);
+                return Number.isNaN(d.getTime()) ? `${dd}/${mm}/${yyyy}` : d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+            }
+            // Fallback: show as-is
+            return s;
         }
 
         function loadCategoryInfo() {
@@ -642,25 +651,35 @@
                 const levelMap = { beginner: 'مبتدئ', intermediate: 'متوسط', advanced: 'متقدم' };
                 
                 // Normalize API courses
-                const normalizedFromApi = apiCourses.map(c => ({
-                    id: c.id,
-                    title: c.course_name || 'مقرر',
-                    description: c.description || '',
-                    level: levelMap[c.level_name] || c.level_name || '',
-                    duration: c.duration || (c.duration_weeks ? `${c.duration_weeks} أسبوع` : '—'),
-                    startDate: c.start_date || null,
-                    endDate: c.end_date || null,
-                    capacity: typeof c.capacity === 'number' ? `${c.capacity} شخص` : (c.capacity || (c.max_students ? `${c.max_students} طالب كحد أقصى` : '—')),
-                    price: formatPrice(c.price),
-                    details: c.details || ''
-                }));
+                const normalizedFromApi = apiCourses.map(c => {
+                    const priceValue = extractNumeric(c.price);
+                    const priceAmount = priceValue ? priceValue.toLocaleString('en-US') : '—';
+                    return ({
+                        id: c.id,
+                        title: c.course_name || 'مقرر',
+                        description: c.description || '',
+                        level: levelMap[c.level_name] || c.level_name || '',
+                        duration: c.duration || (c.duration_weeks ? `${c.duration_weeks} أسبوع` : '—'),
+                        startDate: c.start_date || null,
+                        endDate: c.end_date || null,
+                        capacity: typeof c.capacity === 'number' ? `${c.capacity} شخص` : (c.capacity || (c.max_students ? `${c.max_students} طالب كحد أقصى` : '—')),
+                        price: `${priceAmount} ${DEFAULT_CURRENCY}`,
+                        priceAmount: priceAmount,
+                        priceCurrency: DEFAULT_CURRENCY,
+                        priceValue: priceValue,
+                        details: c.details || ''
+                    });
+                });
 
                 // If API returned empty or failed, fallback to sample courses
                 let finalCourses = normalizedFromApi;
 
                 if (!Array.isArray(finalCourses) || finalCourses.length === 0) {
                     const samples = sampleCourses[categoryId] || [];
-                    finalCourses = samples.map(s => ({
+                    finalCourses = samples.map(s => {
+                        const priceValue = extractNumeric(s.price);
+                        const priceAmount = priceValue ? priceValue.toLocaleString('en-US') : '—';
+                        return ({
                         id: s.id,
                         title: s.title,
                         description: s.description || '',
@@ -669,9 +688,13 @@
                         startDate: null,
                         endDate: null,
                         capacity: '—',
-                        price: formatPrice(s.price),
+                        price: `${priceAmount} ${DEFAULT_CURRENCY}`,
+                        priceAmount: priceAmount,
+                        priceCurrency: DEFAULT_CURRENCY,
+                        priceValue: priceValue,
                         details: ''
-                    }));
+                        });
+                    });
                 }
 
                 allCourses = finalCourses;
@@ -752,7 +775,8 @@
                                 <span data-ar="السعر" data-en="Price">السعر</span>
                             </div>
                             <div class="price-value" style="display:flex; align-items:baseline; gap:6px;">
-                                <span class="price-amount" style="font-size:1.25rem; font-weight:700; color:#111827;">${course.price}</span>
+                                <span class="price-amount" style="font-size:1.25rem; font-weight:700; color:#111827;">${course.priceAmount}</span>
+                                <span class="price-currency" style="font-size:1rem; font-weight:600; color:#374151;">${course.priceCurrency}</span>
                             </div>
                         </div>
                         <button class="enroll-btn" onclick="enrollCourse(${course.id})">
@@ -798,10 +822,10 @@
                     filtered.sort((a, b) => a.title.localeCompare(b.title));
                     break;
                 case 'price_low':
-                    filtered.sort((a, b) => extractNumeric(a.price) - extractNumeric(b.price));
+                    filtered.sort((a, b) => (a.priceValue || 0) - (b.priceValue || 0));
                     break;
                 case 'price_high':
-                    filtered.sort((a, b) => extractNumeric(b.price) - extractNumeric(a.price));
+                    filtered.sort((a, b) => (b.priceValue || 0) - (a.priceValue || 0));
                     break;
             }
 
