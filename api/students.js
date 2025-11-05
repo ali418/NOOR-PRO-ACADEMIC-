@@ -72,12 +72,12 @@ router.get('/', async (req, res) => {
 // POST - إضافة طالب جديد
 router.post('/', async (req, res) => {
     const {
-        student_id, first_name, last_name, email, phone,
-        date_of_birth, gender, address, enrollment_date
+        id, firstName, lastName, email, phone,
+        birthDate, gender, address, registrationDate
     } = req.body;
 
     // التحقق من البيانات المطلوبة
-    if (!student_id || !first_name || !last_name || !email) {
+    if (!id || !firstName || !lastName || !email) {
         return res.status(400).json({
             success: false,
             message: 'البيانات المطلوبة مفقودة'
@@ -92,9 +92,9 @@ router.post('/', async (req, res) => {
     `;
 
     const params = [
-        student_id, first_name, last_name, email, phone || '',
-        date_of_birth || null, gender || 'male', address || '',
-        enrollment_date || new Date().toISOString().split('T')[0], 'active'
+        id, firstName, lastName, email, phone || '',
+        birthDate || null, gender || 'male', address || '',
+        registrationDate || new Date().toISOString().split('T')[0], 'active'
     ];
 
     let connection;
