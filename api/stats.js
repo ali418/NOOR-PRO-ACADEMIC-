@@ -45,26 +45,22 @@ router.get('/', async (req, res) => {
 
         const queries = {
             students: 'SELECT COUNT(*) as count FROM students',
-            teachers: 'SELECT COUNT(*) as count FROM teachers',
             courses: 'SELECT COUNT(*) as count FROM courses',
             enrollments: 'SELECT COUNT(*) as count FROM enrollments'
         };
 
         const [
             [studentsResult],
-            [teachersResult],
             [coursesResult],
             [enrollmentsResult]
         ] = await Promise.all([
             connection.execute(queries.students),
-            connection.execute(queries.teachers),
             connection.execute(queries.courses),
             connection.execute(queries.enrollments)
         ]);
 
         const stats = {
             students: studentsResult[0].count,
-            teachers: teachersResult[0].count,
             courses: coursesResult[0].count,
             enrollments: enrollmentsResult[0].count
         };
@@ -73,7 +69,6 @@ router.get('/', async (req, res) => {
 
         res.json({
             students: stats.students,
-            teachers: stats.teachers,
             courses: stats.courses,
             successRate: successRate
         });
