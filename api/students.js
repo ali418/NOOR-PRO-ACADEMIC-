@@ -88,13 +88,13 @@ router.post('/', async (req, res) => {
         INSERT INTO students (
             student_id, first_name, last_name, email, phone,
             date_of_birth, gender, address, enrollment_date, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
         student_id, first_name, last_name, email, phone || '',
-        date_of_birth || null, gender || 'male',
-        enrollment_date || new Date().toISOString().split('T')[0]
+        date_of_birth || null, gender || 'male', address || '',
+        enrollment_date || new Date().toISOString().split('T')[0], 'active'
     ];
 
     let connection;
