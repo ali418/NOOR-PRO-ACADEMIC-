@@ -1,39 +1,12 @@
 -- 002_courses_category_fk.sql
--- إضافة عمود الربط بالقسم إلى جدول الكورسات وربط المفتاح الخارجي
+-- Add category foreign key to courses table.
 
-DELIMITER $$
-CREATE PROCEDURE AddColumnAndForeignKeyIfNotExists()
-BEGIN
-    -- Add the column if it does not exist
-    IF NOT EXISTS(
-        SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE table_schema = DATABASE() AND table_name = 'courses' AND column_name = 'category_id'
-    ) THEN
-        ALTER TABLE courses ADD COLUMN category_id INT DEFAULT NULL;
-    END IF;
+-- Note: This simplified script assumes it is run on a fresh database.
 
-    -- Add the foreign key if it does not exist
-    IF NOT EXISTS(
-        SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-        WHERE constraint_schema = DATABASE() AND table_name = 'courses' AND constraint_name = 'fk_courses_category'
-    ) THEN
-        ALTER TABLE courses 
-          ADD CONSTRAINT fk_courses_category 
-          FOREIGN KEY (category_id) REFERENCES course_categories(id) ON DELETE SET NULL;
-    END IF;
+ALTER TABLE courses ADD COLUMN category_id INT DEFAULT NULL;
 
-    -- Add the index if it does not exist
-    IF NOT EXISTS(
-        SELECT * FROM INFORMATION_SCHEMA.STATISTICS
-        WHERE table_schema = DATABASE() AND table_name = 'courses' AND index_name = 'idx_courses_category_id'
-    ) THEN
-        CREATE INDEX idx_courses_category_id ON courses(category_id);
-    END IF;
-END$$
-DELIMITER ;
+ALTER TABLE courses 
+  ADD CONSTRAINT fk_courses_category 
+  FOREIGN KEY (category_id) REFERENCES course_categories(id) ON DELETE SET NULL;
 
--- Execute the procedure
-CALL AddColumnAndForeignKeyIfNotExists();
-
--- Drop the procedure after use
-DROP PROCEDURE AddColumnAndForeignKeyIfNotExists;
+CREATE INDEX IF NOT EXISTS idx_courses_category_id ON courses(category_id);

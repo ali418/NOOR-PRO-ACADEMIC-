@@ -1,7 +1,6 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
 
 // Resolve database configuration from env vars or DATABASE_URL
 function resolveDbConfig() {
@@ -99,28 +98,6 @@ async function ensureMySqlEnrollmentTable(conn) {
   }
 }
 
-// Fallback JSON storage when DB is unavailable
-const fallbackPath = path.join(__dirname, '..', 'enrollment-requests.json');
-
-function readFallback() {
-  try {
-    if (!fs.existsSync(fallbackPath)) return [];
-    const data = fs.readFileSync(fallbackPath, 'utf8');
-    return JSON.parse(data);
-  } catch (e) {
-    return [];
-  }
-}
-
-function writeFallback(items) {
-  try {
-    fs.writeFileSync(fallbackPath, JSON.stringify(items, null, 2), 'utf8');
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
 function mapRowToEnrollment(row) {
   let paymentDetails = {};
   try {
@@ -154,97 +131,22 @@ function mapRowToEnrollment(row) {
   };
 }
 
-// ---------- SQLite helpers (fallback persistence) ----------
-const sqliteDbPath = path.join(__dirname, '..', 'database.db');
-function getSqliteDb() {
-  return new sqlite3.Database(sqliteDbPath);
-}
-
-function ensureSqliteEnrollmentTable(db) {
-  const ddl = `
-    CREATE TABLE IF NOT EXISTS enrollment_requests (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      student_name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      course_id TEXT NOT NULL,
-      course_name TEXT NOT NULL,
-      course_price REAL,
-      payment_method TEXT,
-      payment_details TEXT,
-      receipt_file TEXT,
-      status TEXT NOT NULL DEFAULT 'pending',
-      request_number TEXT,
-      submission_date TEXT DEFAULT (datetime('now')),
-      approval_date TEXT,
-      notes TEXT,
-      welcome_message TEXT,
-      whatsapp_link TEXT,
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now'))
-    )
-  `;
-  return new Promise((resolve, reject) => {
-    db.run(ddl, (err) => {
-      if (err) reject(err); else resolve(true);
-    });
-  });
-}
-
-function sqliteAll(sql, params = []) {
-  const db = getSqliteDb();
-  return new Promise(async (resolve, reject) => {
-    try {
-      await ensureSqliteEnrollmentTable(db);
-      db.all(sql, params, (err, rows) => {
-        db.close();
-        if (err) reject(err); else resolve(rows);
-      });
-    } catch (e) {
-      db.close();
-      reject(e);
-    }
-  });
-}
-
-function sqliteRun(sql, params = []) {
-  const db = getSqliteDb();
-  return new Promise(async (resolve, reject) => {
-    try {
-      await ensureSqliteEnrollmentTable(db);
-      db.run(sql, params, function(err) {
-        db.close();
-        if (err) reject(err); else resolve({ lastID: this.lastID, changes: this.changes });
-      });
-    } catch (e) {
-      db.close();
-      reject(e);
-    }
-  });
-}
-
 // GET /api/enrollments
 async function getEnrollments(req, res) {
+  let conn;
   try {
-    const conn = await createConnection();
+    conn = await createConnection();
     await ensureMySqlEnrollmentTable(conn);
     const [rows] = await conn.execute(
       'SELECT * FROM enrollment_requests ORDER BY submission_date DESC'
     );
-    await conn.end();
     const data = rows.map(mapRowToEnrollment);
-    return res.json({ success: true, message: 'تم جلب البيانات (MySQL)', data });
+    return res.json({ success: true, message: 'تم جلب البيانات بنجاح', data });
   } catch (error) {
-    // Fallback to SQLite
-    try {
-      const rows = await sqliteAll('SELECT * FROM enrollment_requests ORDER BY submission_date DESC');
-      const data = rows.map(mapRowToEnrollment);
-      return res.json({ success: true, message: 'تم جلب البيانات (SQLite)', data });
-    } catch (e) {
-      // Fallback to file
-      const items = readFallback();
-      return res.json({ success: true, message: 'تم جلب البيانات من التخزين المؤقت', data: items });
-    }
+    console.error('Error fetching enrollments:', error);
+    return res.status(500).json({ success: false, message: 'حدث خطأ في الخادم أثناء جلب البيانات' });
+  } finally {
+    if (conn) await conn.end();
   }
 }
 
@@ -287,18 +189,20 @@ async function insertEnrollment(conn, payload) {
 async function postEnrollments(req, res) {
   const body = req.body || {};
   const action = body.action;
+  let conn;
 
-  if (action === 'update_status') {
-    const id = body.id;
-    const status = body.status;
-    const additionalData = body.additionalData || {};
-    if (!id || !status) {
-      return res.status(400).json({ success: false, message: 'المعرف والحالة مطلوبة' });
-    }
-    // Try DB first
-    try {
-      const conn = await createConnection();
-      await ensureMySqlEnrollmentTable(conn);
+  try {
+    conn = await createConnection();
+    await ensureMySqlEnrollmentTable(conn);
+
+    if (action === 'update_status') {
+      const id = body.id;
+      const status = body.status;
+      const additionalData = body.additionalData || {};
+      if (!id || !status) {
+        return res.status(400).json({ success: false, message: 'المعرف والحالة مطلوبة' });
+      }
+      
       const fields = ['status = ?'];
       const params = [status];
       if (additionalData.approvalDate) {
@@ -314,146 +218,61 @@ async function postEnrollments(req, res) {
         params.push(additionalData.whatsappLink);
       }
       if (additionalData.notes) {
-        // store notes JSON or text
         fields.push('notes = ?');
         params.push(typeof additionalData.notes === 'object' ? JSON.stringify(additionalData.notes) : additionalData.notes);
       }
       params.push(id);
+
       await conn.execute(`UPDATE enrollment_requests SET ${fields.join(', ')} WHERE id = ?`, params);
-      await conn.end();
-      return res.json({ success: true, message: 'تم تحديث الحالة (MySQL)' });
-    } catch (error) {
-      // Fallback to SQLite
+      return res.json({ success: true, message: 'تم تحديث الحالة بنجاح' });
+
+    } else {
+      // Add enrollment
+      const payload = normalizeIncomingEnrollment(body);
+
+      let receiptPath = null;
       try {
-        const fields = ['status = ?'];
-        const params = [status];
-        if (additionalData.approvalDate) { fields.push('approval_date = ?'); params.push(additionalData.approvalDate); }
-        if (additionalData.welcomeMessage) { fields.push('welcome_message = ?'); params.push(additionalData.welcomeMessage); }
-        if (additionalData.whatsappLink) { fields.push('whatsapp_link = ?'); params.push(additionalData.whatsappLink); }
-        if (additionalData.notes) { fields.push('notes = ?'); params.push(typeof additionalData.notes === 'object' ? JSON.stringify(additionalData.notes) : additionalData.notes); }
-        params.push(id);
-        const result = await sqliteRun(`UPDATE enrollment_requests SET ${fields.join(', ')}, updated_at = datetime('now') WHERE id = ?`, params);
-        if (result.changes > 0) {
-          return res.json({ success: true, message: 'تم تحديث الحالة (SQLite)' });
+        if (req.files && req.files.receiptFile) {
+          const file = req.files.receiptFile;
+          const ext = path.extname(file.name).toLowerCase();
+          const allowed = ['.jpg', '.jpeg', '.png', '.pdf'];
+          if (!allowed.includes(ext)) {
+            return res.status(400).json({ success: false, message: 'صيغة الملف غير مدعومة' });
+          }
+          const safeName = `receipt_${Date.now()}_${Math.floor(Math.random()*10000)}${ext}`;
+          const uploadDir = path.join(__dirname, '..', 'uploads', 'receipts');
+          fs.mkdirSync(uploadDir, { recursive: true });
+          const fullPath = path.join(uploadDir, safeName);
+          await file.mv(fullPath);
+          receiptPath = `/uploads/receipts/${safeName}`;
         }
-      } catch (sqliteErr) {
-        // Fallback to file
-        const items = readFallback();
-        const idx = items.findIndex(i => String(i.id) === String(id));
-        if (idx !== -1) {
-          items[idx].status = status;
-          items[idx].approvalDate = additionalData.approvalDate || items[idx].approvalDate || null;
-          items[idx].welcomeMessage = additionalData.welcomeMessage || items[idx].welcomeMessage || null;
-          items[idx].whatsappLink = additionalData.whatsappLink || items[idx].whatsappLink || null;
-          if (additionalData.notes) items[idx].notes = additionalData.notes;
-          writeFallback(items);
-          return res.json({ success: true, message: 'تم تحديث الحالة (تخزين مؤقت)' });
-        }
-        return res.status(404).json({ success: false, message: 'لم يتم العثور على الطلب' });
+      } catch (fileErr) {
+        console.error('خطأ في رفع الإيصال:', fileErr.message);
       }
-    }
-  }
 
-  // Add enrollment
-  try {
-    const payload = normalizeIncomingEnrollment(body);
+      const course_price = body.coursePrice || (payload.notes && payload.notes.coursePrice) || null;
+      const payment_method = body.paymentMethod || (payload.notes && payload.notes.paymentMethod) || null;
+      const payment_details = {
+        amount: body.paymentAmount || null,
+        transactionId: body.transactionId || null
+      };
 
-    // معالجة صورة الإيصال (إن وجدت)
-    let receiptPath = null;
-    try {
-      if (req.files && req.files.receiptFile) {
-        const file = req.files.receiptFile;
-        const ext = path.extname(file.name).toLowerCase();
-        const allowed = ['.jpg', '.jpeg', '.png', '.pdf'];
-        if (!allowed.includes(ext)) {
-          return res.status(400).json({ success: false, message: 'صيغة الملف غير مدعومة' });
-        }
-        const safeName = `receipt_${Date.now()}_${Math.floor(Math.random()*10000)}${ext}`;
-        const uploadDir = path.join(__dirname, '..', 'uploads', 'receipts');
-        fs.mkdirSync(uploadDir, { recursive: true });
-        const fullPath = path.join(uploadDir, safeName);
-        await file.mv(fullPath);
-        receiptPath = `/uploads/receipts/${safeName}`;
-      }
-    } catch (fileErr) {
-      // إذا فشل رفع الملف، لا توقف العملية بالكامل
-      console.error('خطأ في رفع الإيصال:', fileErr.message);
-    }
+      const dbPayload = {
+        ...payload,
+        course_price,
+        payment_method,
+        payment_details,
+        receipt_file: receiptPath
+      };
 
-    // تجميع معلومات إضافية للإدخال
-    const course_price = body.coursePrice || (payload.notes && payload.notes.coursePrice) || null;
-    const payment_method = body.paymentMethod || (payload.notes && payload.notes.paymentMethod) || null;
-    const payment_details = {
-      amount: body.paymentAmount || null,
-      transactionId: body.transactionId || null
-    };
-
-    const dbPayload = {
-      ...payload,
-      course_price,
-      payment_method,
-      payment_details,
-      receipt_file: receiptPath
-    };
-
-    try {
-      const conn = await createConnection();
-      await ensureMySqlEnrollmentTable(conn);
       const { id, request_number } = await insertEnrollment(conn, dbPayload);
-      await conn.end();
-      return res.json({ success: true, message: 'تم إضافة الطلب (MySQL)', id, request_number, receipt_file: receiptPath });
-    } catch (dbErr) {
-      // Fallback to SQLite
-      try {
-        const requestNumber = 'REQ-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-        const submissionDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        const notes = dbPayload.notes ? JSON.stringify(dbPayload.notes) : null;
-        const paymentDetails = dbPayload.payment_details ? JSON.stringify(dbPayload.payment_details) : null;
-        const sql = `INSERT INTO enrollment_requests (
-          student_name, email, phone, course_id, course_name,
-          course_price, payment_method, payment_details, receipt_file,
-          status, request_number, submission_date, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        const params = [
-          dbPayload.student_name,
-          dbPayload.email,
-          dbPayload.phone,
-          String(dbPayload.course_id),
-          dbPayload.course_name,
-          dbPayload.course_price || null,
-          dbPayload.payment_method || null,
-          paymentDetails,
-          dbPayload.receipt_file || null,
-          dbPayload.status || 'pending',
-          requestNumber,
-          submissionDate,
-          notes
-        ];
-        const result = await sqliteRun(sql, params);
-        return res.json({ success: true, message: 'تم إضافة الطلب (SQLite)', id: result.lastID, request_number: requestNumber, receipt_file: receiptPath });
-      } catch (sqliteErr) {
-        // Fallback to file
-        const items = readFallback();
-        const nextId = items.length > 0 ? Math.max(...items.map(i => parseInt(i.id))) + 1 : 1;
-        const entry = {
-          id: String(nextId),
-          studentName: payload.student_name,
-          email: payload.email,
-          phone: payload.phone,
-          courseId: String(payload.course_id),
-          courseName: payload.course_name,
-          status: payload.status || 'pending',
-          submissionDate: new Date().toISOString(),
-          notes: payload.notes || null,
-          receiptFile: receiptPath || null
-        };
-        items.push(entry);
-        writeFallback(items);
-        return res.json({ success: true, message: 'تم إضافة الطلب (تخزين مؤقت)', id: entry.id, receipt_file: receiptPath });
-      }
+      return res.json({ success: true, message: 'تم إضافة الطلب بنجاح', id, request_number, receipt_file: receiptPath });
     }
   } catch (e) {
-    return res.status(400).json({ success: false, message: 'بيانات غير صالحة: ' + e.message });
+    console.error('Error in postEnrollments:', e);
+    return res.status(500).json({ success: false, message: 'حدث خطأ في الخادم: ' + e.message });
+  } finally {
+    if (conn) await conn.end();
   }
 }
 
@@ -463,29 +282,22 @@ async function deleteEnrollment(req, res) {
   if (!id) {
     return res.status(400).json({ success: false, message: 'معرف الطلب مطلوب' });
   }
+  let conn;
   try {
-    const conn = await createConnection();
+    conn = await createConnection();
     await ensureMySqlEnrollmentTable(conn);
-    await conn.execute('DELETE FROM enrollment_requests WHERE id = ?', [id]);
-    await conn.end();
-    return res.json({ success: true, message: 'تم حذف الطلب (MySQL)' });
-  } catch (error) {
-    // Fallback to SQLite
-    try {
-      const result = await sqliteRun('DELETE FROM enrollment_requests WHERE id = ?', [id]);
-      if (result.changes > 0) {
-        return res.json({ success: true, message: 'تم حذف الطلب (SQLite)' });
-      }
-    } catch (sqliteErr) {
-      const items = readFallback();
-      const idx = items.findIndex(i => String(i.id) === String(id));
-      if (idx !== -1) {
-        const deleted = items.splice(idx, 1);
-        writeFallback(items);
-        return res.json({ success: true, message: 'تم حذف الطلب (تخزين مؤقت)', data: deleted[0] });
-      }
+    const [result] = await conn.execute('DELETE FROM enrollment_requests WHERE id = ?', [id]);
+    
+    if (result.affectedRows > 0) {
+        return res.json({ success: true, message: 'تم حذف الطلب بنجاح' });
+    } else {
+        return res.status(404).json({ success: false, message: 'لم يتم العثور على الطلب' });
     }
-    return res.status(404).json({ success: false, message: 'لم يتم العثور على الطلب' });
+  } catch (error) {
+    console.error('Error deleting enrollment:', error);
+    return res.status(500).json({ success: false, message: 'حدث خطأ في الخادم أثناء حذف الطلب' });
+  } finally {
+    if (conn) await conn.end();
   }
 }
 
