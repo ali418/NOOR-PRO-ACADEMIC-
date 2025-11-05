@@ -230,6 +230,14 @@ async function postEnrollments(req, res) {
       // Add enrollment
       const payload = normalizeIncomingEnrollment(body);
 
+      // --- SECURITY FIX: Fetch course price from the database ---
+      const [courseRows] = await conn.execute('SELECT price FROM courses WHERE id = ?', [payload.course_id]);
+      if (courseRows.length === 0) {
+        return res.status(404).json({ success: false, message: 'لم يتم العثور على الدورة التدريبية المحددة' });
+      }
+      const real_course_price = courseRows[0].price;
+      // --- END SECURITY FIX ---
+
       let receiptPath = null;
       try {
         if (req.files && req.files.receiptFile) {
@@ -250,7 +258,6 @@ async function postEnrollments(req, res) {
         console.error('خطأ في رفع الإيصال:', fileErr.message);
       }
 
-      const course_price = body.coursePrice || (payload.notes && payload.notes.coursePrice) || null;
       const payment_method = body.paymentMethod || (payload.notes && payload.notes.paymentMethod) || null;
       const payment_details = {
         amount: body.paymentAmount || null,
@@ -259,7 +266,7 @@ async function postEnrollments(req, res) {
 
       const dbPayload = {
         ...payload,
-        course_price,
+        course_price: real_course_price, // Use the price from the database
         payment_method,
         payment_details,
         receipt_file: receiptPath
