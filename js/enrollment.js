@@ -467,8 +467,9 @@ class EnrollmentSystem {
 
         // Course information
         if (this.courseData) {
-            this.enrollmentData.courseId = this.courseData.id; // Add courseId to the payload
-            this.enrollmentData.courseTitle = this.courseData.title;
+            const urlParams = new URLSearchParams(window.location.search);
+            this.enrollmentData.courseId = urlParams.get('course'); // Use courseId from URL
+            this.enrollmentData.course_name = this.courseData.title; // Use course_name
             this.enrollmentData.coursePrice = this.courseData.price;
         }
 
