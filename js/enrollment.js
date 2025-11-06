@@ -467,6 +467,7 @@ class EnrollmentSystem {
 
         // Course information
         if (this.courseData) {
+            this.enrollmentData.courseId = this.courseData.id; // Add courseId to the payload
             this.enrollmentData.courseTitle = this.courseData.title;
             this.enrollmentData.coursePrice = this.courseData.price;
         }
