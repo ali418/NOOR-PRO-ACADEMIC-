@@ -423,10 +423,6 @@ class EnrollmentSystem {
 
             if (result && result.success) {
                 this.showSuccessMessage();
-                // Redirect after success
-                setTimeout(() => {
-                    window.location.href = 'profile.html';
-                }, 3000);
             } else {
                 this.showNotification(result.message || 'حدث خطأ في التسجيل', 'error');
             }
@@ -486,10 +482,9 @@ class EnrollmentSystem {
         successDiv.innerHTML = `
             <div class="success-content">
                 <i class="fas fa-check-circle"></i>
-                <h3>تم التسجيل بنجاح!</h3>
-                <p>شكراً لك على التسجيل في الدورة. سيتم التواصل معك قريباً لتأكيد التسجيل.</p>
+                <h3>تم إرسال بياناتك بنجاح!</h3>
+                <p>ستصلك رسالة ترحيبية عبر البريد الإلكتروني وواتساب تحتوي على رابط مجموعة واتساب.</p>
                 <div class="success-actions">
-                    <a href="profile.html" class="btn btn-primary">الذهاب إلى الملف الشخصي</a>
                     <a href="courses.html" class="btn btn-secondary">تصفح المزيد من الدورات</a>
                 </div>
             </div>
