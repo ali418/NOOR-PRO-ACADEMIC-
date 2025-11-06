@@ -452,8 +452,8 @@ class EnrollmentSystem {
 
     collectFormData() {
         // Personal information
-        this.enrollmentData.fullName = document.getElementById('fullName')?.value || '';
-        this.enrollmentData.email = document.getElementById('email')?.value || '';
+        this.enrollmentData.fullName = document.getElementById('fullName')?.value || this.enrollmentData.userName || '';
+        this.enrollmentData.email = document.getElementById('email')?.value || this.enrollmentData.userEmail || '';
         this.enrollmentData.phone = document.getElementById('phone')?.value || '';
         this.enrollmentData.address = document.getElementById('address')?.value || '';
         this.enrollmentData.birthDate = document.getElementById('birthDate')?.value || '';
