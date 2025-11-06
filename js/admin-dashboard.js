@@ -422,6 +422,10 @@ class AdminDashboard {
         try {
             await this.createStudentFromEnrollment(this.currentEnrollment);
             this.showNotification('تم إضافة الطالب إلى قائمة الطلاب بنجاح', 'success');
+
+            // Automatically trigger WhatsApp message after successful student creation
+            this.sendWhatsAppMessage();
+
         } catch (e) {
             console.warn('Failed to add student to DB:', e.message);
             this.showNotification('تم القبول، لكن حدث خطأ في إضافة الطالب لقاعدة البيانات', 'error');
@@ -457,15 +461,15 @@ class AdminDashboard {
         const enrollment_date = new Date().toISOString().split('T')[0];
 
         const payload = {
-            student_id,
-            first_name,
-            last_name,
+            id: student_id, // Use id instead of student_id
+            firstName: first_name, // Use firstName instead of first_name
+            lastName: last_name, // Use lastName instead of last_name
             email: String(enrollment.email || ''),
             phone: String(enrollment.phone || ''),
-            date_of_birth: null,
+            birthDate: null,
             gender: 'male',
             address: '',
-            enrollment_date
+            registrationDate: enrollment_date
         };
 
         const resp = await fetch('/api/students', {
@@ -728,22 +732,13 @@ class AdminDashboard {
         };
     }
 
-    saveEnrollments() {
-        try {
-            localStorage.setItem('noorProEnrollments', JSON.stringify(this.enrollments));
-            console.log('Enrollments saved to localStorage');
-        } catch (error) {
-            console.error('Error saving enrollments:', error);
-        }
-    }
-
     sendWelcomeMessage(enrollment) {
         console.log('Sending welcome message to:', enrollment.studentName);
         console.log('Message:', enrollment.welcomeMessage);
         console.log('WhatsApp Link:', enrollment.whatsappLink);
     }
 
-    closeModal(modalId) {
+    sendWhatsAppMessage() {\n        if (!this.currentEnrollment) {\n            this.showNotification(\'لا يوجد طلب محدد لإرسال رسالة واتساب.\', \'error\');\n            return;\n        }\n\n        const welcomeMessageText = document.getElementById(\'welcomeMessage\')?.value || \'\';\n        const studentName = this.currentEnrollment.studentName;\n        const studentPhone = this.currentEnrollment.phone;\n\n        if (!studentPhone) {\n            this.showNotification(\'رقم هاتف الطالب غير متوفر.\', \'error\');\n            return;\n        }\n\n        // Replace placeholder for student name if not already done\n        const finalMessage = welcomeMessageText.replace(/\\\[STUDENT_NAME\\\]|undefined/gi, studentName);\n\n        if (typeof WelcomeSystem !== \'undefined\') {\n            const welcomeSystem = new WelcomeSystem();\n            const whatsappUrl = welcomeSystem.createWhatsAppMessage(finalMessage, studentPhone);\n            \n            // Open WhatsApp link in a new tab\n            window.open(whatsappUrl, \'_blank\');\n            \n            this.showNotification(\'يتم فتح واتساب لإرسال الرسالة...\', \'info\');\n        } else {\n            this.showNotification(\'نظام الترحيب غير متاح.\', \'error\');\n        }\n    }\n\n    closeModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'none';

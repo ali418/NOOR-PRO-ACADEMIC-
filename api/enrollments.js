@@ -207,7 +207,8 @@ async function postEnrollments(req, res) {
       const params = [status];
       if (additionalData.approvalDate) {
         fields.push('approval_date = ?');
-        params.push(additionalData.approvalDate);
+        const formattedDate = new Date(additionalData.approvalDate).toISOString().slice(0, 19).replace('T', ' ');
+        params.push(formattedDate);
       }
       if (additionalData.welcomeMessage) {
         fields.push('welcome_message = ?');
