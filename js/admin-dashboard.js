@@ -411,7 +411,6 @@ class AdminDashboard {
         // Record a student notification in localStorage for profile page
         this.addStudentNotification(this.currentEnrollment, welcomeMessage, whatsappLink);
 
-        this.saveEnrollments();
         this.updateStats();
         this.displayEnrollments();
 
