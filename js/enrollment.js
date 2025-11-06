@@ -477,6 +477,16 @@ class EnrollmentSystem {
     }
 
     showSuccessMessage() {
+        // Hide the form and step indicators
+        const form = document.getElementById('enrollmentForm');
+        if (form) {
+            form.style.display = 'none';
+        }
+        const stepIndicator = document.querySelector('.step-indicator');
+        if (stepIndicator) {
+            stepIndicator.style.display = 'none';
+        }
+
         const successDiv = document.createElement('div');
         successDiv.className = 'success-message';
         successDiv.innerHTML = `
