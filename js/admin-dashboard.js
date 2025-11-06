@@ -738,7 +738,38 @@ class AdminDashboard {
         console.log('WhatsApp Link:', enrollment.whatsappLink);
     }
 
-    sendWhatsAppMessage() {\n        if (!this.currentEnrollment) {\n            this.showNotification(\'لا يوجد طلب محدد لإرسال رسالة واتساب.\', \'error\');\n            return;\n        }\n\n        const welcomeMessageText = document.getElementById(\'welcomeMessage\')?.value || \'\';\n        const studentName = this.currentEnrollment.studentName;\n        const studentPhone = this.currentEnrollment.phone;\n\n        if (!studentPhone) {\n            this.showNotification(\'رقم هاتف الطالب غير متوفر.\', \'error\');\n            return;\n        }\n\n        // Replace placeholder for student name if not already done\n        const finalMessage = welcomeMessageText.replace(/\\\[STUDENT_NAME\\\]|undefined/gi, studentName);\n\n        if (typeof WelcomeSystem !== \'undefined\') {\n            const welcomeSystem = new WelcomeSystem();\n            const whatsappUrl = welcomeSystem.createWhatsAppMessage(finalMessage, studentPhone);\n            \n            // Open WhatsApp link in a new tab\n            window.open(whatsappUrl, \'_blank\');\n            \n            this.showNotification(\'يتم فتح واتساب لإرسال الرسالة...\', \'info\');\n        } else {\n            this.showNotification(\'نظام الترحيب غير متاح.\', \'error\');\n        }\n    }\n\n    closeModal(modalId) {
+    sendWhatsAppMessage() {
+        if (!this.currentEnrollment) {
+            this.showNotification('لا يوجد طلب محدد لإرسال رسالة واتساب.', 'error');
+            return;
+        }
+
+        const welcomeMessageText = document.getElementById('welcomeMessage')?.value || '';
+        const studentName = this.currentEnrollment.studentName;
+        const studentPhone = this.currentEnrollment.phone;
+
+        if (!studentPhone) {
+            this.showNotification('رقم هاتف الطالب غير متوفر.', 'error');
+            return;
+        }
+
+        // Replace placeholder for student name if not already done
+        const finalMessage = welcomeMessageText.replace(/\[STUDENT_NAME\]|undefined/gi, studentName);
+
+        if (typeof WelcomeSystem !== 'undefined') {
+            const welcomeSystem = new WelcomeSystem();
+            const whatsappUrl = welcomeSystem.createWhatsAppMessage(finalMessage, studentPhone);
+            
+            // Open WhatsApp link in a new tab
+            window.open(whatsappUrl, '_blank');
+            
+            this.showNotification('يتم فتح واتساب لإرسال الرسالة...', 'info');
+        } else {
+            this.showNotification('نظام الترحيب غير متاح.', 'error');
+        }
+    }
+
+    closeModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'none';
