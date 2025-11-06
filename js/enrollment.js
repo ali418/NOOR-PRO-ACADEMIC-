@@ -8,7 +8,7 @@ class EnrollmentSystem {
         this.enrollmentData = {};
         this.currentLanguage = 'ar';
         // استخدام نفس الأصل لواجهات API افتراضياً
-        this.apiBase = '';
+        this.apiBase = 'https://nooracademic.up.railway.app';
         
         this.init();
     }
