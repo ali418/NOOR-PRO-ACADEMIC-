@@ -235,7 +235,19 @@ async function postEnrollments(req, res) {
       if (courseRows.length === 0) {
         return res.status(404).json({ success: false, message: 'لم يتم العثور على الدورة التدريبية المحددة' });
       }
-      const real_course_price = courseRows[0].price;
+      let real_course_price = courseRows[0].price;
+
+      // Sanitize the price to extract only the number
+      if (typeof real_course_price === 'string') {
+        const priceMatch = real_course_price.match(/(\d+(\.\d+)?)/);
+        if (priceMatch) {
+          real_course_price = parseFloat(priceMatch[1]);
+        } else {
+          real_course_price = 0; // Or handle as an error
+        }
+      }
+
+
       // --- END SECURITY FIX ---
 
       let receiptPath = null;
