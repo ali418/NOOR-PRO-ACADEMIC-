@@ -376,25 +376,19 @@ async function updateCourse(req, res) {
             });
         }
         
-        // Resolve category_id from provided input or textual category
-        let resolvedCategoryId = category_id || null;
-        if (!resolvedCategoryId && category) {
-            try {
-                const [catRows] = await connection.execute(
-                    'SELECT id FROM course_categories WHERE LOWER(category_name) = LOWER(?) OR LOWER(category_name_ar) = LOWER(?) LIMIT 1',
-                    [category, category]
-                );
-                if (catRows.length > 0) {
-                    resolvedCategoryId = catRows[0].id;
-                }
-            } catch (e) {
-                // ignore mapping error, keep null
+        // Sanitize price to extract only the numerical value
+        let sanitizedPrice = '0';
+        if (price) {
+            // This regex extracts the first number (integer or decimal) from the string
+            const priceMatch = String(price).match(/(\d+(\.\d+)?)/);
+            if (priceMatch) {
+                sanitizedPrice = priceMatch[1];
             }
         }
 
-        const hasCategoryIdUpdate = await columnExists(connection, 'courses', 'category_id');
+        const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
         let query, params;
-        if (hasCategoryIdUpdate) {
+        if (hasCategoryId) {
             // تحديث course_name بالإضافة إلى title
             query = `UPDATE courses SET 
                 course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
