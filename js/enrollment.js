@@ -422,7 +422,8 @@ class EnrollmentSystem {
             const result = await response.json();
 
             if (result && result.success) {
-                this.showSuccessMessage();
+                // Redirect to the confirmation page
+                window.location.href = 'enrollment-confirmation.html';
             } else {
                 this.showNotification(result.message || 'حدث خطأ في التسجيل', 'error');
             }
