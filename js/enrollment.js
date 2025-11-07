@@ -2,6 +2,8 @@ class EnrollmentSystem {
     constructor() {
         this.enrollmentData = {};
         this.apiBase = 'https://nooracademic.up.railway.app';
+        this.currentStep = 1;
+        this.selectedPaymentMethod = null;
         
         this.init();
     }
@@ -45,13 +47,141 @@ class EnrollmentSystem {
     }
 
     setupEventListeners() {
+        // منع إرسال النموذج المباشر
         const enrollmentForm = document.getElementById('enrollmentForm');
         if (enrollmentForm) {
-            enrollmentForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.submitEnrollment();
-            });
+            enrollmentForm.addEventListener('submit', (e) => e.preventDefault());
         }
+
+        // أزرار التنقل بين الخطوات
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (nextBtn) nextBtn.addEventListener('click', () => this.nextStep());
+        if (prevBtn) prevBtn.addEventListener('click', () => this.prevStep());
+        if (submitBtn) submitBtn.addEventListener('click', () => this.submitEnrollment());
+
+        // اختيار طريقة الدفع
+        const paymentTiles = document.querySelectorAll('.payment-method');
+        paymentTiles.forEach(tile => {
+            tile.addEventListener('click', () => {
+                this.selectPaymentMethod(tile.dataset.method);
+            });
+        });
+    }
+
+    showStep(step) {
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach(s => {
+            const isTarget = s.getAttribute('data-step') === String(step);
+            s.style.display = isTarget ? 'block' : 'none';
+            s.classList.toggle('active', isTarget);
+        });
+
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (prevBtn) prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
+        if (nextBtn) nextBtn.style.display = step < 3 ? 'inline-block' : 'none';
+        if (submitBtn) submitBtn.style.display = step === 3 ? 'inline-block' : 'none';
+
+        this.currentStep = step;
+        if (step === 3) this.updateReviewBlock();
+    }
+
+    nextStep() {
+        if (this.currentStep === 1) {
+            // تحقق من بيانات الطالب
+            const fullName = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+
+            if (!fullName || !phone || !address) {
+                this.showToast('أكمل بياناتك الأساسية أولاً', 'error');
+                return;
+            }
+
+            this.enrollmentData.fullName = fullName;
+            this.enrollmentData.phone = phone;
+            this.enrollmentData.address = address;
+
+            this.showStep(2);
+        } else if (this.currentStep === 2) {
+            if (!this.selectedPaymentMethod) {
+                this.showToast('اختر طريقة الدفع للاستمرار', 'error');
+                return;
+            }
+
+            // حفظ تفاصيل الدفع
+            const amount = parseFloat(document.getElementById('paymentAmount')?.value || '0');
+            const transactionIdEl = document.getElementById('transactionId');
+            const transactionId = transactionIdEl && transactionIdEl.style.display !== 'none' ? (transactionIdEl.value || '') : '';
+
+            const paymentDetails = {
+                amount: isNaN(amount) ? 0 : amount,
+                transactionId: transactionId || undefined
+            };
+
+            // احفظ بصيغتين لضمان التوافق
+            this.enrollmentData.paymentMethod = this.selectedPaymentMethod;
+            this.enrollmentData.paymentDetails = paymentDetails;
+            this.enrollmentData.payment_method = this.selectedPaymentMethod;
+            this.enrollmentData.payment_details = paymentDetails;
+
+            this.showStep(3);
+        }
+    }
+
+    prevStep() {
+        if (this.currentStep > 1) {
+            this.showStep(this.currentStep - 1);
+        }
+    }
+
+    selectPaymentMethod(method) {
+        this.selectedPaymentMethod = method;
+        // تمييز العنصر المحدد بصرياً
+        document.querySelectorAll('.payment-method').forEach(el => {
+            el.classList.toggle('selected', el.dataset.method === method);
+        });
+
+        const details = document.getElementById('paymentDetails');
+        const txGroup = document.getElementById('transactionIdGroup');
+        if (details) details.style.display = 'block';
+
+        // عرض/إخفاء رقم المعاملة حسب الطريقة
+        const needsTransactionId = ['mobile-money','bank','areeba','amteen','bank-transfer'].includes(method);
+        if (txGroup) txGroup.style.display = needsTransactionId ? 'block' : 'none';
+    }
+
+    updateReviewBlock() {
+        const review = document.getElementById('reviewBlock');
+        if (!review) return;
+
+        const methodText = {
+            'mobile-money': 'موبايل موني',
+            'bank': 'بنكك',
+            'areeba': 'أريبا',
+            'amteen': 'أمتين',
+            'bank-transfer': 'تحويل بنكي',
+            'in-person': 'دفع مباشر'
+        }[this.selectedPaymentMethod] || this.selectedPaymentMethod || 'غير محدد';
+
+        const amount = this.enrollmentData.paymentDetails?.amount || 0;
+        const tx = this.enrollmentData.paymentDetails?.transactionId || '';
+
+        review.innerHTML = `
+            <div class="detail-item"><span class="detail-label">الاسم:</span> ${this.enrollmentData.fullName}</div>
+            <div class="detail-item"><span class="detail-label">الهاتف:</span> ${this.enrollmentData.phone}</div>
+            <div class="detail-item"><span class="detail-label">العنوان:</span> ${this.enrollmentData.address}</div>
+            <hr style="margin:10px 0;">
+            <div class="detail-item"><span class="detail-label">الدورة:</span> ${this.enrollmentData.courseName || ''}</div>
+            <div class="detail-item"><span class="detail-label">طريقة الدفع:</span> ${methodText}</div>
+            <div class="detail-item"><span class="detail-label">المبلغ:</span> ${amount} دولار</div>
+            ${tx ? `<div class="detail-item"><span class="detail-label">رقم العملية:</span> ${tx}</div>` : ''}
+        `;
     }
 
     loadCourseData() {
@@ -84,18 +214,17 @@ class EnrollmentSystem {
     submitEnrollment() {
         if (!this.checkUserAuthentication()) return;
 
-        const fullName = document.getElementById('fullName').value;
-        const phone = document.getElementById('phone').value;
-        const address = document.getElementById('address').value;
-
-        if (!fullName || !phone || !address) {
-            this.showToast('Please fill in all required fields.', 'error');
+        if (!this.enrollmentData.fullName || !this.enrollmentData.phone || !this.enrollmentData.address) {
+            this.showToast('أكمل بياناتك الأساسية أولاً', 'error');
+            this.showStep(1);
             return;
         }
 
-        this.enrollmentData.fullName = fullName;
-        this.enrollmentData.phone = phone;
-        this.enrollmentData.address = address;
+        if (!this.enrollmentData.paymentMethod) {
+            this.showToast('اختر طريقة الدفع أولاً', 'error');
+            this.showStep(2);
+            return;
+        }
 
         fetch(`${this.apiBase}/api/enrollments`, {
             method: 'POST',
@@ -109,12 +238,12 @@ class EnrollmentSystem {
             if (data.success) {
                 this.showSuccessMessage();
             } else {
-                this.showToast(data.message || 'Enrollment failed.', 'error');
+                this.showToast(data.message || 'فشل إرسال طلب التسجيل', 'error');
             }
         })
         .catch(error => {
             console.error('Error submitting enrollment:', error);
-            this.showToast('An error occurred. Please try again.', 'error');
+            this.showToast('حدث خطأ، حاول مرة أخرى', 'error');
         });
     }
 

@@ -698,17 +698,28 @@
                 return;
             }
 
-            // بطاقات مبسطة: عرض اسم الكورس فقط، والبطاقة كلها قابلة للنقر
-            const coursesHTML = courses.map(course => `
-                <div class="course-card" onclick="viewCourseDetails(${course.id})" style="cursor: pointer;">
+            // عرض كارد واحد يحوي قائمة بأسماء الكورسات تحت بعضها
+            const listItems = courses.map(course => `
+                <li class="course-name-item">
+                    <button class="course-name-btn" onclick="viewCourseDetails(${course.id})" title="${course.title}">
+                        <i class="fas fa-book"></i>
+                        <span>${course.title}</span>
+                    </button>
+                </li>
+            `).join('');
+
+            const coursesHTML = `
+                <div class="course-card" style="cursor: default;">
                     <div class="course-image" style="background: ${currentCategory.gradient}">
                         <i class="${currentCategory.icon}"></i>
                     </div>
                     <div class="course-content">
-                        <h3 class="course-title" style="margin-bottom: 0;">${course.title}</h3>
+                        <h3 class="course-title" style="margin-bottom: 10px;">أسماء المقررات المتاحة</h3>
+                        <ul class="course-name-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                            ${listItems}
+                        </ul>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
 
             grid.innerHTML = coursesHTML;
             showCourses();
