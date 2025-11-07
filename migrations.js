@@ -49,13 +49,21 @@ const loadMigrationFiles = () => {
   }
 };
 
-// تقسيم ملف SQL إلى أوامر منفصلة
+// تقسيم ملف SQL إلى أوامر منفصلة مع إزالة التعليقات
 const splitSqlCommands = (sqlContent) => {
-  // تقسيم الأوامر بناءً على الفاصل ";"
-  return sqlContent
+  if (!sqlContent || typeof sqlContent !== 'string') return [];
+  // إزالة تعليقات البلوك /* ... */
+  let cleaned = sqlContent.replace(/\/\*[\s\S]*?\*\//g, '');
+  // إزالة التعليقات أحادية السطر التي تبدأ بـ -- أو #
+  cleaned = cleaned
+    .split(/\r?\n/)
+    .filter(line => !/^\s*(--|#)/.test(line))
+    .join('\n');
+
+  return cleaned
     .split(';')
-    .map(command => command.trim())
-    .filter(command => command.length > 0);
+    .map(cmd => cmd.trim())
+    .filter(cmd => cmd.length > 0);
 };
 
 // استخراج إعدادات قاعدة البيانات من متغيرات البيئة أو DATABASE_URL
@@ -112,12 +120,71 @@ const createConnection = async () => {
   }
 };
 
-// تنفيذ أوامر SQL
+// التحقق مما إذا كان يجب تخطي الأمر لتجنب الازدواجية
+const shouldSkipCommand = async (connection, command) => {
+  const cmd = command.replace(/\s+/g, ' ').trim();
+
+  // CREATE INDEX idx_name ON table (...)
+  let m = cmd.match(/CREATE\s+INDEX\s+`?([A-Za-z0-9_]+)`?\s+ON\s+`?([A-Za-z0-9_]+)`?/i);
+  if (m) {
+    const indexName = m[1];
+    const tableName = m[2];
+    const [rows] = await connection.query(
+      'SELECT COUNT(*) AS cnt FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?',
+      [tableName, indexName]
+    );
+    return rows[0]?.cnt > 0;
+  }
+
+  // ALTER TABLE table ADD INDEX/KEY idx_name (...)
+  m = cmd.match(/ALTER\s+TABLE\s+`?([A-Za-z0-9_]+)`?\s+ADD\s+(?:INDEX|KEY)\s+`?([A-Za-z0-9_]+)`?/i);
+  if (m) {
+    const tableName = m[1];
+    const indexName = m[2];
+    const [rows] = await connection.query(
+      'SELECT COUNT(*) AS cnt FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?',
+      [tableName, indexName]
+    );
+    return rows[0]?.cnt > 0;
+  }
+
+  // ALTER TABLE table ADD COLUMN column ...
+  m = cmd.match(/ALTER\s+TABLE\s+`?([A-Za-z0-9_]+)`?\s+ADD\s+COLUMN\s+`?([A-Za-z0-9_]+)`?/i);
+  if (m) {
+    const tableName = m[1];
+    const columnName = m[2];
+    const [rows] = await connection.query(
+      'SELECT COUNT(*) AS cnt FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?',
+      [tableName, columnName]
+    );
+    return rows[0]?.cnt > 0;
+  }
+
+  // ALTER TABLE table ADD CONSTRAINT fk_name FOREIGN KEY (...)
+  m = cmd.match(/ALTER\s+TABLE\s+`?([A-Za-z0-9_]+)`?\s+ADD\s+CONSTRAINT\s+`?([A-Za-z0-9_]+)`?\s+FOREIGN\s+KEY/i);
+  if (m) {
+    const tableName = m[1];
+    const constraintName = m[2];
+    const [rows] = await connection.query(
+      "SELECT COUNT(*) AS cnt FROM information_schema.table_constraints WHERE table_schema = DATABASE() AND table_name = ? AND constraint_name = ? AND constraint_type = 'FOREIGN KEY'",
+      [tableName, constraintName]
+    );
+    return rows[0]?.cnt > 0;
+  }
+
+  return false; // افتراضياً لا يتم التخطي
+};
+
+// تنفيذ أوامر SQL مع تخطي الأوامر المكررة
 const executeSqlCommands = async (connection, commands) => {
   for (const command of commands) {
     try {
+      if (await shouldSkipCommand(connection, command)) {
+        console.log('تم تخطي الأمر (موجود مسبقاً):', command.substring(0, 80) + '...');
+        continue;
+      }
       await connection.query(command);
-      console.log('تم تنفيذ الأمر بنجاح:', command.substring(0, 50) + '...');
+      console.log('تم تنفيذ الأمر بنجاح:', command.substring(0, 80) + '...');
     } catch (error) {
       console.error('خطأ في تنفيذ الأمر:', command.substring(0, 100));
       console.error('رسالة الخطأ:', error.message);
