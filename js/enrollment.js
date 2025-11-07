@@ -56,7 +56,8 @@ class EnrollmentSystem {
 
     loadCourseData() {
         const urlParams = new URLSearchParams(window.location.search);
-        const courseId = urlParams.get('courseId');
+        // دعم كلا المفتاحين: courseId و course لضمان التوافق الخلفي
+        const courseId = urlParams.get('courseId') || urlParams.get('course');
 
         if (!courseId) {
             window.location.href = 'courses.html';

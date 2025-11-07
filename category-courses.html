@@ -698,38 +698,14 @@
                 return;
             }
 
+            // بطاقات مبسطة: عرض اسم الكورس فقط، والبطاقة كلها قابلة للنقر
             const coursesHTML = courses.map(course => `
-                <div class="course-card">
+                <div class="course-card" onclick="viewCourseDetails(${course.id})" style="cursor: pointer;">
                     <div class="course-image" style="background: ${currentCategory.gradient}">
                         <i class="${currentCategory.icon}"></i>
-                        <div class="course-badge">${course.level}</div>
                     </div>
                     <div class="course-content">
-                        <h3 class="course-title">${course.title}</h3>
-                        <p class="course-description">${course.description}</p>
-                        <div class="course-meta">
-                            <div class="course-duration">
-                                <i class="fas fa-calendar-alt"></i>
-                                <strong><span data-ar="المدة:" data-en="Duration:">المدة:</span></strong> ${course.duration || '—'}
-                            </div>
-                            <div class="course-dates">
-                                <i class="fas fa-play"></i>
-                                <strong><span data-ar="البداية:" data-en="Start:">البداية:</span></strong> ${formatDateDisplay(course.startDate)}
-                            </div>
-                            <div class="course-dates">
-                                <i class="fas fa-stop"></i>
-                                <strong><span data-ar="النهاية:" data-en="End:">النهاية:</span></strong> ${formatDateDisplay(course.endDate)}
-                            </div>
-                            <div class="course-capacity">
-                                <i class="fas fa-users"></i>
-                                <strong><span data-ar="العدد المستهدف:" data-en="Capacity:">العدد المستهدف:</span></strong> ${course.capacity || '—'}
-                            </div>
-                       
-                      
-                        <button class="enroll-btn" onclick="enrollCourse(${course.id})">
-                            <i class="fas fa-user-plus"></i>
-                            <span data-ar="التسجيل في المقرر" data-en="Enroll in Course">التسجيل في المقرر</span>
-                        </button>
+                        <h3 class="course-title" style="margin-bottom: 0;">${course.title}</h3>
                     </div>
                 </div>
             `).join('');
@@ -821,9 +797,9 @@
             document.getElementById('errorMessage').textContent = message;
         }
 
-        function enrollCourse(courseId) {
-            // Redirect to enrollment page
-            window.location.href = `enrollment.html?course=${courseId}`;
+        // فتح صفحة تفاصيل الكورس والتسجيل
+        function viewCourseDetails(courseId) {
+            window.location.href = `enrollment.html?courseId=${courseId}`;
         }
     </script>
 </body>
