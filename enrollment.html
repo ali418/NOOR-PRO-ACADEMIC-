@@ -10,7 +10,8 @@
     <style>
         /* Navigation Styles */
         .navbar {
-            background: white;
+            background: var(--primary-color);
+            color: var(--text-light);
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
@@ -32,7 +33,7 @@
             display: flex;
             align-items: center;
             text-decoration: none;
-            color: var(--primary-color);
+            color: var(--text-light);
             font-size: 1.5rem;
             font-weight: bold;
         }
@@ -90,7 +91,7 @@
         }
 
         .user-welcome {
-            color: var(--primary-color);
+            color: var(--text-light);
             font-weight: 500;
             margin-left: 15px;
         }
@@ -99,7 +100,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background: #f8f9fa;
+            background: var(--light-bg);
             min-height: 100vh;
         }
 
@@ -419,7 +420,7 @@
 
         .file-upload:hover {
             border-color: var(--primary-color);
-            background: #f8f9fa;
+            background: var(--light-bg);
         }
 
         .file-upload.dragover {
@@ -478,12 +479,13 @@
         }
 
         .btn-secondary {
-            background: #6c757d;
+            background: var(--accent-color);
             color: white;
         }
 
         .btn-secondary:hover {
-            background: #545b62;
+            background: var(--accent-color);
+            filter: brightness(0.92);
         }
 
         .success-message {
@@ -593,6 +595,12 @@
                     <span data-ar="نور أكاديمي" data-en="Noor Academy">نور أكاديمي</span>
                 </a>
             </div>
+            <div class="nav-links">
+        <a href="index.html" class="back-btn">Back</a>
+        <button id="theme-toggle" class="theme-toggle">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
             
         </div>
     </nav>
@@ -631,7 +639,6 @@
                     <div class="step active" data-step="1">1</div>
                     <div class="step" data-step="2">2</div>
                     <div class="step" data-step="3">3</div>
-                    <div class="step" data-step="4">4</div>
                 </div>
 
                 <form id="enrollmentForm" onsubmit="return false;">
@@ -644,110 +651,21 @@
                             <input type="text" id="fullName" name="fullName" required>
                         </div>
 
-                        <!-- <div class="form-group">
-                            <label for="email" data-ar="البريد الإلكتروني *" data-en="Email Address *">البريد الإلكتروني *</label>
-                            <input type="email" id="email" name="email" required>
-                        </div> -->
-
                         <div class="form-group">
                             <label for="phone" data-ar="رقم الهاتف *" data-en="Phone Number *">رقم الهاتف *</label>
                             <input type="tel" id="phone" name="phone" required>
                         </div>
 
-                    <!-- Step 3: Payment Method -->
-                    <div class="form-step" data-step="3">
-                        <h3><i class="fas fa-credit-card"></i> <span data-ar="طريقة الدفع" data-en="Payment Method">طريقة الدفع</span></h3>
-                        
-                        <div class="payment-methods">
-                            <div class="payment-method" data-method="mobile-money">
-                                <i class="fas fa-mobile-alt"></i>
-                                <h4 data-ar="موبايل موني" data-en="Mobile Money">موبايل موني</h4>
-                                <p data-ar="الدفع عبر موبايل موني" data-en="Payment via Mobile Money">الدفع عبر موبايل موني</p>
-                            </div>
-
-                            <div class="payment-method" data-method="bank">
-                                <i class="fas fa-university"></i>
-                                <h4 data-ar="بنكك" data-en="Bankak">بنكك</h4>
-                                <p data-ar="الدفع عبر بنكك" data-en="Payment via Bankak">الدفع عبر بنكك</p>
-                            </div>
-                        </div>
-
-                        <!-- Payment Details -->
-                        <div class="payment-details" id="mobileMoneyDetails">
-                            <div class="payment-info">
-                                <h4 data-ar="معلومات الدفع - موبايل موني" data-en="Payment Information - Mobile Money">معلومات الدفع - موبايل موني</h4>
-                                <div class="account-info">
-                                    <span data-ar="رقم الحساب: " data-en="Account Number: ">رقم الحساب: <strong>+256767033631</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('+256767033631')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                                <div class="account-info">
-                                    <span data-ar="اسم الحساب: " data-en="Account Name: ">اسم الحساب: <strong data-ar="محمد محمد نور الدين" data-en="Mohamed Mohamed Nour Eldeen">محمد محمد نور الدين</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('محمد محمد نور الدين')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        
-
-                        <div class="payment-details" id="bankDetails">
-                            <div class="payment-info">
-                                <h4 data-ar="معلومات الدفع - بنكك" data-en="Payment Information - Bankak">معلومات الدفع - بنكك</h4>
-                                <div class="account-info">
-                                    <span data-ar="رقم الحساب: " data-en="Account Number: ">رقم الحساب: <strong>4055971</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('4055971')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                                <div class="account-info">
-                                    <span data-ar="اسم الحساب: " data-en="Account Name: ">اسم الحساب: <strong data-ar="نورالدين محمد" data-en="Nour Eldeen Mohamed">نورالدين محمد</strong></span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('نورالدين محمد')" data-ar="نسخ" data-en="Copy">نسخ</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 4: Receipt Upload -->
-                    <div class="form-step" data-step="4">
-                        <h3><i class="fas fa-receipt"></i> <span data-ar="رفع إيصال الدفع" data-en="Upload Payment Receipt">رفع إيصال الدفع</span></h3>
-                        
-                        <p style="text-align: center; color: #666; margin-bottom: 25px;" data-ar="بعد إتمام عملية الدفع، يرجى رفع صورة واضحة لإيصال الدفع" data-en="After completing the payment, please upload a clear image of the payment receipt">
-                            بعد إتمام عملية الدفع، يرجى رفع صورة واضحة لإيصال الدفع
-                        </p>
-
-                        <div class="file-upload" onclick="document.getElementById('receiptFile').click()">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <h4 data-ar="اضغط هنا لرفع إيصال الدفع" data-en="Click here to upload payment receipt">اضغط هنا لرفع إيصال الدفع</h4>
-                            <p data-ar="أو اسحب الملف هنا" data-en="Or drag the file here">أو اسحب الملف هنا</p>
-                            <small data-ar="الصيغ المدعومة: JPG, PNG, PDF (حد أقصى 5 ميجا)" data-en="Supported formats: JPG, PNG, PDF (Max 5MB)">الصيغ المدعومة: JPG, PNG, PDF (حد أقصى 5 ميجا)</small>
-                            <input type="file" id="receiptFile" name="receiptFile" accept=".jpg,.jpeg,.png,.pdf" required>
-                        </div>
-
-                        <div class="uploaded-file" id="uploadedFile">
-                            <i class="fas fa-check-circle"></i>
-                            <span data-ar="تم رفع الملف بنجاح: " data-en="File uploaded successfully: ">تم رفع الملف بنجاح: </span>
-                            <strong id="fileName"></strong>
-                        </div>
-
                         <div class="form-group">
-                            <label for="paymentAmount" data-ar="مبلغ الدفع" data-en="Payment Amount">مبلغ الدفع</label>
-                            <input type="number" id="paymentAmount" name="paymentAmount" placeholder="أدخل المبلغ المدفوع" data-ar-placeholder="أدخل المبلغ المدفوع" data-en-placeholder="Enter the amount paid" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="transactionId" data-ar="رقم العملية (اختياري)" data-en="Transaction ID (Optional)">رقم العملية (اختياري)</label>
-                            <input type="text" id="transactionId" name="transactionId" placeholder="رقم العملية أو المرجع" data-ar-placeholder="رقم العملية أو المرجع" data-en-placeholder="Transaction or reference number">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="notes" data-ar="ملاحظات إضافية" data-en="Additional Notes">ملاحظات إضافية</label>
-                            <textarea id="notes" name="notes" rows="3" placeholder="أي ملاحظات أو تفاصيل إضافية..." data-ar-placeholder="أي ملاحظات أو تفاصيل إضافية..." data-en-placeholder="Any additional notes or details..."></textarea>
+                            <label for="address" data-ar="عنوان السكن *" data-en="Address *">عنوان السكن *</label>
+                            <input type="text" id="address" name="address" required>
                         </div>
                     </div>
                 </form>
 
                 <!-- Navigation Buttons -->
                 <div class="btn-group">
-                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;" data-ar="السابق" data-en="Previous">السابق</button>
-                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)" data-ar="التالي" data-en="Next">التالي</button>
-                    <button type="button" class="btn btn-primary" id="submitBtn" onclick="submitEnrollment()" style="display: none;" data-ar="إرسال الطلب" data-en="Submit Request">إرسال الطلب</button>
+                    <button type="submit" class="btn btn-primary" onclick="submitEnrollment()" data-ar="تسجيل" data-en="Submit">تسجيل</button>
                 </div>
             </div>
         </div>
@@ -764,5 +682,6 @@
 
     <script src="js/script.js"></script>
     <script src="js/enrollment.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 </html>

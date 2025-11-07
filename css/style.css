@@ -6,48 +6,72 @@
 }
 
 :root {
-    --primary-color: #2563eb;
-    --primary-dark: #1d4ed8;
-    --secondary-color: #1e40af;
-    --accent-color: #f59e0b;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --dark-color: #1f2937;
-    --light-color: #f8fafc;
+    --primary-color: #3A589B; /* Primary Blue */
+    --primary-dark: #2F4E86;
+    --secondary-color: #6c757d; /* Gray */
+    --accent-color: #B89B5E; /* Gold/Ochre */
+    --success-color: #28a745; /* Green */
+    --warning-color: #ffc107; /* Yellow */
+    --danger-color: #D9534F; /* Red Accent */
+    --light-bg: #EAF1FB; /* Light Blue Background */
+    --light-text: #212529;
+    --light-card-bg: #ffffff;
+    --light-border: #dee2e6;
     --white: #ffffff;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-    --gray-900: #111827;
-    
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+
     --font-primary: 'Cairo', sans-serif;
     --font-secondary: 'Roboto', sans-serif;
-    
+
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
+
     --border-radius: 8px;
     --border-radius-lg: 12px;
     --border-radius-xl: 16px;
-    
+
     --transition: all 0.3s ease;
+    /* Noor Pro Custom Palette Variables */
+    --text-dark: #333333; /* Headings */
+    --text-light: #FFFFFF; /* Light text on colored backgrounds */
+    --text-grey: #888888; /* Body/Sub-text */
 }
 
+[data-theme="dark"] {
+    --primary-color: #02a8a8; /* Teal */
+    --primary-dark: #027f7f;
+    --secondary-color: #a0aec0; /* Cool Gray */
+    --accent-color: #f6ad55; /* Orange */
+    --success-color: #48bb78; /* Green */
+    --warning-color: #f6ad55; /* Orange */
+    --danger-color: #f56565; /* Red */
+    --dark-bg: #1a202c;
+    --dark-text: #e2e8f0;
+    --dark-card-bg: #2d3748;
+    --dark-border: #4a5568;
+}
 body {
     font-family: var(--font-primary);
     line-height: 1.6;
-    color: var(--gray-800);
-    background-color: var(--white);
+    color: var(--light-text);
+    background-color: var(--light-bg);
     overflow-x: hidden;
+}
+
+[data-theme="dark"] body {
+    color: var(--dark-text);
+    background-color: var(--dark-bg);
 }
 
 .container {
@@ -755,7 +779,20 @@ body {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem; /* Space between search and other actions */
+}
+
+.theme-btn {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.theme-btn:hover {
+    color: var(--primary-color);
 }
 
 .search-box {
@@ -2481,3 +2518,4 @@ html {
 .video-feature i {
     color: var(--primary-color);
 }
+    

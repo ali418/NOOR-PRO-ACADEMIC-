@@ -712,21 +712,19 @@
 }
 
 /* Dark Mode Responsive Adjustments */
-@media (prefers-color-scheme: dark) {
-    .nav-menu {
-        background: var(--dark-bg);
-        border-top: 1px solid var(--dark-border);
-    }
-    
-    .mobile-card {
-        background: var(--dark-card-bg);
-        border-color: var(--dark-border);
-    }
-    
-    .modal-content {
-        background: var(--dark-bg);
-        border-color: var(--dark-border);
-    }
+[data-theme="dark"] .nav-menu {
+    background: var(--dark-bg);
+    border-top: 1px solid var(--dark-border);
+}
+
+[data-theme="dark"] .mobile-card {
+    background: var(--dark-card-bg);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .modal-content {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
 }
 
 /* Landscape Orientation for Mobile */

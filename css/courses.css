@@ -866,31 +866,47 @@
 }
 
 /* Dark Mode Support */
-[data-theme="dark"] .course-card,
-[data-theme="dark"] .filters-section,
-[data-theme="dark"] .courses-table {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+[data-theme="dark"] .course-card {
+    background-color: var(--dark-card-bg);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .course-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.15);
 }
 
 [data-theme="dark"] .course-title,
-[data-theme="dark"] .course-name {
-    color: var(--gray-100);
+[data-theme="dark"] .course-instructor,
+[data-theme="dark"] .course-price {
+    color: var(--dark-text);
 }
 
-[data-theme="dark"] .course-description,
-[data-theme="dark"] .course-meta,
-[data-theme="dark"] .course-category {
-    color: var(--gray-400);
+[data-theme="dark"] .course-description {
+    color: var(--dark-text-secondary);
 }
 
-[data-theme="dark"] .stat-card {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+[data-theme="dark"] .course-filters .filter-btn.active,
+[data-theme="dark"] .course-filters .filter-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
 }
 
-[data-theme="dark"] .stat-number {
-    color: var(--gray-100);
+[data-theme="dark"] .course-content-section {
+    background-color: var(--dark-card-bg);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .lesson-item {
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .lesson-item:hover {
+    background-color: var(--dark-bg);
+}
+
+[data-theme="dark"] .lesson-title {
+    color: var(--dark-text);
 }
 
 [data-theme="dark"] .lesson-item {
