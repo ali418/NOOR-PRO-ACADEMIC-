@@ -93,9 +93,10 @@ class CourseLoader {
         // Clear inline display to let CSS grid/flex rules apply
         if (this.coursesGrid) this.coursesGrid.style.display = '';
 
-        // Show admin controls if admin
+        // Show admin controls only on allowed admin pages
         if (this.adminControls) {
-            this.adminControls.style.display = this.isAdmin ? 'flex' : 'none';
+            const canShowAdmin = this.isAdmin && this.isAdminAllowedOnPage();
+            this.adminControls.style.display = canShowAdmin ? 'flex' : 'none';
         }
 
         // Refresh translations for newly injected elements
@@ -146,7 +147,8 @@ class CourseLoader {
 
         const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
 
-        const adminActions = this.isAdmin ? `
+        const showAdminActions = this.isAdmin && this.isAdminAllowedOnPage();
+        const adminActions = showAdminActions ? `
             <div class="admin-actions" style="display:flex; gap:8px; margin-top:10px;">
                 <button class="btn btn-sm btn-secondary" onclick="window.courseLoader.editCourse(${course.id})">
                     <i class="fas fa-edit"></i> تعديل
@@ -193,6 +195,18 @@ class CourseLoader {
                 </div>
             </div>
         `;
+    }
+
+    // Allow admin actions only on admin-specific pages
+    isAdminAllowedOnPage() {
+        try {
+            const path = (window.location.pathname || '').toLowerCase();
+            const allowedPages = ['/courses.html', '/admin-dashboard.html'];
+            const hasExplicitAdminContainer = !!document.getElementById('adminControls');
+            return allowedPages.includes(path) || hasExplicitAdminContainer;
+        } catch (_) {
+            return false;
+        }
     }
 
     showLoading() {
