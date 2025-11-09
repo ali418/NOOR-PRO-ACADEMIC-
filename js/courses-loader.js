@@ -19,12 +19,36 @@ class CourseLoader {
     }
 
     detectAdmin() {
+        // Support multiple storage keys used across the app for admin detection
         try {
+            let isAdmin = false;
+
+            // Check structured currentUser object
             const raw = localStorage.getItem('currentUser');
-            if (!raw) return false;
-            const user = JSON.parse(raw);
-            return user && (user.role === 'admin' || user.userType === 'admin');
-        } catch (_) { return false; }
+            if (raw) {
+                const user = JSON.parse(raw);
+                if (user && (user.role === 'admin' || user.userType === 'admin' || user.role === 'administrator')) {
+                    isAdmin = true;
+                }
+            }
+
+            // Fallback: simple flags/roles stored separately
+            const adminFlag = localStorage.getItem('isAdminLoggedIn');
+            if (adminFlag && (adminFlag === 'true' || adminFlag === '1')) {
+                isAdmin = true;
+            }
+
+            const role = localStorage.getItem('userRole');
+            if (role && role.toLowerCase() === 'admin') {
+                isAdmin = true;
+            }
+
+            return isAdmin;
+        } catch (_) {
+            const adminFlag = localStorage.getItem('isAdminLoggedIn');
+            const role = (localStorage.getItem('userRole') || '').toLowerCase();
+            return (adminFlag === 'true' || adminFlag === '1' || role === 'admin');
+        }
     }
 
     async loadCourses() {
