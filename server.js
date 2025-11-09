@@ -258,12 +258,36 @@ app.delete('/api/courses-sample', (req, res) => {
 // Import courses API
 const coursesAPI = require('./api/courses');
 
-// Courses API routes
-app.get('/api/courses', coursesAPI.getCourses);
-app.get('/api/courses/:id', coursesAPI.getCourseById);
-app.post('/api/courses', coursesAPI.addCourse);
-app.put('/api/courses', coursesAPI.updateCourse);
-app.delete('/api/courses', coursesAPI.deleteCourse);
+// Courses API routes (guarded to avoid startup crashes if exports are missing)
+if (coursesAPI && typeof coursesAPI.getCourses === 'function') {
+  app.get('/api/courses', coursesAPI.getCourses);
+} else {
+  console.error('coursesAPI.getCourses is undefined; skipping route /api/courses');
+}
+
+if (coursesAPI && typeof coursesAPI.getCourseById === 'function') {
+  app.get('/api/courses/:id', coursesAPI.getCourseById);
+} else {
+  console.error('coursesAPI.getCourseById is undefined; skipping route /api/courses/:id');
+}
+
+if (coursesAPI && typeof coursesAPI.addCourse === 'function') {
+  app.post('/api/courses', coursesAPI.addCourse);
+} else {
+  console.error('coursesAPI.addCourse is undefined; skipping route POST /api/courses');
+}
+
+if (coursesAPI && typeof coursesAPI.updateCourse === 'function') {
+  app.put('/api/courses', coursesAPI.updateCourse);
+} else {
+  console.error('coursesAPI.updateCourse is undefined; skipping route PUT /api/courses');
+}
+
+if (coursesAPI && typeof coursesAPI.deleteCourse === 'function') {
+  app.delete('/api/courses', coursesAPI.deleteCourse);
+} else {
+  console.error('coursesAPI.deleteCourse is undefined; skipping route DELETE /api/courses');
+}
 
 // Import categories API
 const categoriesAPI = require('./api/categories');
