@@ -311,7 +311,7 @@ class CourseLoader {
                 // Parse price number if present (supports strings like "75 دولار")
                 const priceMatch = String(priceRaw).match(/(\d+(?:\.\d+)?)/);
                 const priceNum = priceMatch ? parseFloat(priceMatch[1]) : null;
-                const priceSdgRaw = document.getElementById('editPriceSDG')?.value || '';
+                const priceSdgRaw = document.getElementById('addPriceSDG')?.value || '';
                 const priceSdgMatch = String(priceSdgRaw).match(/(\d+(?:\.\d+)?)/);
                 const priceSdgNum = priceSdgMatch ? parseFloat(priceSdgMatch[1]) : null;
 
@@ -334,13 +334,14 @@ class CourseLoader {
                     start_date: startDate || undefined,
                     end_date: endDate || undefined,
                     price: priceNum !== null ? priceNum : (priceRaw || undefined),
+                    price_sdg: priceSdgNum !== null ? priceSdgNum : (priceSdgRaw || undefined),
                     course_icon: courseIcon || undefined,
                     badge_text: badgeText || undefined
                 };
 
                 try {
                     // Send POST to API
-                    const resp = await fetch(`/api/courses?id=${id}`, {
+                    const resp = await fetch(`/api/courses`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
@@ -396,6 +397,9 @@ class CourseLoader {
 
                 const priceMatch = String(priceRaw).match(/(\d+(?:\.\d+)?)/);
                 const priceNum = priceMatch ? parseFloat(priceMatch[1]) : null;
+                const priceSdgRaw = document.getElementById('editPriceSDG')?.value || '';
+                const priceSdgMatch = String(priceSdgRaw).match(/(\d+(?:\.\d+)?)/);
+                const priceSdgNum = priceSdgMatch ? parseFloat(priceSdgMatch[1]) : null;
 
                 const payload = {
                     id: parseInt(id),
@@ -479,6 +483,7 @@ class CourseLoader {
             document.getElementById('editLevel') && (document.getElementById('editLevel').value = course.level_name || course.level || '');
             document.getElementById('editDuration') && (document.getElementById('editDuration').value = course.duration || course.duration_weeks || '');
             document.getElementById('editPrice') && (document.getElementById('editPrice').value = course.price || '');
+            document.getElementById('editPriceSDG') && (document.getElementById('editPriceSDG').value = course.price_sdg || '');
             document.getElementById('editInstructor') && (document.getElementById('editInstructor').value = course.instructor_name || '');
             document.getElementById('editYoutube') && (document.getElementById('editYoutube').value = course.youtube_link || '');
             document.getElementById('editStartDate') && (document.getElementById('editStartDate').value = course.start_date || '');
