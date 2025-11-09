@@ -265,11 +265,33 @@ if (coursesAPI && typeof coursesAPI.getCourses === 'function') {
   console.error('coursesAPI.getCourses is undefined; skipping route /api/courses');
 }
 
-if (coursesAPI && typeof coursesAPI.getCourseById === 'function') {
-  app.get('/api/courses/:id', coursesAPI.getCourseById);
-} else {
-  console.error('coursesAPI.getCourseById is undefined; skipping route /api/courses/:id');
-}
+// Explicit route for fetching a single course by ID
+// Delegates to coursesAPI.getCourseById if available; otherwise falls back to sample data
+app.get('/api/courses/:id', async (req, res) => {
+  try {
+    if (coursesAPI && typeof coursesAPI.getCourseById === 'function') {
+      return coursesAPI.getCourseById(req, res);
+    }
+    throw new Error('coursesAPI.getCourseById not available');
+  } catch (err) {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const sampleCoursesPath = path.join(__dirname, 'sample-courses.json');
+      const raw = fs.readFileSync(sampleCoursesPath, 'utf8');
+      const sampleCourses = JSON.parse(raw);
+      const courseId = req.params.id;
+      const course = sampleCourses.find(c => String(c.id) === String(courseId));
+      if (course) {
+        return res.json({ success: true, course });
+      }
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    } catch (fallbackErr) {
+      console.error('Fallback failed for /api/courses/:id:', fallbackErr);
+      return res.status(500).json({ success: false, message: 'Internal Server Error', error: fallbackErr.message });
+    }
+  }
+});
 
 if (coursesAPI && typeof coursesAPI.addCourse === 'function') {
   app.post('/api/courses', coursesAPI.addCourse);
