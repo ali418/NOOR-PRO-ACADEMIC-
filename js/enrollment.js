@@ -718,11 +718,12 @@ class EnrollmentSystem {
                     return;
                 }
 
-                // أظهر رسالة النجاح للطالب ثم حوّله لصفحة التأكيد
-                this.showSuccessMessage();
-                const cid = this.enrollmentData.courseId;
-                if (cid) {
-                    try { window.location.href = `/enrollment-confirmation.html?courseId=${cid}`; } catch (_) {}
+                // Redirect to the confirmation page
+                const courseId = this.enrollmentData.courseId;
+                if (courseId) {
+                    window.location.href = `enrollment-confirmation.html?courseId=${courseId}`;
+                } else {
+                    window.location.href = 'enrollment-confirmation.html';
                 }
             } else {
                 this.showToast(data.message || 'فشل إرسال طلب التسجيل', 'error');
