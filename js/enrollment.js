@@ -63,11 +63,13 @@ class EnrollmentSystem {
         const nextBtnInline = document.getElementById('nextBtnInline');
         const prevBtn = document.getElementById('prevBtn');
         const submitBtn = document.getElementById('submitBtn');
+        const submitBtnFooter = document.getElementById('submitBtnFooter');
 
         if (nextBtn) nextBtn.addEventListener('click', () => this.nextStep());
         if (nextBtnInline) nextBtnInline.addEventListener('click', () => this.nextStep());
         if (prevBtn) prevBtn.addEventListener('click', () => this.prevStep());
         if (submitBtn) submitBtn.addEventListener('click', () => this.submitEnrollment());
+        if (submitBtnFooter) submitBtnFooter.addEventListener('click', () => this.submitEnrollment());
 
         // اختيار طريقة الدفع
         const paymentTiles = document.querySelectorAll('.payment-method');
@@ -109,10 +111,12 @@ class EnrollmentSystem {
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const submitBtn = document.getElementById('submitBtn');
+        const submitBtnFooter = document.getElementById('submitBtnFooter');
 
         if (prevBtn) prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
         if (nextBtn) nextBtn.style.display = step < 3 ? 'inline-block' : 'none';
         if (submitBtn) submitBtn.style.display = step === 3 ? 'inline-block' : 'none';
+        if (submitBtnFooter) submitBtnFooter.style.display = step === 3 ? 'inline-block' : 'none';
 
         this.currentStep = step;
         if (step === 3) {
@@ -124,6 +128,8 @@ class EnrollmentSystem {
             }
             const sb = document.getElementById('submitBtn');
             if (sb) sb.style.display = 'inline-block';
+            const sbf = document.getElementById('submitBtnFooter');
+            if (sbf) sbf.style.display = 'inline-block';
             this.updateReviewBlock();
         }
     }
