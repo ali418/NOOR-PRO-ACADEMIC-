@@ -374,10 +374,27 @@ class EnrollmentSystem {
             fragments.push(div);
         };
 
+        const formatDate = (d) => {
+            if (!d) return undefined;
+            try {
+                const dt = new Date(d);
+                if (!isNaN(dt)) return dt.toLocaleDateString('ar-EG');
+            } catch (e) {}
+            return String(d);
+        };
+        const formattedPrice = (course.price !== undefined && course.price !== null && course.price !== '')
+            ? `${Number(course.price).toLocaleString('ar-EG')} SDG`
+            : undefined;
+
         addItem('fas fa-book', 'العنوان:', course.title);
         addItem('fas fa-align-left', 'الوصف:', course.description);
         addItem('fas fa-clock', 'المدة:', course.duration);
-        addItem('fas fa-dollar-sign', 'السعر:', course.price ? `${course.price} SDG` : undefined);
+        addItem('fas fa-chalkboard-teacher', 'المُدرّس:', course.instructor_name);
+        addItem('fas fa-tags', 'الفئة:', course.category);
+        addItem('fas fa-level-up-alt', 'المستوى:', course.level_name);
+        addItem('fas fa-calendar-day', 'تاريخ البدء:', formatDate(course.start_date));
+        addItem('fas fa-calendar-check', 'تاريخ الانتهاء:', formatDate(course.end_date));
+        addItem('fas fa-dollar-sign', 'السعر:', formattedPrice);
 
         // Clear and append
         infoEl.innerHTML = '';
@@ -392,6 +409,34 @@ class EnrollmentSystem {
                 li.textContent = String(f);
                 featuresEl.appendChild(li);
             });
+        }
+
+        // Target Audience block
+        const audienceEl = document.getElementById('courseAudience');
+        if (audienceEl) {
+            audienceEl.innerHTML = '';
+            let audience = course.target_audience || course.audience || course.targetAudience;
+            if (Array.isArray(audience)) {
+                audience.slice(0, 8).forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = String(item);
+                    audienceEl.appendChild(li);
+                });
+            } else if (typeof audience === 'string' && audience.trim()) {
+                const li = document.createElement('li');
+                li.textContent = audience.trim();
+                audienceEl.appendChild(li);
+            } else {
+                const fallback = [];
+                if (course.level_name) fallback.push(`مناسب لمستوى ${course.level_name}`);
+                if (course.category) fallback.push(`مفيد لطلاب ${course.category}`);
+                if (fallback.length === 0) fallback.push('مناسب للطلاب المهتمين بهذا المجال');
+                fallback.forEach(text => {
+                    const li = document.createElement('li');
+                    li.textContent = text;
+                    audienceEl.appendChild(li);
+                });
+            }
         }
     }
 
