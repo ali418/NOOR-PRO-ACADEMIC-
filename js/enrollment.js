@@ -156,6 +156,7 @@ class EnrollmentSystem {
         
         // Hide the main next button in step 1, as there is an inline one
         if (nextBtn) {
+            nextBtn.textContent = (step === 2) ? 'إتمام التسجيل' : 'الانتقال للخطوة التالية';
             if (step === 1) {
                 nextBtn.style.display = 'none';
             } else {
@@ -232,7 +233,7 @@ class EnrollmentSystem {
             this.enrollmentData.payment_method = this.selectedPaymentMethod;
             this.enrollmentData.payment_details = paymentDetails;
 
-            this.showStep(3);
+            this.submitEnrollment();
         }
     }
 

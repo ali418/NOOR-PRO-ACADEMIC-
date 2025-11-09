@@ -646,7 +646,6 @@
                 <div class="step-indicator">
                     <div class="step active" data-step="1">1</div>
                     <div class="step" data-step="2">2</div>
-                    <div class="step" data-step="3">3</div>
                 </div>
 
                 <form id="enrollmentForm" onsubmit="return false;">
@@ -718,19 +717,6 @@
                                 <label for="studentNotes">ملاحظات إضافية (اختياري)</label>
                                 <textarea id="studentNotes" name="studentNotes" rows="3" placeholder="أدخل أي ملاحظة تخص عملية الدفع"></textarea>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: Confirmation -->
-                    <div class="form-step" data-step="3" style="display: none;">
-                        <h3><i class="fas fa-clipboard-check"></i> <span data-ar="تأكيد البيانات" data-en="Confirm Details">تأكيد البيانات</span></h3>
-                        <p>راجع بياناتك وبيانات الكورس، ثم اضغط تأكيد الطلاب لإرسال الطلب للمراجعة.</p>
-                        <div id="reviewBlock" style="background:#f8f9fa; color:#333; padding:12px; border-radius:10px;"></div>
-                        <!-- زر التأكيد داخل الخطوة الثالثة لضمان ظهوره مع المحتوى -->
-                        <div class="btn-group" style="margin-top: 16px;">
-                            <button type="button" class="btn btn-primary" id="submitBtn">
-                                تأكيد التسجيل
-                            </button>
                         </div>
                     </div>
                 </form>
