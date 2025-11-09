@@ -423,7 +423,7 @@ class CourseLoader {
 
                 try {
                     // Primary attempt: Node API
-                    const resp = await fetch(`/api/courses?id=${id}`, {
+                    const resp = await fetch(`/api/courses`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
