@@ -18,8 +18,20 @@ app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
 }));
 
-// تقديم الملفات الثابتة
-app.use(express.static(path.join(__dirname, '/')));
+// تقديم الملفات الثابتة مع تعطيل الكاش للـ HTML/JS/CSS لضمان تحديثات فورية
+app.use(express.static(path.join(__dirname, '/'), {
+  etag: false,
+  lastModified: false,
+  maxAge: 0,
+  setHeaders: (res, filePath) => {
+    if (/\.(html|js|css)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
+    }
+  }
+}));
 
 // توجيه الطلبات إلى ملفات API
 const studentsAPI = require('./api/students');
