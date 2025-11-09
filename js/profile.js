@@ -277,27 +277,25 @@ class ProfileManager {
             const items = Array.isArray(result) ? result : (result.data || []);
             const userItems = email ? items.filter(i => (i.email || '').toLowerCase() === email) : items;
 
-            // Build map of courseId -> DB course (fetch from API for consistency)
-            const uniqueIds = [...new Set(userItems.map(i => String(i.courseId || i.course_id || '').trim()).filter(Boolean))];
+            // Build map of courseId -> DB course with a single fetch
             const courseInfoMap = {};
-            for (const cid of uniqueIds) {
-                try {
-                    const r = await fetch(`/api/courses?id=${encodeURIComponent(cid)}`);
-                    if (r.ok) {
-                        const j = await r.json();
-                        const arr = Array.isArray(j.courses) ? j.courses : [];
-                        if (arr.length > 0) {
-                            const c = arr[0];
-                            courseInfoMap[cid] = {
-                                title: c.course_name || c.title || 'مقرر',
-                                instructor: c.instructor_name || '',
-                                price: typeof c.price === 'number' ? c.price : (String(c.price || '').match(/(\d+(\.\d+)?)/)?.[1] || '0')
-                            };
-                        }
+            try {
+                const rAll = await fetch('/api/courses');
+                if (rAll.ok) {
+                    const jAll = await rAll.json();
+                    const allCourses = Array.isArray(jAll.courses) ? jAll.courses : (Array.isArray(jAll.data) ? jAll.data : []);
+                    for (const c of allCourses) {
+                        const cidKey = String(c.id || c.db_id || c.ID || '').trim();
+                        if (!cidKey) continue;
+                        courseInfoMap[cidKey] = {
+                            title: c.course_name || c.title || 'مقرر',
+                            instructor: c.instructor_name || '',
+                            price: typeof c.price === 'number' ? c.price : (String(c.price || '').match(/(\d+(\.\d+)?)/)?.[1] || '0')
+                        };
                     }
-                } catch (_) {
-                    // ignore individual fetch failures
                 }
+            } catch (_) {
+                // ignore bulk fetch failures; UI will still show fallback fields
             }
 
             const courses = userItems.map(i => {
