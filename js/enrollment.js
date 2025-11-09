@@ -635,6 +635,31 @@ class EnrollmentSystem {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // املأ رقم الطلب في واجهة النجاح إن وُجد
+                try {
+                    const rnEl = document.getElementById('requestNumber');
+                    if (rnEl) rnEl.textContent = data.request_number || data.id || '';
+                } catch (_) {}
+
+                // تحقّق من كون المستخدم إدمن لتوجيهه للوحة التحكم مباشرةً
+                let isAdmin = false;
+                try {
+                    const user = JSON.parse(localStorage.getItem('userData') || '{}');
+                    const role = (localStorage.getItem('userRole') || '').toLowerCase();
+                    const adminFlag = localStorage.getItem('isAdminLoggedIn') || localStorage.getItem('adminLoggedIn');
+                    isAdmin = (
+                        (user && (user.role === 'admin' || user.userType === 'admin' || user.role === 'administrator')) ||
+                        (adminFlag === 'true' || adminFlag === '1') ||
+                        role === 'admin'
+                    );
+                } catch (_) {}
+
+                if (isAdmin) {
+                    try { window.location.href = '/admin-dashboard.html'; } catch (_) {}
+                    return;
+                }
+
+                // أظهر رسالة النجاح للطالب ثم حوّله لصفحة التأكيد
                 this.showSuccessMessage();
                 const cid = this.enrollmentData.courseId;
                 if (cid) {
