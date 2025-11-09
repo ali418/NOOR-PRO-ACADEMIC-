@@ -291,7 +291,8 @@ class EnrollmentSystem {
         const courseId = String(rawId).trim().replace(/\.+$/g, '');
 
         if (!courseId) {
-            window.location.href = 'courses.html';
+            this.showToast('لم يتم تحديد المقرر المطلوب', 'error');
+            this.renderNotFound('لم يتم تحديد المقرر المطلوب. الرجاء اختيار دورة من قائمة الدورات.');
             return;
         }
 
@@ -327,7 +328,7 @@ class EnrollmentSystem {
                     const found = allCourses.find(c => String(c.id) === String(courseId));
                     if (!found) {
                         this.showToast('لم يتم العثور على المقرر المطلوب', 'error');
-                        window.location.href = 'courses.html';
+                        this.renderNotFound('عذراً، لم نعثر على هذه الدورة. يمكنك اختيار دورة أخرى من القائمة.');
                         return;
                     }
                     // طبيعـة الحقول قد تختلف في بيانات العينة؛ نوحّدها قبل العرض
@@ -347,6 +348,33 @@ class EnrollmentSystem {
                     this.showToast('تعذر تحميل بيانات المقرر حالياً. يرجى المحاولة لاحقاً.', 'error');
                 }
             });
+    }
+
+    // عرض رسالة ودية داخل صفحة التسجيل بدلاً من التحويل التلقائي
+    renderNotFound(message) {
+        const infoEl = document.getElementById('courseInfo');
+        const featuresEl = document.getElementById('courseFeatures');
+        if (featuresEl) {
+            featuresEl.innerHTML = '';
+        }
+        if (infoEl) {
+            const html = `
+                <div style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:12px;border-radius:6px;">
+                    <strong>تنبيه:</strong>
+                    <div style="margin-top:6px;">${message}</div>
+                    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <a href="courses.html" style="background:#0d6efd;color:#fff;padding:8px 12px;border-radius:4px;text-decoration:none;">عرض جميع الدورات</a>
+                        <a href="javascript:history.back()" style="background:#6c757d;color:#fff;padding:8px 12px;border-radius:4px;text-decoration:none;">رجوع</a>
+                    </div>
+                </div>`;
+            infoEl.innerHTML = html;
+        }
+
+        // تعطيل أزرار التقدم إذا كانت موجودة لتفادي إرسال استمارة دون بيانات دورة
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitEnrollmentBtn');
+        if (nextBtn) nextBtn.disabled = true;
+        if (submitBtn) submitBtn.disabled = true;
     }
 
     displayCourseDetails(course) {
