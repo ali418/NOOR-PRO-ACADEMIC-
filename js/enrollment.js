@@ -641,17 +641,15 @@ class EnrollmentSystem {
                     if (rnEl) rnEl.textContent = data.request_number || data.id || '';
                 } catch (_) {}
 
-                // تحقّق من كون المستخدم إدمن لتوجيهه للوحة التحكم مباشرةً
+                // تحقّق صارم من كون المستخدم إدمن لتوجيهه للوحة التحكم مباشرةً
                 let isAdmin = false;
                 try {
-                    const user = JSON.parse(localStorage.getItem('userData') || '{}');
-                    const role = (localStorage.getItem('userRole') || '').toLowerCase();
-                    const adminFlag = localStorage.getItem('isAdminLoggedIn') || localStorage.getItem('adminLoggedIn');
-                    isAdmin = (
-                        (user && (user.role === 'admin' || user.userType === 'admin' || user.role === 'administrator')) ||
-                        (adminFlag === 'true' || adminFlag === '1') ||
-                        role === 'admin'
-                    );
+                    const raw = localStorage.getItem('userData');
+                    if (raw) {
+                        const user = JSON.parse(raw);
+                        const role = (user.role || user.userType || '').toLowerCase();
+                        isAdmin = (role === 'admin' || role === 'administrator');
+                    }
                 } catch (_) {}
 
                 if (isAdmin) {
