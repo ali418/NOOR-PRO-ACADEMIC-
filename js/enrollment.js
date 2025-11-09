@@ -71,6 +71,9 @@ class EnrollmentSystem {
         if (submitBtn) submitBtn.addEventListener('click', () => this.submitEnrollment());
         if (submitBtnFooter) submitBtnFooter.addEventListener('click', () => this.submitEnrollment());
 
+        // تأكد برمجياً من وجود زر تأكيد احتياطي في الأسفل في حال كان القالب قديم
+        this.ensureSubmitButtons();
+
         // اختيار طريقة الدفع
         const paymentTiles = document.querySelectorAll('.payment-method');
         paymentTiles.forEach(tile => {
@@ -90,6 +93,42 @@ class EnrollmentSystem {
                 el.addEventListener(evt, () => this.updateReviewBlock());
             }
         });
+    }
+
+    ensureSubmitButtons() {
+        try {
+            // أنشئ زر سفلي إذا لم يكن موجوداً
+            let submitBtnFooter = document.getElementById('submitBtnFooter');
+            if (!submitBtnFooter) {
+                const btnGroup = document.querySelector('.btn-group');
+                if (btnGroup) {
+                    submitBtnFooter = document.createElement('button');
+                    submitBtnFooter.type = 'button';
+                    submitBtnFooter.id = 'submitBtnFooter';
+                    submitBtnFooter.className = 'btn btn-primary';
+                    submitBtnFooter.style.display = 'none';
+                    submitBtnFooter.textContent = 'تأكيد التسجيل';
+                    btnGroup.appendChild(submitBtnFooter);
+                    submitBtnFooter.addEventListener('click', () => this.submitEnrollment());
+                }
+            }
+
+            // إن لم يكن زر التأكيد داخل الخطوة موجوداً، جرّب إنشاء واحد داخل محتوى الخطوة 3
+            let submitBtn = document.getElementById('submitBtn');
+            if (!submitBtn) {
+                const step3 = document.querySelector('.form-step[data-step="3"] .btn-group');
+                if (step3) {
+                    submitBtn = document.createElement('button');
+                    submitBtn.type = 'button';
+                    submitBtn.id = 'submitBtn';
+                    submitBtn.className = 'btn btn-primary';
+                    submitBtn.style.display = 'none';
+                    submitBtn.textContent = 'تأكيد التسجيل';
+                    step3.appendChild(submitBtn);
+                    submitBtn.addEventListener('click', () => this.submitEnrollment());
+                }
+            }
+        } catch (_) {}
     }
 
     showStep(step) {
@@ -131,6 +170,12 @@ class EnrollmentSystem {
             const sbf = document.getElementById('submitBtnFooter');
             if (sbf) sbf.style.display = 'inline-block';
             this.updateReviewBlock();
+        } else {
+            // عند الانتقال لغير الخطوة 3، تأكد من إخفاء الأزرار الاحتياطية
+            const sb = document.getElementById('submitBtn');
+            const sbf = document.getElementById('submitBtnFooter');
+            if (sb) sb.style.display = 'none';
+            if (sbf) sbf.style.display = 'none';
         }
     }
 
