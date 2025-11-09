@@ -311,6 +311,9 @@ class CourseLoader {
                 // Parse price number if present (supports strings like "75 دولار")
                 const priceMatch = String(priceRaw).match(/(\d+(?:\.\d+)?)/);
                 const priceNum = priceMatch ? parseFloat(priceMatch[1]) : null;
+                const priceSdgRaw = document.getElementById('editPriceSDG')?.value || '';
+                const priceSdgMatch = String(priceSdgRaw).match(/(\d+(?:\.\d+)?)/);
+                const priceSdgNum = priceSdgMatch ? parseFloat(priceSdgMatch[1]) : null;
 
                 // Generate a course code
                 const courseCode = `CRS-${Date.now().toString().slice(-6)}`;
@@ -409,18 +412,35 @@ class CourseLoader {
                     start_date: startDate || undefined,
                     end_date: endDate || undefined,
                     price: priceNum !== null ? priceNum : (priceRaw || undefined),
+                    price_sdg: priceSdgNum !== null ? priceSdgNum : (priceSdgRaw || undefined),
                     course_icon: courseIcon || undefined,
                     badge_text: badgeText || undefined
                 };
 
                 try {
+                    // Primary attempt: Node API
                     const resp = await fetch(`/api/courses?id=${id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    const result = await resp.json();
-                    if (resp.ok && result.success) {
+                    let result = null;
+                    try { result = await resp.json(); } catch(_) {}
+
+                    // Fallback to PHP API when course not found or 404
+                    let finalOk = !!(resp.ok && result && result.success);
+                    if (!finalOk && (resp.status === 404 || (result && /المقرر غير موجود|لم يتم العثور/i.test(String(result.message || ''))))) {
+                        const respPhp = await fetch(`api/courses.php`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const resultPhp = await respPhp.json().catch(() => ({ success: false }));
+                        finalOk = !!(respPhp.ok && resultPhp && resultPhp.success);
+                        result = resultPhp;
+                    }
+
+                    if (finalOk) {
                         const modalEl = document.getElementById('editCourseModal');
                         try {
                             const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -432,7 +452,7 @@ class CourseLoader {
                         await this.loadCourses();
                         alert('تم حفظ التغييرات بنجاح');
                     } else {
-                        alert('فشل في تحديث المقرر: ' + (result.message || resp.status));
+                        alert('فشل في تحديث المقرر: ' + ((result && result.message) || resp.status));
                     }
                 } catch (error) {
                     console.error('Error updating course:', error);
