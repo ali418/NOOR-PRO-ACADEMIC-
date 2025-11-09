@@ -5,11 +5,14 @@ class CourseLoader {
         // Use page-provided states instead of injecting a duplicate loader
         this.loadingState = document.getElementById('loadingState');
         this.emptyState = document.getElementById('emptyState');
+        this.addCourseBtn = document.getElementById('addCourseBtn');
+        this.addCourseForm = document.getElementById('addCourseForm');
         this.init();
     }
 
     init() {
         this.loadCourses();
+        this.bindAdminControls();
     }
 
     async loadCourses() {
@@ -172,6 +175,114 @@ class CourseLoader {
     // Method to refresh courses (can be called from admin after updates)
     refresh() {
         this.loadCourses();
+    }
+
+    // Admin: bind add course controls if present on the page
+    bindAdminControls() {
+        // Button to open modal
+        if (this.addCourseBtn) {
+            this.addCourseBtn.addEventListener('click', () => {
+                const modalEl = document.getElementById('addCourseModal');
+                if (!modalEl) return;
+                try {
+                    const modal = new bootstrap.Modal(modalEl);
+                    // Reset form
+                    if (this.addCourseForm) this.addCourseForm.reset();
+                    modal.show();
+                } catch (e) {
+                    // Fallback if Bootstrap isn't available
+                    modalEl.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+        }
+
+        // Form submit handler
+        if (this.addCourseForm) {
+            this.addCourseForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Collect values by IDs defined in courses.html
+                const title = document.getElementById('addTitle')?.value?.trim() || '';
+                const categoryText = document.getElementById('addCategory')?.value || '';
+                const description = document.getElementById('addDescription')?.value?.trim() || '';
+                const level = document.getElementById('addLevel')?.value || '';
+                const duration = document.getElementById('addDuration')?.value?.trim() || '';
+                const priceRaw = document.getElementById('addPrice')?.value || '';
+                const instructor = document.getElementById('addInstructor')?.value?.trim() || '';
+                const youtube = document.getElementById('addYoutube')?.value?.trim() || '';
+                const startDate = document.getElementById('addStartDate')?.value || '';
+                const endDate = document.getElementById('addEndDate')?.value || '';
+                const maxStudents = document.getElementById('addMaxStudents')?.value || '';
+                const courseIcon = document.getElementById('addIcon')?.value?.trim() || '';
+                const badgeText = document.getElementById('addBadge')?.value?.trim() || '';
+
+                // Basic required validation
+                if (!title) {
+                    alert('يرجى إدخال اسم المقرر');
+                    return;
+                }
+
+                // Parse price number if present (supports strings like "75 دولار")
+                const priceMatch = String(priceRaw).match(/(\d+(?:\.\d+)?)/);
+                const priceNum = priceMatch ? parseFloat(priceMatch[1]) : null;
+
+                // Generate a course code
+                const courseCode = `CRS-${Date.now().toString().slice(-6)}`;
+
+                // Build payload compatible with /api/courses addCourse
+                const payload = {
+                    course_code: courseCode,
+                    title,
+                    course_name: title,
+                    description,
+                    instructor_name: instructor,
+                    max_students: maxStudents ? parseInt(maxStudents) : undefined,
+                    status: 'active',
+                    youtube_link: youtube || undefined,
+                    category: categoryText || undefined,
+                    level_name: level || undefined,
+                    duration: duration || undefined,
+                    start_date: startDate || undefined,
+                    end_date: endDate || undefined,
+                    price: priceNum !== null ? priceNum : (priceRaw || undefined),
+                    course_icon: courseIcon || undefined,
+                    badge_text: badgeText || undefined
+                };
+
+                try {
+                    // Send POST to API
+                    const resp = await fetch('/api/courses', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await resp.json();
+
+                    if (resp.ok && result.success) {
+                        // Hide modal
+                        const modalEl = document.getElementById('addCourseModal');
+                        try {
+                            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                            modal.hide();
+                        } catch (_) {
+                            modalEl.style.display = 'none';
+                            document.body.style.overflow = '';
+                        }
+                        // Reset form
+                        this.addCourseForm.reset();
+                        // Refresh course list
+                        await this.loadCourses();
+                        alert('تم إضافة المقرر بنجاح');
+                    } else {
+                        alert('فشل في إضافة المقرر: ' + (result.message || resp.status));
+                    }
+                } catch (error) {
+                    console.error('Error adding course:', error);
+                    alert('حدث خطأ أثناء إضافة المقرر');
+                }
+            });
+        }
     }
 }
 
