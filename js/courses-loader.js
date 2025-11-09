@@ -164,7 +164,11 @@ class CourseLoader {
                     <div class="course-badge" data-ar="${badgeAr}" data-en="${badgeEn}">${lang === 'en' ? badgeEn : badgeAr}</div>
                 </div>
                 <div class="course-content">
-                    <h3 data-ar="${title}" data-en="${title}">${lang === 'en' ? title : title}</h3>
+                    <h3 data-ar="${title}" data-en="${title}">
+                        <a href="enrollment.html?courseId=${course.id}" class="course-title-link" style="text-decoration:none;color:inherit;">
+                            ${lang === 'en' ? title : title}
+                        </a>
+                    </h3>
                     <p data-ar="${description}" data-en="${description}">${lang === 'en' ? description : description}</p>
                     <div class="course-meta">
                         <span class="duration" data-ar="${durationAr}" data-en="${durationEn}">${lang === 'en' ? durationEn : durationAr}</span>
@@ -182,7 +186,7 @@ class CourseLoader {
                             ${lang === 'en' ? 'Watch Intro Video' : 'مشاهدة الفيديو التعريفي'}
                         </button>
                     </div>
-                    <button class="btn-enroll" onclick="window.location.href='enrollment.html?course=${course.id}'" data-ar="التسجيل الآن" data-en="Enroll Now">
+                    <button class="btn-enroll" onclick="window.location.href='enrollment.html?courseId=${course.id}'" data-ar="التسجيل الآن" data-en="Enroll Now">
                         ${lang === 'en' ? 'Enroll Now' : 'التسجيل الآن'}
                     </button>
                     ${adminActions}
