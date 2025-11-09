@@ -1,0 +1,1 @@
+ALTER TABLE courses ADD COLUMN price_sdg VARCHAR(255) AFTER price;

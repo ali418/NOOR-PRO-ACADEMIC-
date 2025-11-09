@@ -138,11 +138,17 @@ class CourseLoader {
         
         // معالجة السعر بشكل صحيح
         let priceDisplay = 'قريباً';
-        const priceUsd = course.price_usd || course.price; // استخدم price_usd إذا كان متاحاً
+        const priceUsd = course.price;
+        const priceSdg = course.price_sdg;
 
         if (priceUsd && !isNaN(parseFloat(priceUsd))) {
             const priceFloat = parseFloat(priceUsd);
             priceDisplay = `${priceFloat.toFixed(2)} $`;
+
+            if (priceSdg && !isNaN(parseFloat(priceSdg))) {
+                const sdgFloat = parseFloat(priceSdg);
+                priceDisplay += ` / ${sdgFloat.toLocaleString('ar-EG')} جنيه`;
+            }
         }
 
         const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');

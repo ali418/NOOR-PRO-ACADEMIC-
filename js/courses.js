@@ -1037,8 +1037,13 @@ class CoursesManager {
                             </div>
                             
                             <div class="form-group">
-                                <label for="edit-course-price">السعر</label>
+                                <label for="edit-course-price">السعر (USD)</label>
                                 <input type="number" id="edit-course-price" value="${course.price}" min="0" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="edit-course-price-sdg">السعر (SDG)</label>
+                                <input type="number" id="edit-course-price-sdg" value="${course.price_sdg || ''}" min="0">
                             </div>
                         </div>
 
@@ -1120,6 +1125,7 @@ class CoursesManager {
                     level: document.getElementById('edit-course-level').value,
                     duration: document.getElementById('edit-course-duration').value,
                     price: document.getElementById('edit-course-price').value,
+                    price_sdg: document.getElementById('edit-course-price-sdg').value,
                     instructor: document.getElementById('edit-course-instructor').value,
                     status: document.getElementById('edit-course-status').value,
                     youtube_link: document.getElementById('edit-course-youtube').value || '',
