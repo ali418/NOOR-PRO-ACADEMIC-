@@ -211,6 +211,10 @@ class EnrollmentSystem {
 
             this.showStep(2);
         } else if (this.currentStep === 2) {
+            if (!this.courseData) {
+                this.showToast('بيانات الدورة لم تحمّل بعد. الرجاء الانتظار قليلاً ثم المحاولة مرة أخرى.', 'info');
+                return;
+            }
             if (!this.selectedPaymentMethod) {
                 this.showToast('اختر طريقة الدفع للاستمرار', 'error');
                 return;
