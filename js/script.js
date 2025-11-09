@@ -901,6 +901,65 @@ document.addEventListener('DOMContentLoaded', () => {
     const statsManager = new StatsManager();
     statsManager.init();
 
+    // Sanitize any legacy enrollment links that use ?course= or malformed IDs
+    (function sanitizeEnrollmentLinks() {
+        try {
+            const anchors = Array.from(document.querySelectorAll('a[href*="enrollment.html?"]'));
+            anchors.forEach(a => {
+                const href = a.getAttribute('href') || '';
+                if (!href.includes('enrollment.html')) return;
+
+                // If already using courseId, ensure it's clean
+                if (href.includes('courseId=')) {
+                    try {
+                        const url = new URL(href, window.location.origin);
+                        let id = url.searchParams.get('courseId');
+                        if (id && /\d+\.?/.test(id)) {
+                            id = parseInt(id, 10).toString();
+                            url.searchParams.set('courseId', id);
+                            a.setAttribute('href', url.pathname + '?' + url.searchParams.toString());
+                        }
+                    } catch (_) { /* ignore */ }
+                    return;
+                }
+
+                // Legacy param name "course" → convert to courseId when possible
+                try {
+                    const url = new URL(href, window.location.origin);
+                    const legacy = url.searchParams.get('course');
+                    let newHref = 'enrollment.html';
+
+                    // Prefer nearby card data attribute if present
+                    const card = a.closest('.course-card');
+                    const dbId = card && card.getAttribute('data-course-id');
+                    if (dbId) {
+                        newHref = `enrollment.html?courseId=${encodeURIComponent(dbId)}`;
+                    } else if (legacy) {
+                        // If legacy looks numeric (e.g., '4.'), sanitize to integer
+                        const numeric = legacy.match(/^(\d+)/);
+                        if (numeric) {
+                            newHref = `enrollment.html?courseId=${numeric[1]}`;
+                        } else {
+                            // Unknown slug: drop param to avoid 404s
+                            newHref = 'enrollment.html';
+                        }
+                    }
+                    a.setAttribute('href', newHref);
+                } catch (_) {
+                    // On parse errors, fallback to plain enrollment page
+                    a.setAttribute('href', 'enrollment.html');
+                }
+            });
+
+            // Observe dynamic injections (e.g., CourseLoader) and re-sanitize
+            const grid = document.getElementById('coursesGrid');
+            if (grid && window.MutationObserver) {
+                const observer = new MutationObserver(() => sanitizeEnrollmentLinks());
+                observer.observe(grid, { childList: true, subtree: true });
+            }
+        } catch (_) { /* noop */ }
+    })();
+
     // Add loading animation
     const loader = document.createElement('div');
     loader.className = 'page-loader';
