@@ -660,6 +660,12 @@
                             <label for="address" data-ar="عنوان السكن *" data-en="Address *">عنوان السكن *</label>
                             <input type="text" id="address" name="address" required>
                         </div>
+                        <!-- زر انتقال واضح داخل الخطوة الأولى -->
+                        <div style="margin-top:12px;">
+                            <button type="button" class="btn btn-primary" id="nextBtnInline" style="width:100%; font-size:1.05rem; padding:12px 18px;">
+                                <i class="fas fa-arrow-left"></i> الانتقال للخطوة التالية
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Step 2: Payment Method -->
@@ -677,26 +683,12 @@
                                 <h4>بنكك</h4>
                                 <p>الدفع عبر تطبيق بنكك</p>
                             </div>
-                            <div class="payment-method" data-method="areeba">
-                                <i class="fas fa-credit-card"></i>
-                                <h4>أريبا</h4>
-                                <p>الدفع عبر خدمات أريبا</p>
-                            </div>
-                            <div class="payment-method" data-method="amteen">
-                                <i class="fas fa-wallet"></i>
-                                <h4>أمتين</h4>
-                                <p>الدفع عبر أمتين</p>
-                            </div>
-                            <div class="payment-method" data-method="bank-transfer">
-                                <i class="fas fa-exchange-alt"></i>
-                                <h4>تحويل بنكي</h4>
-                                <p>تحويل مباشر للحساب البنكي</p>
-                            </div>
-                            <div class="payment-method" data-method="in-person">
-                                <i class="fas fa-hand-holding-usd"></i>
-                                <h4>دفع مباشر</h4>
-                                <p>الدفع عند الحضور</p>
-                            </div>
+                           
+
+                        <!-- تعليمات الطريقة المختارة -->
+                        <div id="methodInfo" class="info-box" style="display:none; background:#f0f6ff; border:1px solid #d8e7ff; padding:12px; border-radius:10px; margin:12px 0;">
+                            <h4 style="margin:0 0 8px 0;">تفاصيل الطريقة المختارة</h4>
+                            <div id="methodInfoContent" style="line-height:1.7"></div>
                         </div>
 
                         <div class="payment-details" id="paymentDetails" style="display:none; padding: 15px; border-radius: 10px;">
@@ -709,22 +701,33 @@
                                 <label for="transactionId">رقم المعاملة</label>
                                 <input type="text" id="transactionId" name="transactionId" placeholder="أدخل رقم العملية إن وجد">
                             </div>
+                            <div class="form-group">
+                                <label for="receiptFile">رفع إيصال الدفع (اختياري)</label>
+                                <input type="file" id="receiptFile" name="receiptFile" accept=".jpg,.jpeg,.png,.pdf">
+                                <small style="color:#666">صيَغ مدعومة: JPG, PNG, PDF</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentNotes">ملاحظات إضافية (اختياري)</label>
+                                <textarea id="studentNotes" name="studentNotes" rows="3" placeholder="أدخل أي ملاحظة تخص عملية الدفع"></textarea>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Step 3: Confirmation -->
                     <div class="form-step" data-step="3" style="display: none;">
                         <h3><i class="fas fa-clipboard-check"></i> <span data-ar="تأكيد البيانات" data-en="Confirm Details">تأكيد البيانات</span></h3>
-                        <p>راجع بياناتك وطريقة الدفع، ثم اضغط تسجيل لإرسال الطلب.</p>
-                        <div id="reviewBlock" style="background:#f8f9fa; padding:12px; border-radius:10px;"></div>
+                        <p>راجع بياناتك وبيانات الكورس، ثم اضغط تأكيد الطلاب لإرسال الطلب للمراجعة.</p>
+                        <div id="reviewBlock" style="background:#f8f9fa; color:#333; padding:12px; border-radius:10px;"></div>
                     </div>
                 </form>
 
                 <!-- Navigation Buttons -->
                 <div class="btn-group">
                     <button type="button" class="btn btn-secondary" id="prevBtn" style="display:none;">رجوع</button>
-                    <button type="button" class="btn btn-primary" id="nextBtn">التالي</button>
-                    <button type="submit" class="btn btn-primary" id="submitBtn" style="display:none;">تسجيل</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn" style="width:100%; font-size:1.05rem; padding:12px 18px;">
+                        <i class="fas fa-arrow-left"></i> الانتقال للخطوة التالية
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="display:none;">تأكيد الطلاب</button>
                 </div>
             </div>
         </div>

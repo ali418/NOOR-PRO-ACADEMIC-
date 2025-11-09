@@ -2,7 +2,9 @@
 class CourseLoader {
     constructor() {
         this.coursesGrid = document.getElementById('coursesGrid');
-        this.loadingIndicator = document.getElementById('loadingCourses');
+        // Use page-provided states instead of injecting a duplicate loader
+        this.loadingState = document.getElementById('loadingState');
+        this.emptyState = document.getElementById('emptyState');
         this.init();
     }
 
@@ -46,13 +48,11 @@ class CourseLoader {
         window.HOMEPAGE_COURSES = courses;
 
         const coursesHTML = courses.map(course => this.createCourseCard(course)).join('');
-        this.coursesGrid.innerHTML = `
-            <div class="loading-courses" id="loadingCourses" style="display: none; text-align: center; padding: 40px; color: #718096;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
-                <p>جاري تحميل المقررات...</p>
-            </div>
-            ${coursesHTML}
-        `;
+        // Render only the course cards; control visibility via existing page states
+        this.coursesGrid.innerHTML = coursesHTML;
+        if (this.emptyState) this.emptyState.style.display = 'none';
+        // Clear inline display to let CSS grid/flex rules apply
+        if (this.coursesGrid) this.coursesGrid.style.display = '';
 
         // Refresh translations for newly injected elements
         if (window.languageManager && typeof window.languageManager.updateContent === 'function') {
@@ -136,23 +136,20 @@ class CourseLoader {
     }
 
     showLoading() {
-        if (this.loadingIndicator) {
-            this.loadingIndicator.style.display = 'block';
-        }
+        if (this.loadingState) this.loadingState.style.display = 'block';
+        if (this.emptyState) this.emptyState.style.display = 'none';
+        if (this.coursesGrid) this.coursesGrid.style.display = 'none';
     }
 
     hideLoading() {
-        if (this.loadingIndicator) {
-            this.loadingIndicator.style.display = 'none';
-        }
+        if (this.loadingState) this.loadingState.style.display = 'none';
     }
 
     showError(message) {
+        if (this.loadingState) this.loadingState.style.display = 'none';
+        if (this.emptyState) this.emptyState.style.display = 'none';
+        if (this.coursesGrid) this.coursesGrid.style.display = '';
         this.coursesGrid.innerHTML = `
-            <div class="loading-courses" id="loadingCourses" style="display: none; text-align: center; padding: 40px; color: #718096;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
-                <p>جاري تحميل المقررات...</p>
-            </div>
             <div class="error-state" style="text-align: center; padding: 40px; color: #e53e3e;">
                 <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
                 <p>${message}</p>
@@ -164,16 +161,12 @@ class CourseLoader {
     }
 
     showEmptyState() {
-        this.coursesGrid.innerHTML = `
-            <div class="loading-courses" id="loadingCourses" style="display: none; text-align: center; padding: 40px; color: #718096;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
-                <p>جاري تحميل المقررات...</p>
-            </div>
-            <div class="empty-state" style="text-align: center; padding: 40px; color: #718096;">
-                <i class="fas fa-graduation-cap" style="font-size: 48px; margin-bottom: 20px;"></i>
-                <p>لا توجد مقررات متاحة حالياً</p>
-            </div>
-        `;
+        if (this.loadingState) this.loadingState.style.display = 'none';
+        if (this.coursesGrid) {
+            this.coursesGrid.innerHTML = '';
+            this.coursesGrid.style.display = 'none';
+        }
+        if (this.emptyState) this.emptyState.style.display = 'block';
     }
 
     // Method to refresh courses (can be called from admin after updates)
