@@ -293,15 +293,50 @@ class EnrollmentSystem {
             return;
         }
 
-        fetch(`${this.apiBase}/api/courses/${courseId}`)
-            .then(response => response.json())
+        const courseUrl = `${this.apiBase}/api/courses/${courseId}`;
+        fetch(courseUrl)
+            .then(async (response) => {
+                const contentType = response.headers.get('content-type') || '';
+                if (!response.ok || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`HTTP ${response.status} from ${courseUrl}. Content-Type: ${contentType}. Body starts: ${text.slice(0, 120)}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 this.courseData = data.course;
                 this.enrollmentData.courseId = data.course.id;
                 this.enrollmentData.courseName = data.course.title;
                 this.displayCourseDetails(data.course);
             })
-            .catch(error => console.error('Error fetching course data:', error));
+            .catch(async (error) => {
+                console.error('Error fetching course data:', error);
+                // Fallback: load from sample endpoint and find by id
+                try {
+                    const sampleUrl = `${this.apiBase}/api/courses-sample`;
+                    const resp = await fetch(sampleUrl);
+                    const ct = resp.headers.get('content-type') || '';
+                    if (!resp.ok || !ct.includes('application/json')) {
+                        const txt = await resp.text();
+                        throw new Error(`Fallback failed: HTTP ${resp.status} from ${sampleUrl}. CT: ${ct}. Body: ${txt.slice(0, 120)}`);
+                    }
+                    const sampleData = await resp.json();
+                    const allCourses = sampleData.courses || sampleData.data || [];
+                    const found = allCourses.find(c => String(c.id) === String(courseId));
+                    if (!found) {
+                        this.showToast('لم يتم العثور على المقرر المطلوب', 'error');
+                        window.location.href = 'courses.html';
+                        return;
+                    }
+                    this.courseData = found;
+                    this.enrollmentData.courseId = found.id;
+                    this.enrollmentData.courseName = found.title || found.course_name || 'دورة';
+                    this.displayCourseDetails(found);
+                } catch (fbErr) {
+                    console.error('Fallback to sample courses failed:', fbErr);
+                    this.showToast('تعذر تحميل بيانات المقرر حالياً. يرجى المحاولة لاحقاً.', 'error');
+                }
+            });
     }
 
     displayCourseDetails(course) {
