@@ -211,10 +211,6 @@ class EnrollmentSystem {
 
             this.showStep(2);
         } else if (this.currentStep === 2) {
-            if (!this.courseData) {
-                this.showToast('بيانات الدورة لم تحمّل بعد. الرجاء الانتظار قليلاً ثم المحاولة مرة أخرى.', 'info');
-                return;
-            }
             if (!this.selectedPaymentMethod) {
                 this.showToast('اختر طريقة الدفع للاستمرار', 'error');
                 return;
@@ -351,7 +347,9 @@ class EnrollmentSystem {
 
     loadCourseData() {
         const urlParams = new URLSearchParams(window.location.search);
+        // دعم كلا المفتاحين: courseId و course لضمان التوافق الخلفي
         const rawId = urlParams.get('courseId') || urlParams.get('course') || '';
+        // إزالة المسافات والنقاط الزائدة في نهاية المعرّف لمنع روابط مثل 1.
         const courseId = String(rawId).trim().replace(/\.+$/g, '');
 
         if (!courseId) {
@@ -360,43 +358,71 @@ class EnrollmentSystem {
             return;
         }
 
-        // تعديل: جلب البيانات من ملف JSON محلي مباشرة
-        const courseUrl = `../sample-courses.json`; 
-
+        const courseUrl = `${this.apiBase}/api/courses/${courseId}`;
         fetch(courseUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            .then(async (response) => {
+                const contentType = response.headers.get('content-type') || '';
+                // تعامل ودّي مع 404: اعرض رسالة داخلية بدون رمي خطأ
+                if (response.status === 404 && contentType.includes('application/json')) {
+                    try {
+                        const data = await response.json();
+                        const msg = (data && (data.message || data.error)) || 'لم يتم العثور على المقرر المطلوب';
+                        this.showToast(msg, 'error');
+                    } catch (_) {
+                        this.showToast('لم يتم العثور على المقرر المطلوب', 'error');
+                    }
+                    this.renderNotFound('عذراً، هذا الكورس غير متوفر حالياً. يمكنك اختيار دورة أخرى من قائمة الدورات.');
+                    return null;
+                }
+                if (!response.ok || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`HTTP ${response.status} from ${courseUrl}. Content-Type: ${contentType}. Body starts: ${text.slice(0, 120)}`);
                 }
                 return response.json();
             })
             .then(data => {
-                const allCourses = data.courses || data.data || [];
-                const found = allCourses.find(c => String(c.id) === String(courseId));
-
-                if (!found) {
-                    this.showToast('لم يتم العثور على المقرر المطلوب', 'error');
-                    this.renderNotFound('عذراً، لم نعثر على هذه الدورة. يمكنك اختيار دورة أخرى من القائمة.');
-                    return;
-                }
-
-                const normalized = {
-                    id: found.id,
-                    title: found.title || found.course_name || 'دورة',
-                    description: found.description || found.course_description || '',
-                    price: found.price || found.course_price || 0,
-                    duration: found.duration || found.course_duration || ''
-                };
-
-                this.courseData = normalized;
-                this.enrollmentData.courseId = normalized.id;
-                this.enrollmentData.courseName = normalized.title;
-                this.displayCourseDetails(normalized);
+                if (!data) return;
+                this.courseData = data.course;
+                this.enrollmentData.courseId = data.course.id;
+                this.enrollmentData.courseName = data.course.title;
+                this.displayCourseDetails(data.course);
             })
-            .catch(error => {
-                console.error('Error fetching local course data:', error);
-                this.showToast('تعذر تحميل بيانات المقرر حالياً. يرجى المحاولة لاحقاً.', 'error');
-                this.renderNotFound('حدث خطأ أثناء تحميل البيانات. الرجاء المحاولة لاحقاً أو اختيار دورة أخرى من القائمة.');
+            .catch(async (error) => {
+                console.warn('Error fetching course data:', error);
+                // Fallback: load from sample endpoint and find by id
+                try {
+                    const sampleUrl = `${this.apiBase}/api/courses-sample`;
+                    const resp = await fetch(sampleUrl);
+                    const ct = resp.headers.get('content-type') || '';
+                    if (!resp.ok || !ct.includes('application/json')) {
+                        const txt = await resp.text();
+                        throw new Error(`Fallback failed: HTTP ${resp.status} from ${sampleUrl}. CT: ${ct}. Body: ${txt.slice(0, 120)}`);
+                    }
+                    const sampleData = await resp.json();
+                    const allCourses = sampleData.courses || sampleData.data || [];
+                    const found = allCourses.find(c => String(c.id) === String(courseId));
+                    if (!found) {
+                        this.showToast('لم يتم العثور على المقرر المطلوب', 'error');
+                        this.renderNotFound('عذراً، لم نعثر على هذه الدورة. يمكنك اختيار دورة أخرى من القائمة.');
+                        return;
+                    }
+                    // طبيعـة الحقول قد تختلف في بيانات العينة؛ نوحّدها قبل العرض
+                    const normalized = {
+                        id: found.id,
+                        title: found.title || found.course_name || 'دورة',
+                        description: found.description || found.course_description || '',
+                        price: found.price || found.course_price || 0,
+                        duration: found.duration || found.course_duration || ''
+                    };
+                    this.courseData = normalized;
+                    this.enrollmentData.courseId = normalized.id;
+                    this.enrollmentData.courseName = normalized.title;
+                    this.displayCourseDetails(normalized);
+                } catch (fbErr) {
+                    console.warn('Fallback to sample courses failed:', fbErr);
+                    this.showToast('تعذر تحميل بيانات المقرر حالياً. يرجى المحاولة لاحقاً.', 'error');
+                    this.renderNotFound('حدث خطأ أثناء تحميل البيانات. الرجاء المحاولة لاحقاً أو اختيار دورة أخرى من القائمة.');
+                }
             });
     }
 
