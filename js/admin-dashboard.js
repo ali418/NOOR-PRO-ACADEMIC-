@@ -751,6 +751,18 @@ class AdminDashboard {
         const studentName = this.currentEnrollment.studentName;
         const studentPhone = this.currentEnrollment.phone;
 
+        // Normalize phone number for WhatsApp (digits only, add country code if local)
+        const normalizePhone = (raw) => {
+            let digits = String(raw || '').replace(/\D+/g, '');
+            if (!digits) return '';
+            // Strip leading 00 international prefix
+            if (digits.startsWith('00')) digits = digits.slice(2);
+            // If local format starting with 0, default to Sudan country code 249
+            if (digits.startsWith('0')) digits = '249' + digits.slice(1);
+            return digits;
+        };
+        const targetPhone = normalizePhone(studentPhone);
+
         // Compile a list of approved students for the same course (or just the current one)
         const approvedSameCourse = (this.enrollments || []).filter(e => 
             e.status === 'approved' && e.courseId === this.currentEnrollment.courseId
@@ -762,11 +774,15 @@ class AdminDashboard {
 
         // Replace placeholder for student name if not already done
         const baseMessage = (welcomeMessageText || `مرحباً ${studentName}! تم قبول طلبك في ${this.currentEnrollment.courseName}.`).replace(/\[STUDENT_NAME\]|undefined/gi, studentName);
-        const finalMessage = `${baseMessage}\n\n${listHeader}\n${listBody}${listFooter}`;
+        let finalMessage = `${baseMessage}\n\n${listHeader}\n${listBody}${listFooter}`;
+        // Limit very long messages to avoid browser URL length issues
+        if (finalMessage.length > 1800) {
+            finalMessage = finalMessage.slice(0, 1780) + '...';
+        }
 
         if (typeof WelcomeSystem !== 'undefined') {
             const welcomeSystem = new WelcomeSystem();
-            const whatsappUrl = welcomeSystem.createWhatsAppMessage(finalMessage, studentPhone || '');
+            const whatsappUrl = welcomeSystem.createWhatsAppMessage(finalMessage, targetPhone || '');
             window.open(whatsappUrl, '_blank');
             this.showNotification('يتم فتح واتساب مع رسالة تحتوي أرقام الطلاب...', 'info');
         } else {
