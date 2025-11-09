@@ -7,12 +7,24 @@ class CourseLoader {
         this.emptyState = document.getElementById('emptyState');
         this.addCourseBtn = document.getElementById('addCourseBtn');
         this.addCourseForm = document.getElementById('addCourseForm');
+        this.editCourseForm = document.getElementById('editCourseForm');
+        this.adminControls = document.getElementById('adminControls');
+        this.isAdmin = this.detectAdmin();
         this.init();
     }
 
     init() {
         this.loadCourses();
         this.bindAdminControls();
+    }
+
+    detectAdmin() {
+        try {
+            const raw = localStorage.getItem('currentUser');
+            if (!raw) return false;
+            const user = JSON.parse(raw);
+            return user && (user.role === 'admin' || user.userType === 'admin');
+        } catch (_) { return false; }
     }
 
     async loadCourses() {
@@ -56,6 +68,11 @@ class CourseLoader {
         if (this.emptyState) this.emptyState.style.display = 'none';
         // Clear inline display to let CSS grid/flex rules apply
         if (this.coursesGrid) this.coursesGrid.style.display = '';
+
+        // Show admin controls if admin
+        if (this.adminControls) {
+            this.adminControls.style.display = this.isAdmin ? 'flex' : 'none';
+        }
 
         // Refresh translations for newly injected elements
         if (window.languageManager && typeof window.languageManager.updateContent === 'function') {
@@ -105,6 +122,17 @@ class CourseLoader {
 
         const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
 
+        const adminActions = this.isAdmin ? `
+            <div class="admin-actions" style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn btn-sm btn-secondary" onclick="window.courseLoader.editCourse(${course.id})">
+                    <i class="fas fa-edit"></i> تعديل
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="window.courseLoader.deleteCourse(${course.id})">
+                    <i class="fas fa-trash"></i> حذف
+                </button>
+            </div>
+        ` : '';
+
         return `
             <div class="course-card" data-category="${course.category || 'general'}" data-course-id="${course.id}">
                 <div class="course-image">
@@ -133,6 +161,7 @@ class CourseLoader {
                     <button class="btn-enroll" onclick="window.location.href='enrollment.html?course=${course.id}'" data-ar="التسجيل الآن" data-en="Enroll Now">
                         ${lang === 'en' ? 'Enroll Now' : 'التسجيل الآن'}
                     </button>
+                    ${adminActions}
                 </div>
             </div>
         `;
@@ -179,6 +208,11 @@ class CourseLoader {
 
     // Admin: bind add course controls if present on the page
     bindAdminControls() {
+        // Toggle admin controls visibility
+        if (this.adminControls) {
+            this.adminControls.style.display = this.isAdmin ? 'flex' : 'none';
+        }
+
         // Button to open modal
         if (this.addCourseBtn) {
             this.addCourseBtn.addEventListener('click', () => {
@@ -282,6 +316,131 @@ class CourseLoader {
                     alert('حدث خطأ أثناء إضافة المقرر');
                 }
             });
+        }
+
+        // Edit form submit
+        if (this.editCourseForm) {
+            this.editCourseForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('editId')?.value;
+                const title = document.getElementById('editTitle')?.value?.trim() || '';
+                const categoryText = document.getElementById('editCategory')?.value || '';
+                const description = document.getElementById('editDescription')?.value?.trim() || '';
+                const level = document.getElementById('editLevel')?.value || '';
+                const duration = document.getElementById('editDuration')?.value?.trim() || '';
+                const priceRaw = document.getElementById('editPrice')?.value || '';
+                const instructor = document.getElementById('editInstructor')?.value?.trim() || '';
+                const youtube = document.getElementById('editYoutube')?.value?.trim() || '';
+                const startDate = document.getElementById('editStartDate')?.value || '';
+                const endDate = document.getElementById('editEndDate')?.value || '';
+                const maxStudents = document.getElementById('editMaxStudents')?.value || '';
+                const courseIcon = document.getElementById('editIcon')?.value?.trim() || '';
+                const badgeText = document.getElementById('editBadge')?.value?.trim() || '';
+
+                if (!id) { alert('معرف المقرر غير موجود'); return; }
+                if (!title) { alert('يرجى إدخال اسم المقرر'); return; }
+
+                const priceMatch = String(priceRaw).match(/(\d+(?:\.\d+)?)/);
+                const priceNum = priceMatch ? parseFloat(priceMatch[1]) : null;
+
+                const payload = {
+                    id: parseInt(id),
+                    title,
+                    course_name: title,
+                    description,
+                    instructor_name: instructor,
+                    max_students: maxStudents ? parseInt(maxStudents) : undefined,
+                    status: 'active',
+                    youtube_link: youtube || undefined,
+                    category: categoryText || undefined,
+                    level_name: level || undefined,
+                    duration: duration || undefined,
+                    start_date: startDate || undefined,
+                    end_date: endDate || undefined,
+                    price: priceNum !== null ? priceNum : (priceRaw || undefined),
+                    course_icon: courseIcon || undefined,
+                    badge_text: badgeText || undefined
+                };
+
+                try {
+                    const resp = await fetch('/api/courses', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await resp.json();
+                    if (resp.ok && result.success) {
+                        const modalEl = document.getElementById('editCourseModal');
+                        try {
+                            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                            modal.hide();
+                        } catch (_) {
+                            modalEl.style.display = 'none';
+                            document.body.style.overflow = '';
+                        }
+                        await this.loadCourses();
+                        alert('تم حفظ التغييرات بنجاح');
+                    } else {
+                        alert('فشل في تحديث المقرر: ' + (result.message || resp.status));
+                    }
+                } catch (error) {
+                    console.error('Error updating course:', error);
+                    alert('حدث خطأ أثناء تحديث المقرر');
+                }
+            });
+        }
+    }
+
+    // Open edit modal and prefill values
+    editCourse(dbId) {
+        const course = (this.courses || []).find(c => String(c.id) === String(dbId));
+        if (!course) { alert('لم يتم العثور على المقرر'); return; }
+
+        const modalEl = document.getElementById('editCourseModal');
+        if (!modalEl) { alert('نموذج التعديل غير متاح'); return; }
+        try {
+            const modal = new bootstrap.Modal(modalEl);
+            // Prefill fields
+            document.getElementById('editId') && (document.getElementById('editId').value = course.id);
+            document.getElementById('editTitle') && (document.getElementById('editTitle').value = course.title || course.course_name || '');
+            document.getElementById('editCategory') && (document.getElementById('editCategory').value = course.category || '');
+            document.getElementById('editDescription') && (document.getElementById('editDescription').value = course.description || '');
+            document.getElementById('editLevel') && (document.getElementById('editLevel').value = course.level_name || course.level || '');
+            document.getElementById('editDuration') && (document.getElementById('editDuration').value = course.duration || course.duration_weeks || '');
+            document.getElementById('editPrice') && (document.getElementById('editPrice').value = course.price || '');
+            document.getElementById('editInstructor') && (document.getElementById('editInstructor').value = course.instructor_name || '');
+            document.getElementById('editYoutube') && (document.getElementById('editYoutube').value = course.youtube_link || '');
+            document.getElementById('editStartDate') && (document.getElementById('editStartDate').value = course.start_date || '');
+            document.getElementById('editEndDate') && (document.getElementById('editEndDate').value = course.end_date || '');
+            document.getElementById('editMaxStudents') && (document.getElementById('editMaxStudents').value = course.max_students || '');
+            document.getElementById('editIcon') && (document.getElementById('editIcon').value = course.course_icon || '');
+            document.getElementById('editBadge') && (document.getElementById('editBadge').value = course.badge_text || '');
+            modal.show();
+        } catch (_) {
+            modalEl.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    // Delete course handler
+    async deleteCourse(dbId) {
+        if (!confirm('هل أنت متأكد من حذف هذا المقرر؟')) return;
+        try {
+            const resp = await fetch(`/api/courses?id=${encodeURIComponent(dbId)}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: dbId })
+            });
+            const result = await resp.json();
+            if (resp.ok && result.success) {
+                await this.loadCourses();
+                alert('تم حذف المقرر بنجاح');
+            } else {
+                alert('فشل في حذف المقرر: ' + (result.message || resp.status));
+            }
+        } catch (error) {
+            console.error('Error deleting course:', error);
+            alert('حدث خطأ أثناء حذف المقرر');
         }
     }
 }
