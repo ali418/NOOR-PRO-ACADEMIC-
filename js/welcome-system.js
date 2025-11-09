@@ -302,10 +302,11 @@ ${whatsappLink ? `📱 للانضمام إلى مجموعة الواتساب ا�
         return `${baseUrl}${groupId}?welcome=${encodeURIComponent(studentName)}`;
     }
 
-    createWhatsAppMessage(text, phoneNumber) {
-        // Create WhatsApp message link
+    createWhatsAppMessage(text, phoneNumber = '') {
+        // Create WhatsApp message link (supports no phone to open composer)
         const encodedText = encodeURIComponent(text);
-        return `https://wa.me/${phoneNumber}?text=${encodedText}`;
+        const dest = (phoneNumber && String(phoneNumber).trim()) ? String(phoneNumber).trim() : '';
+        return dest ? `https://wa.me/${dest}?text=${encodedText}` : `https://wa.me/?text=${encodedText}`;
     }
 
     // Notification tracking

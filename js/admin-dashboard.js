@@ -348,7 +348,11 @@ class AdminDashboard {
         
         if (typeof WelcomeSystem !== 'undefined') {
             const welcomeSystem = new WelcomeSystem();
-            const template = welcomeSystem.generateWelcomeMessage(this.currentEnrollment);
+            const template = welcomeSystem.generateWelcomeMessage(
+                this.currentEnrollment.courseId,
+                this.currentEnrollment.studentName,
+                this.currentEnrollment.whatsappLink || ''
+            );
             welcomeMessage = template.message;
             whatsappLink = template.whatsappLink;
         } else {
@@ -747,24 +751,28 @@ class AdminDashboard {
         const studentName = this.currentEnrollment.studentName;
         const studentPhone = this.currentEnrollment.phone;
 
-        if (!studentPhone) {
-            this.showNotification('رقم هاتف الطالب غير متوفر.', 'error');
-            return;
-        }
+        // Compile a list of approved students for the same course (or just the current one)
+        const approvedSameCourse = (this.enrollments || []).filter(e => 
+            e.status === 'approved' && e.courseId === this.currentEnrollment.courseId
+        );
+        const studentsForList = approvedSameCourse.length ? approvedSameCourse : [this.currentEnrollment];
+        const listHeader = 'قائمة الطلاب المقبولين:';
+        const listBody = studentsForList.map((e, i) => `${i + 1}) ${e.studentName} - ${e.phone || 'بدون رقم'} - ${e.courseName}`).join('\n');
+        const listFooter = `\nإجمالي: ${studentsForList.length}`;
 
         // Replace placeholder for student name if not already done
-        const finalMessage = welcomeMessageText.replace(/\[STUDENT_NAME\]|undefined/gi, studentName);
+        const baseMessage = (welcomeMessageText || `مرحباً ${studentName}! تم قبول طلبك في ${this.currentEnrollment.courseName}.`).replace(/\[STUDENT_NAME\]|undefined/gi, studentName);
+        const finalMessage = `${baseMessage}\n\n${listHeader}\n${listBody}${listFooter}`;
 
         if (typeof WelcomeSystem !== 'undefined') {
             const welcomeSystem = new WelcomeSystem();
-            const whatsappUrl = welcomeSystem.createWhatsAppMessage(finalMessage, studentPhone);
-            
-            // Open WhatsApp link in a new tab
+            const whatsappUrl = welcomeSystem.createWhatsAppMessage(finalMessage, studentPhone || '');
             window.open(whatsappUrl, '_blank');
-            
-            this.showNotification('يتم فتح واتساب لإرسال الرسالة...', 'info');
+            this.showNotification('يتم فتح واتساب مع رسالة تحتوي أرقام الطلاب...', 'info');
         } else {
-            this.showNotification('نظام الترحيب غير متاح.', 'error');
+            this.showNotification('نظام الترحيب غير متاح، سيتم استخدام نص الرسالة فقط.', 'warning');
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(finalMessage)}`;
+            window.open(whatsappUrl, '_blank');
         }
     }
 
