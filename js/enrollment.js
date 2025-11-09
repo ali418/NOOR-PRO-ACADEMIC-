@@ -580,12 +580,12 @@ class EnrollmentSystem {
             if (!d) return undefined;
             try {
                 const dt = new Date(d);
-                if (!isNaN(dt)) return dt.toLocaleDateString('ar-EG');
+                if (!isNaN(dt)) return dt.toLocaleDateString('en-GB');
             } catch (e) {}
             return String(d);
         };
         const formattedPrice = (course.price !== undefined && course.price !== null && course.price !== '')
-            ? `${Number(course.price).toLocaleString('ar-EG')} SDG`
+            ? `${Number(course.price).toLocaleString('en-US')} SDG`
             : undefined;
 
         addItem('fas fa-book', 'العنوان:', course.title);

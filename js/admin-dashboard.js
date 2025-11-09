@@ -272,7 +272,7 @@ class AdminDashboard {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">تاريخ التقديم:</span>
-                            <span class="detail-value">${new Date(enrollment.submissionDate).toLocaleDateString('ar-SA')}</span>
+                            <span class="detail-value">${new Date(enrollment.submissionDate).toLocaleDateString('en-GB')}</span>
                         </div>
                     </div>
 
@@ -284,7 +284,7 @@ class AdminDashboard {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">السعر:</span>
-                            <span class="detail-value">${coursePrice} دولار</span>
+                            <span class="detail-value">${Number(coursePrice || 0).toLocaleString('en-US')} دولار</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">طريقة الدفع:</span>
@@ -292,7 +292,7 @@ class AdminDashboard {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">المبلغ المدفوع:</span>
-                            <span class="detail-value">${paymentDetails.amount || coursePrice || 0} دولار</span>
+                            <span class="detail-value">${Number(paymentDetails.amount || coursePrice || 0).toLocaleString('en-US')} دولار</span>
                         </div>
                         ${paymentDetails.transactionId ? `
                         <div class="detail-item">
@@ -547,7 +547,7 @@ class AdminDashboard {
         const enrollment = this.enrollments.find(e => e.id === enrollmentId);
         if (!enrollment) return;
 
-        alert(`تفاصيل الطلب ${enrollment.id}:\n\nالطالب: ${enrollment.studentName}\nالكورس: ${enrollment.courseName}\nالحالة: ${enrollment.status}\nتاريخ التقديم: ${new Date(enrollment.submissionDate).toLocaleDateString('ar-SA')}`);
+        alert(`تفاصيل الطلب ${enrollment.id}:\n\nالطالب: ${enrollment.studentName}\nالكورس: ${enrollment.courseName}\nالحالة: ${enrollment.status}\nتاريخ التقديم: ${new Date(enrollment.submissionDate).toLocaleDateString('en-GB')}`);
     }
     
     viewStudentDetails(enrollmentId) {
@@ -612,7 +612,7 @@ class AdminDashboard {
             </div>
             <div class="detail-item">
                 <span class="detail-label">تاريخ التقديم:</span>
-                <span class="detail-value">${new Date(enrollment.submissionDate).toLocaleDateString('ar-SA')}</span>
+                <span class="detail-value">${new Date(enrollment.submissionDate).toLocaleDateString('en-GB')}</span>
             </div>
         `;
         
@@ -647,7 +647,7 @@ class AdminDashboard {
             </div>
             <div class="detail-item">
                 <span class="detail-label">المبلغ المدفوع:</span>
-                <span class="detail-value">${enrollment.paymentDetails.amount || 0} دولار</span>
+                <span class="detail-value">${Number(enrollment.paymentDetails.amount || 0).toLocaleString('en-US')} دولار</span>
             </div>
             ${enrollment.paymentDetails.transactionId ? `
             <div class="detail-item">

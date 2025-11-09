@@ -391,7 +391,7 @@ class ProfileManager {
     }
 
     createNotificationCard(n) {
-        const dateStr = n.createdAt ? new Date(n.createdAt).toLocaleString('ar-SA') : '';
+        const dateStr = n.createdAt ? new Date(n.createdAt).toLocaleString('en-GB') : '';
         const whatsappBtn = n.whatsappLink ? `
             <a class="btn-whatsapp" href="${n.whatsappLink}" target="_blank" rel="noopener">
                 <i class="fab fa-whatsapp"></i>
@@ -453,7 +453,7 @@ class ProfileManager {
             </div>
             <div class="course-info">
                 <p><strong>المدرس:</strong> ${course.instructor}</p>
-                <p><strong>تاريخ التسجيل:</strong> ${new Date(course.enrollDate).toLocaleDateString('ar-SA')}</p>
+                <p><strong>تاريخ التسجيل:</strong> ${new Date(course.enrollDate).toLocaleDateString('en-GB')}</p>
             </div>
             ${course.status === 'approved' && course.whatsappLink ? `
             <div class="course-actions" style="margin-top: 10px;">
@@ -521,7 +521,7 @@ class ProfileManager {
                 <i class="fas fa-certificate"></i>
             </div>
             <h4>${certificate.title}</h4>
-            <p class="certificate-date">${new Date(certificate.date).toLocaleDateString('ar-SA')}</p>
+            <p class="certificate-date">${new Date(certificate.date).toLocaleDateString('en-GB')}</p>
             <button class="download-btn" onclick="window.open('${certificate.downloadUrl}', '_blank')">
                 <i class="fas fa-download"></i>
                 تحميل الشهادة

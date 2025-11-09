@@ -544,7 +544,7 @@
             if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
                 const d = new Date(s);
                 if (Number.isNaN(d.getTime())) return toEnglishDigits(s);
-                const out = d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+            const out = d.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
                 return toEnglishDigits(out);
             }
             // DD/MM/YYYY or DD-MM-YYYY
@@ -553,7 +553,7 @@
                 const [_, dd, mm, yyyy] = m;
                 const d = new Date(`${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`);
                 if (Number.isNaN(d.getTime())) return toEnglishDigits(`${dd}/${mm}/${yyyy}`);
-                const out = d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+            const out = d.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
                 return toEnglishDigits(out);
             }
             // Fallback: show as-is (digits enforced to English)

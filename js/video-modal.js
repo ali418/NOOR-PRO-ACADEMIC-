@@ -164,7 +164,7 @@ class VideoModal {
                 const duration = course.duration_weeks || course.duration || course.hours;
                 if (duration) features.push({ icon: 'fas fa-clock', text: `المدة: ${duration}` });
                 const startDate = course.start_date;
-                if (startDate) features.push({ icon: 'fas fa-calendar-alt', text: `تاريخ البدء: ${new Date(startDate).toLocaleDateString('ar-EG')}` });
+        if (startDate) features.push({ icon: 'fas fa-calendar-alt', text: `تاريخ البدء: ${new Date(startDate).toLocaleDateString('en-GB')}` });
                 if (course.price) features.push({ icon: 'fas fa-tags', text: `السعر: ${course.price}$` });
 
                 return {

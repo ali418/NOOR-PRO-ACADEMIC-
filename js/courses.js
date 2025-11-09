@@ -633,7 +633,8 @@ class CoursesManager {
 
     formatDate(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('ar-SA');
+        // التقويم الميلادي وأرقام إنجليزية
+        return date.toLocaleDateString('en-GB');
     }
 
     updatePagination() {

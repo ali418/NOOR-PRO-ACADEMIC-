@@ -133,7 +133,7 @@ class CourseLoader {
         const durationAr = course.duration || (durationWeeks ? `${durationWeeks} أسبوع` : '');
         const durationEn = course.duration || (durationWeeks ? `${durationWeeks} weeks` : '');
         const startDateObj = course.start_date ? new Date(course.start_date) : null;
-        const startDateAr = startDateObj ? startDateObj.toLocaleDateString('ar-EG') : '';
+    const startDateAr = startDateObj ? startDateObj.toLocaleDateString('en-GB') : '';
         const startDateEn = startDateObj ? startDateObj.toLocaleDateString('en-US') : '';
         
         // معالجة السعر بشكل صحيح
@@ -147,7 +147,7 @@ class CourseLoader {
 
             if (priceSdg && !isNaN(parseFloat(priceSdg)) && parseFloat(priceSdg) > 0) {
                 if (priceDisplay) priceDisplay += ' / ';
-                priceDisplay += `<span>${parseFloat(priceSdg).toLocaleString('ar-EG')} جنيه</span>`;
+    priceDisplay += `<span>${parseFloat(priceSdg).toLocaleString('en-US')} جنيه</span>`;
             }
 
             if (!priceDisplay) {

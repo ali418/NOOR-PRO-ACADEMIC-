@@ -446,6 +446,10 @@ async function updateCourse(req, res) {
 
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
         const hasPriceSDG = await columnExists(connection, 'courses', 'price_sdg');
+        // Resolve category_id safely (use provided value if numeric, else null)
+        const resolvedCategoryId = (category_id !== undefined && category_id !== null && !isNaN(parseInt(category_id)))
+            ? parseInt(category_id)
+            : null;
         let query, params;
         if (hasCategoryId) {
             // تحديث course_name بالإضافة إلى title
@@ -467,14 +471,14 @@ async function updateCourse(req, res) {
                 status || 'active',
                 youtube_link || null,
                 category || 'general',
-                price || '0',
+                sanitizedPrice,
                 ...(hasPriceSDG ? [req.body.price_sdg || null] : []),
                 level_name || 'مبتدئ',
                 start_date || null,
                 end_date || null,
                 course_icon || 'fas fa-book',
                 badge_text || null,
-                resolvedCategoryId || null,
+                resolvedCategoryId,
                 id
             ];
         } else {
@@ -496,7 +500,7 @@ async function updateCourse(req, res) {
                 status || 'active',
                 youtube_link || null,
                 category || 'general',
-                price || '0',
+                sanitizedPrice,
                 ...(hasPriceSDG ? [req.body.price_sdg || null] : []),
                 level_name || 'مبتدئ',
                 start_date || null,

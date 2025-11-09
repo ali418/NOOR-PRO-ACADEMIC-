@@ -535,7 +535,8 @@ class StudentsManager {
 
     formatDate(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('ar-SA');
+        // إظهار التاريخ بالتقويم الميلادي وبأرقام إنجليزية
+        return date.toLocaleDateString('en-GB');
     }
 
     updatePagination() {
@@ -635,7 +636,8 @@ class StudentsManager {
             id: studentId,
             firstName: formData.get('firstName'),
             lastName: formData.get('lastName'),
-            email: formData.get('email'),
+            // لم يعد هناك حقل بريد في النموذج؛ نولّد بريداً داخلياً لتلبية متطلبات الخادم
+            email: `no-email-${studentId}@noor.local`,
             phone: formData.get('phone') || '',
             birthDate: formData.get('birthDate'),
             gender: formData.get('gender'),
