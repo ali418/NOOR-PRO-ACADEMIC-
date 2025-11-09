@@ -334,7 +334,7 @@ class CourseLoader {
 
                 try {
                     // Send POST to API
-                    const resp = await fetch('/api/courses', {
+                    const resp = await fetch(`/api/courses?id=${id}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
