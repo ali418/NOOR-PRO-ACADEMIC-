@@ -286,7 +286,9 @@ class EnrollmentSystem {
     loadCourseData() {
         const urlParams = new URLSearchParams(window.location.search);
         // دعم كلا المفتاحين: courseId و course لضمان التوافق الخلفي
-        const courseId = urlParams.get('courseId') || urlParams.get('course');
+        const rawId = urlParams.get('courseId') || urlParams.get('course') || '';
+        // إزالة المسافات والنقاط الزائدة في نهاية المعرّف لمنع روابط مثل 1.
+        const courseId = String(rawId).trim().replace(/\.+$/g, '');
 
         if (!courseId) {
             window.location.href = 'courses.html';
@@ -328,10 +330,18 @@ class EnrollmentSystem {
                         window.location.href = 'courses.html';
                         return;
                     }
-                    this.courseData = found;
-                    this.enrollmentData.courseId = found.id;
-                    this.enrollmentData.courseName = found.title || found.course_name || 'دورة';
-                    this.displayCourseDetails(found);
+                    // طبيعـة الحقول قد تختلف في بيانات العينة؛ نوحّدها قبل العرض
+                    const normalized = {
+                        id: found.id,
+                        title: found.title || found.course_name || 'دورة',
+                        description: found.description || found.course_description || '',
+                        price: found.price || found.course_price || 0,
+                        duration: found.duration || found.course_duration || ''
+                    };
+                    this.courseData = normalized;
+                    this.enrollmentData.courseId = normalized.id;
+                    this.enrollmentData.courseName = normalized.title;
+                    this.displayCourseDetails(normalized);
                 } catch (fbErr) {
                     console.error('Fallback to sample courses failed:', fbErr);
                     this.showToast('تعذر تحميل بيانات المقرر حالياً. يرجى المحاولة لاحقاً.', 'error');
@@ -340,9 +350,49 @@ class EnrollmentSystem {
     }
 
     displayCourseDetails(course) {
-        document.getElementById('courseTitle').textContent = course.title;
-        document.getElementById('courseDescription').textContent = course.description;
-        document.getElementById('coursePrice').textContent = `Price: ${course.price} SDG`;
+        const infoEl = document.getElementById('courseInfo');
+        const featuresEl = document.getElementById('courseFeatures');
+        if (!infoEl) {
+            console.warn('Missing #courseInfo element; skipping course details render');
+            return;
+        }
+        // Render structured info blocks compatible with enrollment.html markup
+        const fragments = [];
+        const addItem = (iconClass, label, value) => {
+            if (value === undefined || value === null || value === '') return;
+            const div = document.createElement('div');
+            div.className = 'course-info-item';
+            const icon = document.createElement('i');
+            icon.className = iconClass;
+            const strong = document.createElement('strong');
+            strong.textContent = label;
+            const span = document.createElement('span');
+            span.textContent = String(value);
+            div.appendChild(icon);
+            div.appendChild(strong);
+            div.appendChild(span);
+            fragments.push(div);
+        };
+
+        addItem('fas fa-book', 'العنوان:', course.title);
+        addItem('fas fa-align-left', 'الوصف:', course.description);
+        addItem('fas fa-clock', 'المدة:', course.duration);
+        addItem('fas fa-dollar-sign', 'السعر:', course.price ? `${course.price} SDG` : undefined);
+
+        // Clear and append
+        infoEl.innerHTML = '';
+        fragments.forEach(el => infoEl.appendChild(el));
+
+        // Optional features list
+        if (featuresEl) {
+            featuresEl.innerHTML = '';
+            const features = Array.isArray(course.features) ? course.features : [];
+            features.slice(0, 8).forEach(f => {
+                const li = document.createElement('li');
+                li.textContent = String(f);
+                featuresEl.appendChild(li);
+            });
+        }
     }
 
     submitEnrollment() {
