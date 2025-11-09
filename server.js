@@ -268,6 +268,15 @@ if (coursesAPI && typeof coursesAPI.getCourses === 'function') {
 // Explicit route for fetching a single course by ID
 // Delegates to coursesAPI.getCourseById if available; otherwise falls back to sample data
 app.get('/api/courses/:id', async (req, res) => {
+  // Sanitize id: accept numeric id, tolerate trailing punctuation like '4.'
+  const originalId = req.params.id;
+  const numericId = parseInt(String(originalId), 10);
+  if (!Number.isFinite(numericId)) {
+    return res.status(400).json({ success: false, message: 'Invalid course id' });
+  }
+  // Normalize the param for downstream handlers
+  req.params.id = String(numericId);
+
   try {
     if (coursesAPI && typeof coursesAPI.getCourseById === 'function') {
       return coursesAPI.getCourseById(req, res);
@@ -280,8 +289,7 @@ app.get('/api/courses/:id', async (req, res) => {
       const sampleCoursesPath = path.join(__dirname, 'sample-courses.json');
       const raw = fs.readFileSync(sampleCoursesPath, 'utf8');
       const sampleCourses = JSON.parse(raw);
-      const courseId = req.params.id;
-      const course = sampleCourses.find(c => String(c.id) === String(courseId));
+      const course = sampleCourses.find(c => Number(c.id) === numericId);
       if (course) {
         return res.json({ success: true, course });
       }

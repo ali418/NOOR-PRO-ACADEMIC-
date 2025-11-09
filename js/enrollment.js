@@ -1,7 +1,9 @@
 class EnrollmentSystem {
     constructor() {
         this.enrollmentData = {};
-        this.apiBase = 'https://nooracademic.up.railway.app';
+        // استخدم الخادم المحلي أثناء التطوير تلقائياً
+        const isLocal = typeof window !== 'undefined' && /localhost|127\.0\.0\.1/i.test(window.location.hostname);
+        this.apiBase = isLocal ? '' : 'https://nooracademic.up.railway.app';
         this.currentStep = 1;
         this.selectedPaymentMethod = null;
         
@@ -373,22 +375,119 @@ class EnrollmentSystem {
         }
         if (infoEl) {
             const html = `
-                <div style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:12px;border-radius:6px;">
-                    <strong>تنبيه:</strong>
-                    <div style="margin-top:6px;">${message}</div>
-                    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                        <a href="courses.html" style="background:#0d6efd;color:#fff;padding:8px 12px;border-radius:4px;text-decoration:none;">عرض جميع الدورات</a>
-                        <a href="javascript:history.back()" style="background:#6c757d;color:#fff;padding:8px 12px;border-radius:4px;text-decoration:none;">رجوع</a>
+                <div style="margin-top:12px;padding:12px;border:1px dashed #d8e7ff;border-radius:8px;background:#f8fbff;">
+                    <div style="margin-bottom:8px;font-weight:bold;color:#0d6efd;">اختر دورة من القائمة:</div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id="courseSelector" style="flex:1;padding:10px;border:2px solid #e9ecef;border-radius:6px;"></select>
+                        <button id="chooseCourseBtn" class="btn btn-primary" style="padding:10px 16px;">اختيار</button>
                     </div>
                 </div>`;
             infoEl.innerHTML = html;
+            // حمّل قائمة الدورات لملء المُحدِّد
+            this.loadCourseListIntoSelector();
+            const chooseBtn = document.getElementById('chooseCourseBtn');
+            if (chooseBtn) {
+                chooseBtn.addEventListener('click', () => this.applySelectedCourse());
+            }
         }
 
-        // تعطيل أزرار التقدم إذا كانت موجودة لتفادي إرسال استمارة دون بيانات دورة
-        const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.getElementById('submitEnrollmentBtn');
-        if (nextBtn) nextBtn.disabled = true;
-        if (submitBtn) submitBtn.disabled = true;
+        // لا نعطل الأزرار؛ نسمح بإدخال بيانات الطالب والدفع، لكن نتحقق عند الإرسال
+    }
+
+    // جلب قائمة الدورات وعرضها في المُحدِّد
+    async loadCourseListIntoSelector() {
+        const selector = document.getElementById('courseSelector');
+        if (!selector) return;
+        selector.innerHTML = '<option value="">جاري التحميل...</option>';
+        let courses = [];
+        try {
+            const resp = await fetch(`${this.apiBase}/api/courses`);
+            const ct = resp.headers.get('content-type') || '';
+            if (resp.ok && ct.includes('application/json')) {
+                const data = await resp.json();
+                courses = data.courses || data.data || [];
+            } else {
+                throw new Error(`HTTP ${resp.status}`);
+            }
+        } catch (_) {
+            try {
+                const fb = await fetch(`${this.apiBase}/api/courses-sample`);
+                const ct = fb.headers.get('content-type') || '';
+                if (fb.ok && ct.includes('application/json')) {
+                    const data = await fb.json();
+                    courses = data.courses || data.data || [];
+                }
+            } catch (e) {
+                console.warn('Failed to load course list', e);
+            }
+        }
+
+        selector.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'اختر دورة من القائمة';
+        selector.appendChild(placeholder);
+        courses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = String(c.id);
+            opt.textContent = c.title || c.course_name || `دورة #${c.id}`;
+            selector.appendChild(opt);
+        });
+    }
+
+    async applySelectedCourse() {
+        const selector = document.getElementById('courseSelector');
+        if (!selector) return;
+        const selectedId = selector.value;
+        if (!selectedId) {
+            this.showToast('يرجى اختيار دورة من القائمة أولاً', 'error');
+            return;
+        }
+        // حاول جلب تفاصيل الدورة المختارة
+        try {
+            const resp = await fetch(`${this.apiBase}/api/courses/${selectedId}`);
+            const ct = resp.headers.get('content-type') || '';
+            if (resp.ok && ct.includes('application/json')) {
+                const data = await resp.json();
+                const course = data.course || data.data || data;
+                this.courseData = course;
+                this.enrollmentData.courseId = course.id;
+                this.enrollmentData.courseName = course.title;
+                this.displayCourseDetails(course);
+                this.showToast('تم اختيار الدورة بنجاح', 'success');
+                return;
+            }
+            throw new Error(`HTTP ${resp.status}`);
+        } catch (_) {
+            // فشل الجلب من القاعدة؛ استخدم بيانات العينة إن توفرت
+            try {
+                const fb = await fetch(`${this.apiBase}/api/courses-sample`);
+                const ct = fb.headers.get('content-type') || '';
+                if (fb.ok && ct.includes('application/json')) {
+                    const data = await fb.json();
+                    const list = data.courses || data.data || [];
+                    const found = list.find(c => String(c.id) === String(selectedId));
+                    if (found) {
+                        const normalized = {
+                            id: found.id,
+                            title: found.title || found.course_name || 'دورة',
+                            description: found.description || found.course_description || '',
+                            price: found.price || found.course_price || 0,
+                            duration: found.duration || found.course_duration || ''
+                        };
+                        this.courseData = normalized;
+                        this.enrollmentData.courseId = normalized.id;
+                        this.enrollmentData.courseName = normalized.title;
+                        this.displayCourseDetails(normalized);
+                        this.showToast('تم اختيار الدورة بنجاح (بيانات العينة)', 'success');
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to apply selected course', e);
+            }
+            this.showToast('تعذر تحميل تفاصيل الدورة المختارة', 'error');
+        }
     }
 
     displayCourseDetails(course) {
@@ -490,6 +589,14 @@ class EnrollmentSystem {
         if (!this.enrollmentData.fullName || !this.enrollmentData.phone) {
             this.showToast('أدخل الاسم ورقم الهاتف أولاً', 'error');
             this.showStep(1);
+            return;
+        }
+
+        // يجب اختيار دورة قبل الإرسال
+        if (!this.enrollmentData.courseId) {
+            this.showToast('يرجى اختيار دورة أولاً قبل تأكيد التسجيل', 'error');
+            // إن لم تكن تفاصيل الدورة ظاهرة، أعد إظهار المحدد
+            if (!this.courseData) this.renderNotFound('يرجى اختيار دورة من القائمة لإتمام التسجيل.');
             return;
         }
 

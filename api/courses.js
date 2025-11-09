@@ -57,6 +57,61 @@ async function columnExists(connection, tableName, columnName) {
     }
 }
 
+// Get a single course by ID
+async function getCourseById(req, res) {
+    try {
+        const connection = await createConnection();
+        const courseId = req.params.id;
+        
+        const query = 'SELECT * FROM courses WHERE id = ?';
+        const params = [courseId];
+        
+        const [rows] = await connection.execute(query, params);
+        await connection.end();
+        
+        if (rows.length > 0) {
+            res.json({
+                success: true,
+                message: 'تم جلب بيانات الدورة بنجاح',
+                course: rows[0]
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                message: 'لم يتم العثور على الدورة'
+            });
+        }
+        
+    } catch (error) {
+        try {
+            const samplePath = path.join(__dirname, '..', 'sample-courses.json');
+            const raw = fs.readFileSync(samplePath, 'utf8');
+            const sampleCourses = JSON.parse(raw);
+            const courseId = req.params.id;
+            const course = sampleCourses.find(c => String(c.id) === String(courseId));
+            
+            if (course) {
+                res.json({
+                    success: true,
+                    message: 'تم جلب بيانات الدورة بنجاح من الملف الاحتياطي',
+                    course: course
+                });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    message: 'لم يتم العثور على الدورة في الملف الاحتياطي'
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                success: false,
+                message: 'فشل الاتصال بقاعدة البيانات ولم يتم العثور على الملف الاحتياطي',
+                error: e.message
+            });
+        }
+    }
+}
+
 // Get all courses
 async function getCourses(req, res) {
     try {
@@ -593,6 +648,7 @@ async function deleteCourse(req, res) {
 
 module.exports = {
     getCourses,
+    getCourseById,
     addCourse,
     updateCourse,
     deleteCourse

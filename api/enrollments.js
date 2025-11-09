@@ -231,12 +231,29 @@ async function postEnrollments(req, res) {
       // Add enrollment
       const payload = normalizeIncomingEnrollment(body);
 
-      // --- SECURITY FIX: Fetch course price from the database ---
-      const [courseRows] = await conn.execute('SELECT price FROM courses WHERE id = ?', [payload.course_id]);
-      if (courseRows.length === 0) {
-        return res.status(404).json({ success: false, message: 'لم يتم العثور على الدورة التدريبية المحددة' });
+      // --- Fetch course title and price from the database (do not trust frontend) ---
+      const [courseRows] = await conn.execute('SELECT title, course_name, price FROM courses WHERE id = ?', [payload.course_id]);
+      let courseTitle = null;
+      let real_course_price = null;
+      if (courseRows.length > 0) {
+        courseTitle = courseRows[0].title || courseRows[0].course_name || null;
+        real_course_price = courseRows[0].price;
+      } else {
+        // Fallback to sample courses file to keep dev/test flow working
+        try {
+          const samplePath = path.join(__dirname, '..', 'sample-courses.json');
+          const raw = fs.readFileSync(samplePath, 'utf8');
+          const sampleCourses = JSON.parse(raw);
+          const found = sampleCourses.find(c => String(c.id) === String(payload.course_id));
+          if (!found) {
+            return res.status(404).json({ success: false, message: 'لم يتم العثور على الدورة التدريبية المحددة' });
+          }
+          courseTitle = found.title || null;
+          real_course_price = found.price || null;
+        } catch (fallbackErr) {
+          return res.status(404).json({ success: false, message: 'لم يتم العثور على الدورة التدريبية المحددة' });
+        }
       }
-      let real_course_price = courseRows[0].price;
 
       // Sanitize the price to extract only the number
       if (typeof real_course_price === 'string') {
@@ -248,8 +265,9 @@ async function postEnrollments(req, res) {
         }
       }
 
-
-      // --- END SECURITY FIX ---
+      // Ensure course title is set (fallback to empty string)
+      courseTitle = courseTitle || '';
+      // --- END: trusted course details from backend ---
 
       let receiptPath = null;
       try {
@@ -279,6 +297,7 @@ async function postEnrollments(req, res) {
 
       const dbPayload = {
         ...payload,
+        course_name: courseTitle,
         course_price: real_course_price, // Use the price from the database
         payment_method,
         payment_details,
@@ -324,9 +343,11 @@ async function deleteEnrollment(req, res) {
 function normalizeIncomingEnrollment(body) {
   // Support both form-based naming and our EnrollmentSystem structure
   const student_name = body.student_name || body.fullName || body.studentName || '';
-  const email = body.email || '';
+  // اجعل البريد الإلكتروني اختيارياً؛ وفّر قيمة افتراضية عند الغياب
+  const email = body.email || `guest-${Date.now()}@noor.local`;
   const phone = body.phone || '';
   const course_id = body.course_id || body.courseId || body.course || '';
+  // لم نعد نطلب اسم الكورس من الواجهة؛ سنجلبه من قاعدة البيانات
   const course_name = body.course_name || body.courseTitle || '';
   const notes = {
     address: body.address || null,
@@ -336,8 +357,9 @@ function normalizeIncomingEnrollment(body) {
     paymentMethod: body.paymentMethod || null,
     coursePrice: body.coursePrice || null
   };
-  if (!student_name || !email || !phone || !course_id || !course_name) {
-    throw new Error('الاسم والبريد والهاتف ومعرف واسم الكورس مطلوبة');
+  // الحقول المطلوبة: الاسم، الهاتف، ومعرّف الكورس فقط
+  if (!student_name || !phone || !course_id) {
+    throw new Error('الاسم ورقم الهاتف ومعرّف الكورس مطلوبة');
   }
   return { student_name, email, phone, course_id, course_name, status: 'pending', notes };
 }
