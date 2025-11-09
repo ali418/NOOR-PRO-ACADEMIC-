@@ -137,19 +137,22 @@ class CourseLoader {
         const startDateEn = startDateObj ? startDateObj.toLocaleDateString('en-US') : '';
         
         // معالجة السعر بشكل صحيح
-        let priceDisplay = 'قريباً';
-        const priceUsd = course.price;
-        const priceSdg = course.price_sdg;
+        let priceDisplay = '';
+            const priceUsd = course.price;
+            const priceSdg = course.price_sdg;
 
-        if (priceUsd && !isNaN(parseFloat(priceUsd))) {
-            const priceFloat = parseFloat(priceUsd);
-            priceDisplay = `${priceFloat.toFixed(2)} $`;
-
-            if (priceSdg && !isNaN(parseFloat(priceSdg))) {
-                const sdgFloat = parseFloat(priceSdg);
-                priceDisplay += ` / ${sdgFloat.toLocaleString('ar-EG')} جنيه`;
+            if (priceUsd && !isNaN(parseFloat(priceUsd)) && parseFloat(priceUsd) > 0) {
+                priceDisplay += `<span>${parseFloat(priceUsd).toFixed(2)} $</span>`;
             }
-        }
+
+            if (priceSdg && !isNaN(parseFloat(priceSdg)) && parseFloat(priceSdg) > 0) {
+                if (priceDisplay) priceDisplay += ' / ';
+                priceDisplay += `<span>${parseFloat(priceSdg).toLocaleString('ar-EG')} جنيه</span>`;
+            }
+
+            if (!priceDisplay) {
+                priceDisplay = 'مجاني';
+            }
 
         const lang = (localStorage.getItem('language') || document.documentElement.lang || 'ar');
 
@@ -411,7 +414,7 @@ class CourseLoader {
                 };
 
                 try {
-                    const resp = await fetch('/api/courses', {
+                    const resp = await fetch(`/api/courses?id=${id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
