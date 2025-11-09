@@ -431,17 +431,30 @@ class CourseLoader {
                     let result = null;
                     try { result = await resp.json(); } catch(_) {}
 
-                    // Fallback to PHP API when course not found or 404
+                    // Fallback to sample API when course not found or 404 (Railway Node app doesn't serve .php routes for PUT)
                     let finalOk = !!(resp.ok && result && result.success);
                     if (!finalOk && (resp.status === 404 || (result && /المقرر غير موجود|لم يتم العثور/i.test(String(result.message || ''))))) {
-                        const respPhp = await fetch(`api/courses.php`, {
+                        const samplePayload = {
+                            id: parseInt(id),
+                            course_name: title,
+                            description,
+                            category: categoryText || undefined,
+                            level: level || undefined,
+                            duration: duration || undefined,
+                            price: priceNum !== null ? priceNum : (priceRaw || undefined),
+                            instructor: instructor,
+                            youtube_link: youtube || undefined,
+                            start_date: startDate || undefined,
+                            end_date: endDate || undefined
+                        };
+                        const respSample = await fetch(`/api/courses-sample`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
+                            body: JSON.stringify(samplePayload)
                         });
-                        const resultPhp = await respPhp.json().catch(() => ({ success: false }));
-                        finalOk = !!(respPhp.ok && resultPhp && resultPhp.success);
-                        result = resultPhp;
+                        const resultSample = await respSample.json().catch(() => ({ success: false }));
+                        finalOk = !!(respSample.ok && resultSample && resultSample.success);
+                        result = resultSample;
                     }
 
                     if (finalOk) {
