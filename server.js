@@ -7,7 +7,7 @@ require('dotenv').config();
 const { runMigrations } = require('./migrations');
 
 const app = express();
-const PORT = process.env.PORT || 8010;
+const PORT = process.env.PORT || 8012;
 
 // ضبط الإعدادات الأساسية
 app.use(cors());
