@@ -689,40 +689,35 @@ class CourseManager {
     }
 
     handleEnrollment(e) {
-        e.preventDefault();
-        
-        // الحصول على رابط التسجيل من الزر مباشرة
-        const enrollBtn = e.target;
-        const enrollmentUrl = enrollBtn.getAttribute('onclick');
-        
-        // استخراج معرف الكورس من الرابط
-        let courseId = '';
-        
-        if (enrollmentUrl && enrollmentUrl.includes('enrollment.html')) {
-            // استخراج رابط التسجيل من onclick
-            const match = enrollmentUrl.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);
-            if (match) {
-                const url = match[1];
-                const courseMatch = url.match(/course=([^&]+)/);
-                if (courseMatch) {
-                    courseId = courseMatch[1];
-                }
+        // الهدف: احترام رابط التسجيل الأصلي وعدم تحويله لصيغة مختلفة
+        const enrollBtn = e.currentTarget || e.target;
+
+        // إن وُجد onclick يحدد window.location.href، استخدمه كما هو
+        const onclickAttr = enrollBtn.getAttribute('onclick') || '';
+        const fullUrlMatch = onclickAttr.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);
+        if (fullUrlMatch && fullUrlMatch[1]) {
+            window.location.href = fullUrlMatch[1];
+            return;
+        }
+
+        // محاولة استخراج المعرّف من بيانات الكارت
+        const courseCard = enrollBtn.closest('.course-card');
+        if (courseCard) {
+            const dbId = courseCard.getAttribute('data-course-id');
+            if (dbId) {
+                window.location.href = `enrollment.html?courseId=${encodeURIComponent(dbId)}`;
+                return;
+            }
+
+            const titleLink = courseCard.querySelector('a.course-title-link');
+            if (titleLink && titleLink.getAttribute('href')) {
+                window.location.href = titleLink.getAttribute('href');
+                return;
             }
         }
-        
-        if (!courseId) {
-            // إذا لم يتم العثور على معرف الكورس، استخدم الطريقة القديمة
-            const courseCard = e.target.closest('.course-card');
-            if (courseCard) {
-                const courseName = courseCard.querySelector('h3').textContent;
-                courseId = this.getCourseIdFromName(courseName);
-            } else {
-                courseId = 'english-a1'; // معرف افتراضي
-            }
-        }
-        
-        // توجيه المستخدم مباشرة إلى صفحة التسجيل مع عرض بيانات الكورس
-        window.location.href = `enrollment.html?course=${courseId}`;
+
+        // ملاذ أخير: الانتقال لصفحة التسجيل العامة
+        window.location.href = 'enrollment.html';
     }
 
     getCourseIdFromName(courseName) {
