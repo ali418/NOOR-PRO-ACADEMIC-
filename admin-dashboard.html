@@ -596,8 +596,12 @@
                   <input type="text" class="form-control" id="addDuration" placeholder="مثال: 30 يوم" />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">السعر</label>
-                  <input type="text" class="form-control" id="addPrice" placeholder="مثال: 75 دولار ≈ 260,000 جنيه سوداني" />
+                  <label class="form-label">السعر (USD)</label>
+                  <input type="number" class="form-control" id="addPrice" placeholder="مثال: 75" min="0" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">السعر (SDG)</label>
+                  <input type="number" class="form-control" id="addPriceSDG" placeholder="مثال: 260000" min="0" />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">المدرس</label>

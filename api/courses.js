@@ -255,14 +255,15 @@ async function addCourse(req, res) {
         if (!categoryText) categoryText = 'general';
 
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
+        const hasPriceSDG = await columnExists(connection, 'courses', 'price_sdg');
         let query, params;
         if (hasCategoryId) {
             // تضمين course_name لتفادي قيود NOT NULL في بعض المخططات
             query = `INSERT INTO courses (
                 course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, status, youtube_link, category, 
-                price, level_name, start_date, end_date, course_icon, badge_text, category_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text, category_id
+            ) VALUES (${Array.from({length: hasPriceSDG ? 20 : 19}).map(() => '?').join(', ')})`;
             params = [
                 course_code,
                 courseTitle, // course_name
@@ -277,6 +278,7 @@ async function addCourse(req, res) {
                 youtube_link || null,
                 categoryText,
                 price || '0',
+                ...(hasPriceSDG ? [req.body.price_sdg || null] : []),
                 level_name || 'مبتدئ',
                 start_date || null,
                 end_date || null,
@@ -289,8 +291,8 @@ async function addCourse(req, res) {
             query = `INSERT INTO courses (
                 course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, status, youtube_link, category, 
-                price, level_name, start_date, end_date, course_icon, badge_text
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text
+            ) VALUES (${Array.from({length: hasPriceSDG ? 18 : 17}).map(() => '?').join(', ')})`;
             params = [
                 course_code,
                 courseTitle, // course_name
@@ -305,6 +307,7 @@ async function addCourse(req, res) {
                 youtube_link || null,
                 categoryText,
                 price || '0',
+                ...(hasPriceSDG ? [req.body.price_sdg || null] : []),
                 level_name || 'مبتدئ',
                 start_date || null,
                 end_date || null,
@@ -442,13 +445,14 @@ async function updateCourse(req, res) {
         }
 
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
+        const hasPriceSDG = await columnExists(connection, 'courses', 'price_sdg');
         let query, params;
         if (hasCategoryId) {
             // تحديث course_name بالإضافة إلى title
             query = `UPDATE courses SET 
                 course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
                 instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
-                category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
+                category = ?, price = ?${hasPriceSDG ? ', price_sdg = ?' : ''}, level_name = ?, start_date = ?, end_date = ?,
                 course_icon = ?, badge_text = ?, category_id = ?
                 WHERE id = ?`;
             params = [
@@ -464,6 +468,7 @@ async function updateCourse(req, res) {
                 youtube_link || null,
                 category || 'general',
                 price || '0',
+                ...(hasPriceSDG ? [req.body.price_sdg || null] : []),
                 level_name || 'مبتدئ',
                 start_date || null,
                 end_date || null,
@@ -476,7 +481,7 @@ async function updateCourse(req, res) {
             query = `UPDATE courses SET 
                 course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
                 instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
-                category = ?, price = ?, level_name = ?, start_date = ?, end_date = ?,
+                category = ?, price = ?${hasPriceSDG ? ', price_sdg = ?' : ''}, level_name = ?, start_date = ?, end_date = ?,
                 course_icon = ?, badge_text = ?
                 WHERE id = ?`;
             params = [
@@ -492,6 +497,7 @@ async function updateCourse(req, res) {
                 youtube_link || null,
                 category || 'general',
                 price || '0',
+                ...(hasPriceSDG ? [req.body.price_sdg || null] : []),
                 level_name || 'مبتدئ',
                 start_date || null,
                 end_date || null,

@@ -119,7 +119,10 @@ class CoursesManager {
                 start_date: courseData.start_date || null,
                 end_date: courseData.end_date || null,
                 // Price as string (server sanitizes)
-                price: String(courseData.price ?? '0')
+                price: String(courseData.price ?? '0'),
+                price_sdg: courseData.price_sdg !== null && courseData.price_sdg !== undefined ? String(courseData.price_sdg) : null,
+                course_icon: courseData.course_icon || null,
+                badge_text: courseData.badge_text || null
             };
 
             const response = await fetch(this.apiUrl, {
@@ -155,10 +158,11 @@ class CoursesManager {
                 duration: courseData.duration || null,
                 start_date: courseData.start_date || null,
                 end_date: courseData.end_date || null,
-                price: String(courseData.price ?? '0')
+                price: String(courseData.price ?? '0'),
+                price_sdg: String(courseData.price_sdg ?? '')
             };
 
-            const response = await fetch(this.apiUrl, {
+            const response = await fetch(`${this.apiUrl}?id=${courseData.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -765,27 +769,31 @@ class CoursesManager {
     async handleAddCourse(e) {
         e.preventDefault();
         const form = e.target;
-        const formData = new FormData(form);
         
         // Show loading
         this.showLoading(true);
         
-        // Create new course object for API
+        // Create new course object for API (read values by element IDs)
         const courseData = {
             course_code: `CRS${(this.courses.length + 1).toString().padStart(3, '0')}`,
-            course_name: formData.get('courseName'),
-            description: formData.get('description'),
-            category_id: formData.get('category'),
-            level: formData.get('level'),
-            status: formData.get('status') || 'draft',
-            duration: formData.get('duration') || '',
-            price: parseFloat(formData.get('price')) || 0,
-            max_students: parseInt(formData.get('maxStudents')) || 30,
-            instructor: formData.get('instructor') || 'مدرس جديد',
-            schedule: formData.get('schedule') || '',
-            youtube_link: formData.get('youtubeLink') || '',
-            allow_enrollment: formData.get('allowEnrollment') === 'on' ? 1 : 0,
-            require_approval: formData.get('requireApproval') === 'on' ? 1 : 0
+            course_name: (document.getElementById('addTitle')?.value || '').trim(),
+            description: (document.getElementById('addDescription')?.value || '').trim(),
+            category: document.getElementById('addCategory')?.value || '',
+            level: document.getElementById('addLevel')?.value || '',
+            status: 'draft',
+            duration: document.getElementById('addDuration')?.value || '',
+            price: parseFloat(document.getElementById('addPrice')?.value) || 0,
+            price_sdg: (() => {
+                const val = document.getElementById('addPriceSDG')?.value;
+                return val && val.trim() !== '' ? parseFloat(val) : null;
+            })(),
+            max_students: parseInt(document.getElementById('addMaxStudents')?.value) || 30,
+            instructor: (document.getElementById('addInstructor')?.value || 'مدرس جديد').trim(),
+            youtube_link: (document.getElementById('addYoutube')?.value || '').trim(),
+            start_date: document.getElementById('addStartDate')?.value || null,
+            end_date: document.getElementById('addEndDate')?.value || null,
+            course_icon: (document.getElementById('addIcon')?.value || '').trim(),
+            badge_text: (document.getElementById('addBadge')?.value || '').trim()
         };
 
         try {
