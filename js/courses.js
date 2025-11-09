@@ -49,33 +49,45 @@ class CoursesManager {
             const data = await response.json();
             
             if (data.success) {
-                this.courses = data.data.map(course => ({
-                    id: course.course_code,
-                    db_id: course.id,
-                    name: course.course_name,
-                    description: course.description,
-                    category: course.category,
-                    level: course.level,
-                    status: course.status,
-                    duration: course.duration,
-                    price: course.price,
-                    maxStudents: course.max_students,
-                    enrolledStudents: course.enrolled_students || 0,
-                    lessonsCount: course.lessons_count || 0,
-                    instructor: course.instructor,
-                    createdDate: course.created_at || course.start_date || new Date().toISOString(),
-                    start_date: course.start_date || null,
-                    end_date: course.end_date || null,
-                    image: `https://via.placeholder.com/300x180/4F46E5/FFFFFF?text=${encodeURIComponent(course.course_name)}`,
-                    allowEnrollment: course.allow_enrollment === 1,
-                    requireApproval: course.require_approval === 1,
-                    youtube_link: course.youtube_link || ''
-                }));
+                const rawCourses = Array.isArray(data.data) ? data.data : (Array.isArray(data.courses) ? data.courses : []);
+                this.courses = rawCourses.map(course => {
+                    const title = course.course_name || course.title || '';
+                    // Normalize numeric price (supports strings like "299 $")
+                    let priceNum = 0;
+                    if (typeof course.price === 'number') {
+                        priceNum = course.price;
+                    } else if (typeof course.price === 'string') {
+                        const m = course.price.match(/(\d+(\.\d+)?)/);
+                        priceNum = m ? parseFloat(m[1]) : 0;
+                    }
+                    return {
+                        id: course.course_code || `CRS-${String(course.id || '').padStart(3, '0')}`,
+                        db_id: course.id,
+                        name: title,
+                        description: course.description || '',
+                        category: course.category || 'general',
+                        level: course.level || course.level_name || 'beginner',
+                        status: course.status || 'active',
+                        duration: course.duration || course.duration_weeks || '',
+                        price: priceNum,
+                        maxStudents: course.max_students || 30,
+                        enrolledStudents: course.enrolled_students || 0,
+                        lessonsCount: course.lessons_count || 0,
+                        instructor: course.instructor || course.instructor_name || '—',
+                        createdDate: course.created_at || course.start_date || new Date().toISOString(),
+                        start_date: course.start_date || null,
+                        end_date: course.end_date || null,
+                        image: `https://via.placeholder.com/300x180/4F46E5/FFFFFF?text=${encodeURIComponent(title)}`,
+                        allowEnrollment: course.allow_enrollment === 1,
+                        requireApproval: course.require_approval === 1,
+                        youtube_link: course.youtube_link || ''
+                    };
+                });
                 this.applyFilters();
                 this.updateStats();
             } else {
                 console.error('Failed to load courses:', data.message);
-                this.showNotification('فشل في تحميل المقررات: ' + data.message, 'error');
+                this.showNotification('فشل في تحميل المقررات: ' + (data.message || ''), 'error');
             }
         } catch (error) {
             console.error('Error loading courses:', error);
@@ -87,12 +99,35 @@ class CoursesManager {
 
     async addCourseToAPI(courseData) {
         try {
+            // Map frontend fields to API schema (supports title/course_name, instructor_name, level_name, category/category_id)
+            const payload = {
+                course_code: courseData.course_code,
+                title: courseData.course_name,
+                course_name: courseData.course_name,
+                description: courseData.description,
+                instructor_name: courseData.instructor,
+                max_students: courseData.max_students,
+                status: courseData.status,
+                youtube_link: courseData.youtube_link,
+                // Prefer numeric category_id if present, else textual category
+                category_id: courseData.category_id || null,
+                category: courseData.category || null,
+                // Level naming normalization
+                level_name: courseData.level,
+                // Duration and dates (optional)
+                duration: courseData.duration || null,
+                start_date: courseData.start_date || null,
+                end_date: courseData.end_date || null,
+                // Price as string (server sanitizes)
+                price: String(courseData.price ?? '0')
+            };
+
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(courseData)
+                body: JSON.stringify(payload)
             });
             
             const result = await response.json();
@@ -105,12 +140,30 @@ class CoursesManager {
 
     async updateCourseInAPI(courseData) {
         try {
+            // Map to API expected keys
+            const payload = {
+                id: courseData.id,
+                title: courseData.course_name,
+                course_name: courseData.course_name,
+                description: courseData.description,
+                instructor_name: courseData.instructor,
+                max_students: courseData.max_students || 30,
+                status: courseData.status,
+                youtube_link: courseData.youtube_link,
+                category: courseData.category,
+                level_name: courseData.level,
+                duration: courseData.duration || null,
+                start_date: courseData.start_date || null,
+                end_date: courseData.end_date || null,
+                price: String(courseData.price ?? '0')
+            };
+
             const response = await fetch(this.apiUrl, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(courseData)
+                body: JSON.stringify(payload)
             });
             
             const result = await response.json();

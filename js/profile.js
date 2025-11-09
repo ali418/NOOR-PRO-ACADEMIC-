@@ -276,16 +276,47 @@ class ProfileManager {
             const result = await resp.json();
             const items = Array.isArray(result) ? result : (result.data || []);
             const userItems = email ? items.filter(i => (i.email || '').toLowerCase() === email) : items;
-            const courses = userItems.map(i => ({
-                id: i.id,
-                title: i.courseName || 'مقرر',
-                priceDescription: (i.notes && typeof i.notes === 'object' && (i.notes.coursePrice || i.notes.paymentMethod)) ? `${formatPrice(i.notes.coursePrice)} - الدفع: ${i.notes.paymentMethod || '—'}` : 'مجاني',
-                status: (i.status === 'approved' || i.status === 'completed' || i.status === 'pending') ? i.status : 'pending',
-                progress: i.status === 'completed' ? 100 : 0,
-                instructor: '',
-                enrollDate: i.submissionDate || new Date().toISOString(),
-                whatsappLink: i.whatsappLink || (i.notes && i.notes.whatsappLink) || ''
-            }));
+
+            // Build map of courseId -> DB course (fetch from API for consistency)
+            const uniqueIds = [...new Set(userItems.map(i => String(i.courseId || i.course_id || '').trim()).filter(Boolean))];
+            const courseInfoMap = {};
+            for (const cid of uniqueIds) {
+                try {
+                    const r = await fetch(`/api/courses?id=${encodeURIComponent(cid)}`);
+                    if (r.ok) {
+                        const j = await r.json();
+                        const arr = Array.isArray(j.courses) ? j.courses : [];
+                        if (arr.length > 0) {
+                            const c = arr[0];
+                            courseInfoMap[cid] = {
+                                title: c.course_name || c.title || 'مقرر',
+                                instructor: c.instructor_name || '',
+                                price: typeof c.price === 'number' ? c.price : (String(c.price || '').match(/(\d+(\.\d+)?)/)?.[1] || '0')
+                            };
+                        }
+                    }
+                } catch (_) {
+                    // ignore individual fetch failures
+                }
+            }
+
+            const courses = userItems.map(i => {
+                const cid = String(i.courseId || i.course_id || '').trim();
+                const info = courseInfoMap[cid] || null;
+                const priceStr = info ? info.price : (i.notes && typeof i.notes === 'object' ? i.notes.coursePrice : null);
+                const paymentMethod = i.notes && typeof i.notes === 'object' ? i.notes.paymentMethod : null;
+                const priceDescription = priceStr ? `${formatPrice(priceStr)}${paymentMethod ? ` - الدفع: ${paymentMethod}` : ''}` : (paymentMethod ? `الدفع: ${paymentMethod}` : 'مجاني');
+                return {
+                    id: i.id,
+                    title: (info && info.title) ? info.title : (i.courseName || 'مقرر'),
+                    priceDescription,
+                    status: (i.status === 'approved' || i.status === 'completed' || i.status === 'pending') ? i.status : 'pending',
+                    progress: i.status === 'completed' ? 100 : 0,
+                    instructor: (info && info.instructor) ? info.instructor : '',
+                    enrollDate: i.submissionDate || new Date().toISOString(),
+                    whatsappLink: i.whatsappLink || (i.notes && i.notes.whatsappLink) || ''
+                };
+            });
 
             // Update counters from enrollments
             const total = courses.length;
