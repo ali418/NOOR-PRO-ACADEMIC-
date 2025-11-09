@@ -260,6 +260,7 @@ const coursesAPI = require('./api/courses');
 
 // Courses API routes
 app.get('/api/courses', coursesAPI.getCourses);
+app.get('/api/courses/:id', coursesAPI.getCourseById);
 app.post('/api/courses', coursesAPI.addCourse);
 app.put('/api/courses', coursesAPI.updateCourse);
 app.delete('/api/courses', coursesAPI.deleteCourse);

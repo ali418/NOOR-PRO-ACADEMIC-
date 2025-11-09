@@ -20,18 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listener for the theme toggle button
-    themeToggle.addEventListener('click', () => {
-        let newTheme;
-        if (body.getAttribute('data-theme') === 'dark') {
-            body.removeAttribute('data-theme');
-            newTheme = 'light';
-        } else {
-            body.setAttribute('data-theme', 'dark');
-            newTheme = 'dark';
-        }
-        // Save the new theme to local storage
-        localStorage.setItem('theme', newTheme);
-        // Apply the theme changes
-        applyTheme(newTheme);
-    });
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            let newTheme;
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                newTheme = 'light';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                newTheme = 'dark';
+            }
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+    }
 });

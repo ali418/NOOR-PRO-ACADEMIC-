@@ -296,10 +296,10 @@ class EnrollmentSystem {
         fetch(`${this.apiBase}/api/courses/${courseId}`)
             .then(response => response.json())
             .then(data => {
-                this.courseData = data;
-                this.enrollmentData.courseId = data.id;
-                this.enrollmentData.courseName = data.title;
-                this.displayCourseDetails(data);
+                this.courseData = data.course;
+                this.enrollmentData.courseId = data.course.id;
+                this.enrollmentData.courseName = data.course.title;
+                this.displayCourseDetails(data.course);
             })
             .catch(error => console.error('Error fetching course data:', error));
     }
