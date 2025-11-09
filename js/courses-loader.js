@@ -33,7 +33,7 @@ class CourseLoader {
             }
 
             // Fallback: simple flags/roles stored separately
-            const adminFlag = localStorage.getItem('isAdminLoggedIn');
+            const adminFlag = localStorage.getItem('isAdminLoggedIn') || localStorage.getItem('adminLoggedIn');
             if (adminFlag && (adminFlag === 'true' || adminFlag === '1')) {
                 isAdmin = true;
             }
@@ -45,7 +45,7 @@ class CourseLoader {
 
             return isAdmin;
         } catch (_) {
-            const adminFlag = localStorage.getItem('isAdminLoggedIn');
+            const adminFlag = localStorage.getItem('isAdminLoggedIn') || localStorage.getItem('adminLoggedIn');
             const role = (localStorage.getItem('userRole') || '').toLowerCase();
             return (adminFlag === 'true' || adminFlag === '1' || role === 'admin');
         }
