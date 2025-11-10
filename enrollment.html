@@ -661,6 +661,13 @@
                         <div class="form-group">
                             <label for="phone" data-ar="رقم الهاتف *" data-en="Phone Number *">رقم الهاتف *</label>
                             <input type="tel" id="phone" name="phone" required>
+                            <small id="phoneHint" style="display:block; margin-top:6px; color:#555; line-height:1.6;">
+                                تنبيه: لازم الرقم يكون فيه واتساب، ومفتاح الدولة مهم جدًا.
+                                اكتب الرقم مع مفتاح البلد مثل <strong>+256XXXXXXXX</strong> أو <strong>00256XXXXXXXX</strong>.
+                            </small>
+                            <div id="phoneWarning" style="display:none; margin-top:6px; color:#b00020; font-weight:600;">
+                                الرجاء كتابة الرقم مع مفتاح الدولة مثل +256 أو 00256.
+                            </div>
                         </div>
 
                         <div class="form-group">

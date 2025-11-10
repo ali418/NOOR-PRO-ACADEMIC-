@@ -751,14 +751,14 @@ class AdminDashboard {
         const studentName = this.currentEnrollment.studentName;
         const studentPhone = this.currentEnrollment.phone;
 
-        // Normalize phone number for WhatsApp (digits only, add country code if local)
+        // Normalize phone number for WhatsApp (digits only, add Uganda country code if local)
         const normalizePhone = (raw) => {
             let digits = String(raw || '').replace(/\D+/g, '');
             if (!digits) return '';
             // Strip leading 00 international prefix
             if (digits.startsWith('00')) digits = digits.slice(2);
-            // If local format starting with 0, default to Sudan country code 249
-            if (digits.startsWith('0')) digits = '249' + digits.slice(1);
+            // If local format starting with 0, default to Uganda country code 256
+            if (digits.startsWith('0')) digits = '256' + digits.slice(1);
             return digits;
         };
         const targetPhone = normalizePhone(studentPhone);

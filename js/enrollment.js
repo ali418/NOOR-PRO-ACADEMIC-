@@ -93,6 +93,42 @@ class EnrollmentSystem {
                 el.addEventListener(evt, () => this.updateReviewBlock());
             }
         });
+
+        // تحذير فوري لحقل الهاتف عند عدم وجود مفتاح دولة
+        const phoneInput = document.getElementById('phone');
+        const phoneWarning = document.getElementById('phoneWarning');
+        if (phoneInput) {
+            const updatePhoneWarning = () => {
+                const val = (phoneInput.value || '').trim();
+                if (!val) {
+                    if (phoneWarning) phoneWarning.style.display = 'none';
+                    phoneInput.style.borderColor = '';
+                    return;
+                }
+                if (this.hasCountryCode(val)) {
+                    if (phoneWarning) phoneWarning.style.display = 'none';
+                    phoneInput.style.borderColor = '';
+                } else {
+                    if (phoneWarning) {
+                        phoneWarning.style.display = 'block';
+                        phoneWarning.textContent = 'تنبيه: اكتب الرقم مع مفتاح الدولة مثل +256XXXXXXXX أو 00256XXXXXXXX؛ هذا ضروري لأننا نتواصل عبر واتساب.';
+                    }
+                    phoneInput.style.borderColor = '#b00020';
+                }
+            };
+            phoneInput.addEventListener('input', updatePhoneWarning);
+            // أضف إدراج تلقائي لمفتاح الدولة 00256 عند فقدان التركيز
+            phoneInput.addEventListener('blur', () => {
+                const val = (phoneInput.value || '').trim();
+                if (!this.hasCountryCode(val) && val) {
+                    const normalized = this.applyDefaultUgandaCode(val);
+                    phoneInput.value = normalized;
+                    updatePhoneWarning();
+                }
+            });
+            // تحديث أولي إذا وُجدت قيمة
+            setTimeout(updatePhoneWarning, 0);
+        }
     }
 
     ensureSubmitButtons() {
@@ -129,6 +165,32 @@ class EnrollmentSystem {
                 }
             }
         } catch (_) {}
+    }
+
+    // يتحقق من وجود مفتاح دولة في الرقم: يقبل +، 00، أو بداية برقم غير صفري بطول مناسب
+    hasCountryCode(raw) {
+        const v = String(raw || '').trim().replace(/\s+/g, '');
+        if (!v) return false;
+        if (v.startsWith('+')) return true;
+        if (v.startsWith('00')) return true;
+        // اعتبار أرقام تبدأ برقم غير صفري وبطول معقول كأرقام دولية (مثال: 249... أو 966...)
+        return /^[1-9]\d{7,}$/.test(v);
+    }
+
+    // إدراج مفتاح أوغندا 00256 تلقائياً للأرقام المحلية أو الخالية من المفتاح
+    applyDefaultUgandaCode(raw) {
+        let digits = String(raw || '').replace(/\D+/g, '');
+        if (!digits) return '';
+        // إن كان يبدأ بـ 00 أو + فلا حاجة
+        if (digits.startsWith('00')) return digits; // يبقى 00...
+        if ((raw || '').trim().startsWith('+')) return (raw || '').trim(); // احفظ الشكل مع + كما هو
+        // إن كان محلياً يبدأ بـ 0، أزل 0 وأضف 00256
+        if (digits.startsWith('0')) {
+            digits = digits.replace(/^0+/, '');
+            return `00256${digits}`;
+        }
+        // إن كان أرقام بلا 0 ومع ذلك بلا مفتاح، أضف 00256
+        return `00256${digits}`;
     }
 
     showStep(step) {
@@ -204,6 +266,25 @@ class EnrollmentSystem {
             if (!fullName || !phone) {
                 this.showToast('يرجى إدخال الاسم ورقم الهاتف أولاً', 'error');
                 return;
+            }
+
+            // منع المتابعة إذا كان الرقم بدون مفتاح دولة
+            if (!this.hasCountryCode(phone)) {
+                // الإدراج التلقائي لمفتاح أوغندا 00256 للأرقام المحلية
+                const autoFixed = this.applyDefaultUgandaCode(phone);
+                if (this.hasCountryCode(autoFixed)) {
+                    this.enrollmentData.phone = autoFixed;
+                    if (phoneEl) phoneEl.value = autoFixed;
+                } else {
+                    this.showToast('الرجاء كتابة الرقم مع مفتاح الدولة (مثال: +256XXXXXXXX أو 00256XXXXXXXX) قبل الانتقال', 'error');
+                    const phoneWarning = document.getElementById('phoneWarning');
+                    if (phoneWarning) {
+                        phoneWarning.style.display = 'block';
+                        phoneWarning.textContent = 'الرقم بلا مفتاح دولة؛ أضف +256 أو 00256 قبل الرقم.';
+                    }
+                    if (phoneEl) phoneEl.style.borderColor = '#b00020';
+                    return;
+                }
             }
 
             this.enrollmentData.fullName = fullName;
@@ -651,6 +732,28 @@ class EnrollmentSystem {
             this.showToast('أدخل الاسم ورقم الهاتف أولاً', 'error');
             this.showStep(1);
             return;
+        }
+
+        // تأكد من اشتمال الرقم على مفتاح الدولة قبل الإرسال النهائي
+        if (!this.hasCountryCode(this.enrollmentData.phone || '')) {
+            // حاول إدراج مفتاح أوغندا 00256 تلقائياً
+            const autoFixed = this.applyDefaultUgandaCode(this.enrollmentData.phone || '');
+            if (this.hasCountryCode(autoFixed)) {
+                this.enrollmentData.phone = autoFixed;
+            } else {
+                this.showToast('أدخل الرقم مع مفتاح الدولة (مثال: +256 أو 00256) قبل التأكيد', 'error');
+                this.showStep(1);
+                try {
+                    const phoneEl = document.getElementById('phone');
+                    const phoneWarning = document.getElementById('phoneWarning');
+                    if (phoneEl) phoneEl.style.borderColor = '#b00020';
+                    if (phoneWarning) {
+                        phoneWarning.style.display = 'block';
+                        phoneWarning.textContent = 'الرقم بلا مفتاح دولة؛ أضف +256 أو 00256 قبل الرقم.';
+                    }
+                } catch (_) {}
+                return;
+            }
         }
 
         // يجب اختيار دورة قبل الإرسال

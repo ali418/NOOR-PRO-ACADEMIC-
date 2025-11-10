@@ -38,22 +38,28 @@
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
+/* اجعل البطاقات الزوجية معكوسة الاتجاه ليظهر الصورة يمينًا كما في النموذج */
+.teachers-grid .teacher-card:nth-child(even) {
+    flex-direction: row-reverse;
+}
+
 .teacher-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
 }
 
 .teacher-img {
-    width: 40%;
+    width: 55%;
     height: auto;
-    overflow: hidden;
+    overflow: visible; /* عرض الصورة كاملة دون قص */
 }
 
 .teacher-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top;
+    width: 100%; /* املأ مساحة الصورة بالكامل */
+    max-width: 100%; /* لا تتجاوز عرض الحاوية إن كانت كبيرة */
+    height: auto; /* حافظ على الأبعاد الطبيعية */
+    object-fit: contain; /* تأكد من ظهور الصورة كاملة إن لزم */
+    object-position: center;
     transition: transform 0.4s ease;
 }
 
@@ -92,14 +98,14 @@
 }
 
 .bio-content h2 {
-    font-size: 20px;
+    font-size: 16px; /* حجم أصغر للعناوين */
     color: #333;
     margin-bottom: 10px;
 }
 
 .bio-content p, .bio-content ul {
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 12px; /* تصغير النص */
+    line-height: 1.5;
     color: #555;
     margin-bottom: 8px;
 }
@@ -113,4 +119,17 @@
     height: 1px;
     background-color: #eee;
     margin: 20px 0;
+}
+
+/* تحسين العرض على الشاشات الصغيرة */
+@media (max-width: 768px) {
+    .teacher-card {
+        flex-direction: column;
+    }
+    .teacher-img {
+        width: 100%;
+    }
+    .teacher-img img {
+        width: 100%;
+    }
 }
