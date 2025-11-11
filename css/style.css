@@ -6,9 +6,9 @@
 }
 
 :root {
-    --primary-color: #3A589B; /* Primary Blue */
+    --primary-color: #f0f2f7; /* Primary Blue */
     /* Ochre and Blue palette (aliases for clarity) */
-    --primary-blue: #3A589B; /* Navbar, headings accents, icons */
+    --primary-blue: #e9eaec; /* Navbar, headings accents, icons */
     --primary-gold: #B89B5E; /* Buttons, footer, important links */
     --primary-red: #D9534F;  /* CTA enroll now */
     --primary-dark: #2F4E86;
