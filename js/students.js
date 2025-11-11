@@ -59,12 +59,18 @@ class StudentsManager {
                 this.updateStats();
             } else {
                 this.showNotification('خطأ في تحميل البيانات: ' + result.message, 'error');
+                // استخدام بيانات تجريبية كبديل في حال فشل الـ API
+                this.loadSampleData();
+                this.renderStudents();
+                this.updateStats();
             }
         } catch (error) {
             console.error('Error loading students:', error);
             this.showNotification('خطأ في الاتصال بالخادم', 'error');
-            // تحميل البيانات التجريبية في حالة فشل الاتصال
+            // تحميل البيانات التجريبية في حالة فشل الاتصال وعرضها فوراً
             this.loadSampleData();
+            this.renderStudents();
+            this.updateStats();
         } finally {
             this.showLoading(false);
         }
