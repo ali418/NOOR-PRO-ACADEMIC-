@@ -55,14 +55,22 @@ class StudentsManager {
                         photo
                     };
                 });
+                // ضمان عرض البيانات فوراً: عيّن المصفّى للقائمة الكاملة ثم ارسم وحدث الترقيم
+                this.filteredStudents = [...this.students];
                 this.renderStudents();
                 this.updateStats();
+                if (typeof this.updatePagination === 'function') {
+                    this.updatePagination();
+                }
             } else {
                 this.showNotification('خطأ في تحميل البيانات: ' + result.message, 'error');
                 // استخدام بيانات تجريبية كبديل في حال فشل الـ API
                 this.loadSampleData();
                 this.renderStudents();
                 this.updateStats();
+                if (typeof this.updatePagination === 'function') {
+                    this.updatePagination();
+                }
             }
         } catch (error) {
             console.error('Error loading students:', error);
@@ -71,6 +79,9 @@ class StudentsManager {
             this.loadSampleData();
             this.renderStudents();
             this.updateStats();
+            if (typeof this.updatePagination === 'function') {
+                this.updatePagination();
+            }
         } finally {
             this.showLoading(false);
         }
