@@ -485,6 +485,20 @@ class AdminDashboard {
             // في حال تعارض المفتاح الفريد، نتجاهل الإضافة (قد يكون الطالب مضاف مسبقاً)
             throw new Error(result.message || 'فشل إضافة الطالب');
         }
+
+        // ربط صورة إيصال الدفع بسجل الطالب محلياً ليتم عرضها في صفحة الطلاب
+        try {
+            if (enrollment && enrollment.receiptFile) {
+                const mapKey = 'noorProStudentReceiptPhotos';
+                const existing = localStorage.getItem(mapKey);
+                const photoMap = existing ? JSON.parse(existing) : {};
+                photoMap[payload.id] = enrollment.receiptFile;
+                localStorage.setItem(mapKey, JSON.stringify(photoMap));
+                console.log('Stored receipt photo for student', payload.id, '->', enrollment.receiptFile);
+            }
+        } catch (e) {
+            console.warn('Failed to store receipt photo mapping:', e.message);
+        }
         return result;
     }
 

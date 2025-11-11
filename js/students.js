@@ -30,19 +30,31 @@ class StudentsManager {
             const result = await response.json();
             
             if (result.success) {
-                this.students = result.data.map(student => ({
-                    id: student.student_id,
-                    firstName: student.first_name,
-                    lastName: student.last_name,
-                    email: student.email,
-                    phone: student.phone || '',
-                    birthDate: student.date_of_birth || '',
-                    gender: student.gender,
-                    address: student.address || '',
-                    status: student.status,
-                    registrationDate: student.enrollment_date,
-                    dbId: student.id // معرف قاعدة البيانات
-                }));
+                // حمّل خريطة صور الإيصالات المخزنة محلياً (تم إنشاؤها بعد الموافقة من لوحة الإدمن)
+                let receiptPhotoMap = {};
+                try {
+                    const mapStr = localStorage.getItem('noorProStudentReceiptPhotos');
+                    receiptPhotoMap = mapStr ? JSON.parse(mapStr) : {};
+                } catch (_) {}
+
+                this.students = result.data.map(student => {
+                    const id = student.student_id;
+                    const photo = receiptPhotoMap[id] || `https://via.placeholder.com/40/${this.getRandomColor()}/FFFFFF?text=${(student.first_name||'?').charAt(0)}`;
+                    return {
+                        id: id,
+                        firstName: student.first_name,
+                        lastName: student.last_name,
+                        email: student.email,
+                        phone: student.phone || '',
+                        birthDate: student.date_of_birth || '',
+                        gender: student.gender,
+                        address: student.address || '',
+                        status: student.status,
+                        registrationDate: student.enrollment_date,
+                        dbId: student.id, // معرف قاعدة البيانات
+                        photo
+                    };
+                });
                 this.renderStudents();
                 this.updateStats();
             } else {
@@ -717,6 +729,10 @@ class StudentsManager {
                                 <span class="meta-label">تاريخ التسجيل</span>
                                 <span class="meta-value">${this.formatDate(student.registrationDate)}</span>
                             </div>
+                        </div>
+                        <div class="receipt-preview" style="margin-top: 1rem;">
+                            <h4><i class="fas fa-receipt"></i> إيصال الدفع</h4>
+                            <img src="${student.photo}" alt="إيصال الدفع" style="max-width: 100%; border-radius: 8px;">
                         </div>
                         ${student.notes ? `
                             <div class="meta-item" style="margin-top: 1rem;">
