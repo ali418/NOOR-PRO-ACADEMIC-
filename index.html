@@ -345,27 +345,53 @@
 
         async function loadFeaturedCoursesForHomepage() {
             try {
+                console.log('=== Homepage Featured Courses Debug ===');
                 console.log('Fetching featured courses for homepage...');
                 const response = await fetch('/api/courses');
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('Full API response:', data);
+                console.log('Response success:', data.success);
+                console.log('Courses data type:', typeof data.courses);
+                console.log('Courses array:', data.courses);
                 
-                console.log('All courses received:', data.courses.length);
-                console.log('First few courses:', data.courses.slice(0, 3));
+                if (data.success && data.courses && Array.isArray(data.courses)) {
+                    console.log('All courses received:', data.courses.length);
+                    
+                    if (data.courses.length > 0) {
+                        console.log('First course details:', data.courses[0]);
+                        console.log('First course featured status:', data.courses[0].is_featured);
+                        console.log('First course title:', data.courses[0].title || data.courses[0].course_name);
+                    }
+                    
+                    // Filter only featured courses
+                    const featuredCourses = data.courses.filter(course => {
+                        const title = course.title || course.course_name;
+                        const isFeatured = course.is_featured === true;
+                        console.log(`Course "${title}" featured status:`, course.is_featured, 'Result:', isFeatured);
+                        return isFeatured;
+                    });
+                    
+                    console.log('Featured courses found:', featuredCourses.length);
+                    console.log('Featured courses details:', featuredCourses);
+                    
+                    // Display featured courses
+                    displayFeaturedCoursesOnHomepage(featuredCourses);
+                } else {
+                    console.log('No courses found or invalid data structure');
+                    displayFeaturedCoursesOnHomepage([]);
+                }
                 
-                // Filter only featured courses
-                const featuredCourses = data.courses.filter(course => {
-                    console.log(`Course "${course.title}" featured status:`, course.is_featured);
-                    return course.is_featured === true;
-                });
-                
-                console.log('Featured courses found:', featuredCourses.length);
-                console.log('Featured courses details:', featuredCourses);
-                
-                // Display featured courses
-                displayFeaturedCoursesOnHomepage(featuredCourses);
+                console.log('=== End Debug ===');
                 
             } catch (error) {
                 console.error('Error loading featured courses for homepage:', error);
+                displayFeaturedCoursesOnHomepage([]);
             }
         }
 

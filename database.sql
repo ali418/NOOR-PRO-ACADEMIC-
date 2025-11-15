@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS courses (
     course_icon VARCHAR(50),
     badge_text VARCHAR(50),
     youtube_link TEXT,
+    is_featured BOOLEAN DEFAULT FALSE,
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

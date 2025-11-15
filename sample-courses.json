@@ -14,6 +14,43 @@
     "start_date": "2025-11-02",
     "course_icon": "fas fa-book",
     "badge_text": null,
-    "youtube_link": ""
+    "youtube_link": "",
+    "is_featured": true
+  },
+  {
+    "id": 2,
+    "title": "كورس مميز للاختبار",
+    "course_code": "CRS-FEATURED-001",
+    "description": "هذا كورس مميز للاختبار فقط",
+    "instructor_name": "مدرب مميز",
+    "duration_weeks": 4,
+    "credits": 2,
+    "max_students": 20,
+    "category": "programming",
+    "price": "50000000",
+    "level_name": "متوسط",
+    "start_date": "2025-12-01",
+    "course_icon": "fas fa-star",
+    "badge_text": "مميز",
+    "youtube_link": "",
+    "is_featured": true
+  },
+  {
+    "id": 3,
+    "title": "كورس عادي للاختبار",
+    "course_code": "CRS-REGULAR-001",
+    "description": "هذا كورس عادي للاختبار فقط",
+    "instructor_name": "مدرب عادي",
+    "duration_weeks": 3,
+    "credits": 1,
+    "max_students": 15,
+    "category": "math",
+    "price": "25000000",
+    "level_name": "مبتدئ",
+    "start_date": "2025-11-15",
+    "course_icon": "fas fa-calculator",
+    "badge_text": null,
+    "youtube_link": "",
+    "is_featured": false
   }
 ]
