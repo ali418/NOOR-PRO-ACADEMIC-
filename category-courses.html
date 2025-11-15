@@ -711,10 +711,26 @@
                     const grid = document.getElementById('coursesGrid');
                     const makeCard = (title, icon, gradient, coursesArr) => {
                         const items = coursesArr.map(course => `
-                            <li class=\"course-name-item\">
-                                <button class=\"course-name-btn\" onclick=\"viewCourseDetails(${course.id})\" title=\"${course.title}\">\n                                    <i class=\"fas fa-book\"></i>\n                                    <span>${course.title}</span>\n                                </button>\n                            </li>\n                        `).join('');
+                            <li class="course-name-item">
+                                <button class="course-name-btn" onclick="viewCourseDetails(${course.id})" title="${course.title}">
+                                    <i class="fas fa-book"></i>
+                                    <span>${course.title}</span>
+                                </button>
+                            </li>
+                        `).join('');
                         return `
-                            <div class=\"course-card\" style=\"cursor: default;\">\n                                <div class=\"course-image\" style=\"background: ${gradient}\">\n                                    <i class=\"${icon}\"></i>\n                                </div>\n                                <div class=\"course-content\">\n                                    <h3 class=\"course-title\" style=\"margin-bottom: 10px;\">${title}</h3>\n                                    <ul class=\"course-name-list\" style=\"list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;\">\n                                        ${items}\n                                    </ul>\n                                </div>\n                            </div>\n                        `;
+                            <div class="course-card" style="cursor: default;">
+                                <div class="course-image" style="background: ${gradient}">
+                                    <i class="${icon}"></i>
+                                </div>
+                                <div class="course-content">
+                                    <h3 class="course-title" style="margin-bottom: 10px;">${title}</h3>
+                                    <ul class="course-name-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                                        ${items}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
                     };
                     const html = [
                         makeCard('كورسات الأساسيات في اللغة الإنجليزية', categoryConfigs[1].icon, categoryConfigs[1].gradient, basics),
@@ -724,6 +740,155 @@
                     updateCoursesCount(basics.length + speakingCourses.length + skillsCourses.length);
                     grid.innerHTML = html;
                     showCourses();
+                } else if (String(categoryId) === '6') {
+                    // صفحة دبلومات الموارد البشرية: عرض بطاقات فرعية للدبلومات والدورات القصيرة
+                    let diplomasId = null;
+                    let shortCoursesId = null;
+                    try {
+                        const catsResp = await fetch('/api/categories');
+                        const catsJson = await catsResp.json();
+                        if (catsJson && catsJson.success && Array.isArray(catsJson.data)) {
+                            const lowerEq = (val, target) => String(val || '').toLowerCase() === String(target || '').toLowerCase();
+                            const diplomasCat = catsJson.data.find(cc => 
+                                lowerEq(cc.category_name, 'hr_diploma') || lowerEq(cc.category_name_ar, 'دبلومات الموارد البشرية')
+                            );
+                            const shortCat = catsJson.data.find(cc => 
+                                lowerEq(cc.category_name, 'hr_short') || lowerEq(cc.category_name_ar, 'دورات الموارد البشرية القصيرة')
+                            );
+                            if (diplomasCat && diplomasCat.id) diplomasId = diplomasCat.id;
+                            if (shortCat && shortCat.id) shortCoursesId = shortCat.id;
+                        }
+                    } catch (e) {
+                        // فشل في جلب التصنيفات، سنعرض الأساسيات فقط إن وجدت
+                    }
+                    const requests = [];
+                    if (diplomasId) requests.push(fetch(`/api/categories/${diplomasId}/courses`).then(r => r.json()).catch(() => ({})));
+                    if (shortCoursesId) requests.push(fetch(`/api/categories/${shortCoursesId}/courses`).then(r => r.json()).catch(() => ({})));
+                    const results = requests.length ? await Promise.all(requests) : [];
+                    const diplomasApi = results[0] && results[0].success && results[0].data && results[0].data.courses ? results[0].data.courses : [];
+                    const shortsApi = results[1] && results[1].success && results[1].data && results[1].data.courses ? results[1].data.courses : [];
+                    const diplomasCourses = normalize(diplomasApi);
+                    const shortCourses = normalize(shortsApi);
+
+                    const grid = document.getElementById('coursesGrid');
+                    const makeCard = (title, icon, gradient, coursesArr) => {
+                        const items = coursesArr.map(course => `
+                            <li class="course-name-item">
+                                <button class="course-name-btn" onclick="viewCourseDetails(${course.id})" title="${course.title}">
+                                    <i class="fas fa-book"></i>
+                                    <span>${course.title}</span>
+                                </button>
+                            </li>
+                        `).join('');
+                        return `
+                            <div class="course-card" style="cursor: default;">
+                                <div class="course-image" style="background: ${gradient}">
+                                    <i class="${icon}"></i>
+                                </div>
+                                <div class="course-content">
+                                    <h3 class="course-title" style="margin-bottom: 10px;">${title}</h3>
+                                    <ul class="course-name-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                                        ${items}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    };
+
+                    const htmlCards = [];
+                    if (diplomasCourses.length) {
+                        htmlCards.push(makeCard('دبلومات الموارد البشرية', 'fas fa-graduation-cap', 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', diplomasCourses));
+                    }
+                    if (shortCourses.length) {
+                        htmlCards.push(makeCard('دورات الموارد البشرية القصيرة', 'fas fa-briefcase', 'linear-gradient(135deg, #20c997 0%, #17a2b8 100%)', shortCourses));
+                    }
+                    // إن لم توجد بطاقات فرعية، اعرض كورسات هذا القسم مباشرة
+                    const combinedCount = (basics.length) + (diplomasCourses.length) + (shortCourses.length);
+                    updateCoursesCount(combinedCount);
+                    if (htmlCards.length) {
+                        grid.innerHTML = htmlCards.join('');
+                        showCourses();
+                    } else if (basics.length) {
+                        displayCourses(basics);
+                    } else {
+                        showEmpty();
+                    }
+                } else if (String(categoryId) === '3') {
+                    // صفحة التقنية: عرض بطاقات فرعية للبرمجة، تطوير المواقع، قواعد البيانات، الذكاء الاصطناعي، أمن المعلومات
+                    const subKeys = [
+                        { key: 'programming', ar: 'البرمجة', icon: 'fas fa-code', gradient: 'linear-gradient(135deg, #007bff 0%, #00c6ff 100%)' },
+                        { key: 'web_development', ar: 'تطوير المواقع', icon: 'fas fa-globe', gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)' },
+                        { key: 'database', ar: 'قواعد البيانات', icon: 'fas fa-database', gradient: 'linear-gradient(135deg, #6c757d 0%, #adb5bd 100%)' },
+                        { key: 'ai', ar: 'الذكاء الاصطناعي', icon: 'fas fa-robot', gradient: 'linear-gradient(135deg, #e83e8c 0%, #ff6a88 100%)' },
+                        { key: 'security', ar: 'أمن المعلومات', icon: 'fas fa-shield-alt', gradient: 'linear-gradient(135deg, #343a40 0%, #495057 100%)' }
+                    ];
+
+                    let catsIndex = {};
+                    try {
+                        const catsResp = await fetch('/api/categories');
+                        const catsJson = await catsResp.json();
+                        if (catsJson && catsJson.success && Array.isArray(catsJson.data)) {
+                            const lowerEq = (val, target) => String(val || '').toLowerCase() === String(target || '').toLowerCase();
+                            for (const cfg of subKeys) {
+                                const found = catsJson.data.find(cc => lowerEq(cc.category_name, cfg.key) || lowerEq(cc.category_name_ar, cfg.ar));
+                                if (found && found.id) catsIndex[cfg.key] = found.id;
+                            }
+                        }
+                    } catch (e) {
+                        // فشل في جلب التصنيفات الفرعية
+                    }
+
+                    const requests = subKeys
+                        .filter(cfg => catsIndex[cfg.key])
+                        .map(cfg => fetch(`/api/categories/${catsIndex[cfg.key]}/courses`).then(r => r.json()).catch(() => ({})));
+                    const results = requests.length ? await Promise.all(requests) : [];
+
+                    const grid = document.getElementById('coursesGrid');
+                    const makeCard = (title, icon, gradient, coursesArr) => {
+                        const items = coursesArr.map(course => `
+                            <li class="course-name-item">
+                                <button class="course-name-btn" onclick="viewCourseDetails(${course.id})" title="${course.title}">
+                                    <i class="fas fa-book"></i>
+                                    <span>${course.title}</span>
+                                </button>
+                            </li>
+                        `).join('');
+                        return `
+                            <div class="course-card" style="cursor: default;">
+                                <div class="course-image" style="background: ${gradient}">
+                                    <i class="${icon}"></i>
+                                </div>
+                                <div class="course-content">
+                                    <h3 class="course-title" style="margin-bottom: 10px;">${title}</h3>
+                                    <ul class="course-name-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                                        ${items}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    };
+
+                    const cardsHtml = [];
+                    let totalCount = 0; // لا نظهر كورسات الأساسيات مباشرة في صفحة التقنية لتجنب ظهور تصنيفات غير صحيحة
+                    for (let i = 0; i < subKeys.length; i++) {
+                        const cfg = subKeys[i];
+                        const res = results[i];
+                        const apiList = res && res.success && res.data && res.data.courses ? res.data.courses : [];
+                        const coursesList = normalize(apiList);
+                        if (coursesList.length) {
+                            cardsHtml.push(makeCard(cfg.ar, cfg.icon, cfg.gradient, coursesList));
+                            totalCount += coursesList.length;
+                        }
+                    }
+
+                    updateCoursesCount(totalCount);
+                    if (cardsHtml.length) {
+                        grid.innerHTML = cardsHtml.join('');
+                        showCourses();
+                    } else {
+                        // إن لم توجد تصنيفات فرعية، لا نعرض أي كورسات لتفادي ظهور كورسات غير تابعة للتقنية
+                        showEmpty();
+                    }
                 } else {
                     const finalCourses = basics;
                     allCourses = finalCourses;
