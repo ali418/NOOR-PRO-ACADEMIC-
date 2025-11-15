@@ -64,7 +64,9 @@ class CourseLoader {
             const data = await response.json();
             
             if (data.success) {
-                this.renderCourses(data.courses);
+                // Filter out featured courses from regular courses page (they appear on students page)
+                const regularCourses = data.courses.filter(course => !course.is_featured);
+                this.renderCourses(regularCourses);
             } else {
                 this.showError('فشل في تحميل المقررات: ' + (data.message || 'خطأ غير معروف'));
             }
@@ -301,6 +303,7 @@ class CourseLoader {
                 const maxStudents = document.getElementById('addMaxStudents')?.value || '';
                 const courseIcon = document.getElementById('addIcon')?.value?.trim() || '';
                 const badgeText = document.getElementById('addBadge')?.value?.trim() || '';
+                const isFeatured = document.getElementById('addFeatured')?.checked || false;
 
                 // Basic required validation
                 if (!title) {
@@ -336,7 +339,8 @@ class CourseLoader {
                     price: priceNum !== null ? priceNum : (priceRaw || undefined),
                     price_sdg: priceSdgNum !== null ? priceSdgNum : (priceSdgRaw || undefined),
                     course_icon: courseIcon || undefined,
-                    badge_text: badgeText || undefined
+                    badge_text: badgeText || undefined,
+                    is_featured: isFeatured || false,
                 };
 
                 try {
@@ -391,6 +395,7 @@ class CourseLoader {
                 const maxStudents = document.getElementById('editMaxStudents')?.value || '';
                 const courseIcon = document.getElementById('editIcon')?.value?.trim() || '';
                 const badgeText = document.getElementById('editBadge')?.value?.trim() || '';
+                const isFeatured = document.getElementById('editFeatured')?.checked || false;
 
                 if (!id) { alert('معرف المقرر غير موجود'); return; }
                 if (!title) { alert('يرجى إدخال اسم المقرر'); return; }

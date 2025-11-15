@@ -398,23 +398,26 @@
 
         // Function to load featured courses (admin-selected)
         function loadFeaturedCategories() {
-            // Get admin-selected featured courses from localStorage
-            var featuredCourseIds = JSON.parse(localStorage.getItem('featuredCourses') || '[]');
+            console.log('Loading featured courses from API...');
             
-            if (featuredCourseIds.length === 0) {
-                console.log('No featured courses selected by admin');
-                return;
-            }
-            
-            console.log('Loading featured courses:', featuredCourseIds);
-            
-            // Fetch all courses and filter the featured ones
+            // Fetch all courses and filter the featured ones using is_featured field
             fetch('/api/courses')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.data) {
-                        var featuredCourses = data.data.filter(course => featuredCourseIds.includes(course.id));
-                        displayFeaturedCourses(featuredCourses);
+                        var featuredCourses = data.data.filter(course => course.is_featured === true);
+                        console.log('Found featured courses:', featuredCourses.length);
+                        
+                        if (featuredCourses.length === 0) {
+                            console.log('No featured courses found');
+                            // Clear the container if no featured courses
+                            var container = document.querySelector('#featuredCategoriesSection .dashboard-grid');
+                            if (container) {
+                                container.innerHTML = '<div class="col-12 text-center text-muted">لا توجد كورسات مميزة حالياً</div>';
+                            }
+                        } else {
+                            displayFeaturedCourses(featuredCourses);
+                        }
                     }
                 })
                 .catch(error => {
