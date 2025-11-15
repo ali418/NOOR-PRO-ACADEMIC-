@@ -30,6 +30,9 @@ function resolveDbConfig() {
 
 const dbConfig = resolveDbConfig();
 
+// Ensure charset conversion is performed only once per process
+let utf8mb4Ensured = false;
+
 // Create database connection
 async function createConnection() {
     try {
@@ -129,6 +132,18 @@ async function getCoursesByCategory(req, res) {
         }
         
         connection = await createConnection();
+
+        // Enforce utf8mb4 charset for proper Arabic text handling (run once)
+        try {
+            await connection.query('SET NAMES utf8mb4');
+            if (!utf8mb4Ensured) {
+                await connection.execute('ALTER TABLE courses CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+                await connection.execute('ALTER TABLE course_categories CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+                utf8mb4Ensured = true;
+            }
+        } catch (charsetErr) {
+            console.warn('Charset enforcement warning:', charsetErr?.message || charsetErr);
+        }
         
         // First, get category info
         const categoryQuery = `

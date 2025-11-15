@@ -404,6 +404,7 @@ async function addCourse(req, res) {
 async function updateCourse(req, res) {
     try {
         const connection = await createConnection();
+        await connection.execute('SET NAMES utf8mb4');
         const {
             id,
             title,
