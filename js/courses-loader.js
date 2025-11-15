@@ -64,16 +64,26 @@ class CourseLoader {
             const data = await response.json();
             
             if (data.success) {
-                // Check if we're on the homepage - show all courses including featured
-                const isHomepage = window.location.pathname === '/' || window.location.pathname === '/index.html';
+                // Check which page we're on and filter courses accordingly
+                const currentPath = window.location.pathname;
+                const isHomepage = currentPath === '/' || currentPath === '/index.html';
+                const isStudentsPage = currentPath === '/students.html' || currentPath.includes('students');
                 
-                if (isHomepage) {
-                    // On homepage, show all courses (including featured)
-                    this.renderCourses(data.courses);
+                console.log('Current path:', currentPath);
+                console.log('Is homepage:', isHomepage);
+                console.log('Is students page:', isStudentsPage);
+                console.log('Total courses:', data.courses?.length);
+                console.log('Featured courses:', data.courses?.filter(c => c.is_featured === true).length);
+                
+                if (isHomepage || isStudentsPage) {
+                    // On homepage and students page, show only featured courses
+                    const featuredCourses = data.courses.filter(course => course.is_featured === true);
+                    console.log('Showing featured courses only:', featuredCourses.length);
+                    this.renderCourses(featuredCourses);
                 } else {
-                    // On other pages (like courses.html), filter out featured courses 
-                    // (they appear on students page and homepage)
+                    // On other pages (like courses.html), show only non-featured courses
                     const regularCourses = data.courses.filter(course => !course.is_featured);
+                    console.log('Showing regular courses only:', regularCourses.length);
                     this.renderCourses(regularCourses);
                 }
             } else {
