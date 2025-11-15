@@ -64,9 +64,18 @@ class CourseLoader {
             const data = await response.json();
             
             if (data.success) {
-                // Filter out featured courses from regular courses page (they appear on students page)
-                const regularCourses = data.courses.filter(course => !course.is_featured);
-                this.renderCourses(regularCourses);
+                // Check if we're on the homepage - show all courses including featured
+                const isHomepage = window.location.pathname === '/' || window.location.pathname === '/index.html';
+                
+                if (isHomepage) {
+                    // On homepage, show all courses (including featured)
+                    this.renderCourses(data.courses);
+                } else {
+                    // On other pages (like courses.html), filter out featured courses 
+                    // (they appear on students page and homepage)
+                    const regularCourses = data.courses.filter(course => !course.is_featured);
+                    this.renderCourses(regularCourses);
+                }
             } else {
                 this.showError('فشل في تحميل المقررات: ' + (data.message || 'خطأ غير معروف'));
             }
