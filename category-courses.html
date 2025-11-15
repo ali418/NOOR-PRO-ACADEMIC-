@@ -623,26 +623,20 @@
                 const apiCourses = (data && data.success && data.data && data.data.courses)
                     ? data.data.courses
                     : ((data && data.data && data.data.courses) ? data.data.courses : []);
-
                 const levelMap = { beginner: 'مبتدئ', intermediate: 'متوسط', advanced: 'متقدم' };
-                
-                // Normalize API courses
-                const normalizedFromApi = apiCourses.map(c => {
+                const normalize = (arr) => arr.map(c => {
                     const usdPriceValue = extractNumeric(c.price);
-                    const sdgPriceValue = usdPriceValue * 1500; // Assuming a fixed rate for now, should be dynamic
+                    const sdgPriceValue = usdPriceValue * 1500;
                     const usdPriceAmount = usdPriceValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     const sdgPriceAmount = sdgPriceValue.toLocaleString('en-US');
-                    // حساب الأيام من النص أو من الأسابيع
                     const daysFromText = parseDaysFromDurationText(c.duration);
                     const daysFromWeeks = c.duration_weeks ? Number(c.duration_weeks) * 7 : 0;
                     const durationDays = daysFromText > 0 ? daysFromText : (daysFromWeeks > 0 ? daysFromWeeks : 0);
-
                     const startDateRaw = c.start_date || null;
                     const endDateRaw = c.end_date || null;
                     const computedEndDate = (!endDateRaw && startDateRaw && durationDays > 0)
                         ? addDaysToDate(startDateRaw, durationDays)
                         : endDateRaw;
-
                     return ({
                         id: c.id,
                         title: c.title || c.course_name || 'مقرر',
@@ -654,12 +648,10 @@
                         capacity: (typeof c.capacity === 'number')
                             ? `${Number(c.capacity).toLocaleString('en-US')} شخص`
                             : (c.capacity || (c.max_students ? `${Number(c.max_students).toLocaleString('en-US')} طالب كحد أقصى` : '—')),
-                        // حقول قديمة للتوافق (لن تُستخدم في العرض)
                         price: `${sdgPriceAmount} SDG`,
                         priceAmount: sdgPriceAmount,
                         priceCurrency: 'SDG',
                         priceValue: sdgPriceValue,
-                        // حقول العرض الجديدة
                         priceUSDValue: usdPriceValue,
                         priceUSDText: `${usdPriceAmount} دولار`,
                         priceSDGValue: sdgPriceValue,
@@ -667,22 +659,64 @@
                         details: c.details || ''
                     });
                 });
-
-                // اعتمد فقط على نتائج الـ API بدون أي عينات محلية
-                const finalCourses = normalizedFromApi;
-
-                allCourses = finalCourses;
-                filteredCourses = [...finalCourses];
-
-                if (finalCourses.length === 0) {
-                    showEmpty();
+                const basics = normalize(apiCourses);
+                if (String(categoryId) === '1') {
+                    const [speakingResp, skillsResp] = await Promise.all([
+                        fetch(`/api/categories/4/courses`),
+                        fetch(`/api/categories/5/courses`)
+                    ]);
+                    const speakingData = await speakingResp.json().catch(() => ({}));
+                    const skillsData = await skillsResp.json().catch(() => ({}));
+                    const speakingApi = (speakingData && speakingData.success && speakingData.data && speakingData.data.courses) ? speakingData.data.courses : [];
+                    const skillsApi = (skillsData && skillsData.success && skillsData.data && skillsData.data.courses) ? skillsData.data.courses : [];
+                    const speakingCourses = normalize(speakingApi);
+                    const skillsCourses = normalize(skillsApi);
+                    allCourses = basics;
+                    filteredCourses = [...basics];
+                    const grid = document.getElementById('coursesGrid');
+                    const makeCard = (title, icon, gradient, coursesArr) => {
+                        const items = coursesArr.map(course => `
+                            <li class=\"course-name-item\">
+                                <button class=\"course-name-btn\" onclick=\"viewCourseDetails(${course.id})\" title=\"${course.title}\">
+                                    <i class=\"fas fa-book\"></i>
+                                    <span>${course.title}</span>
+                                </button>
+                            </li>
+                        `).join('');
+                        return `
+                            <div class=\"course-card\" style=\"cursor: default;\">
+                                <div class=\"course-image\" style=\"background: ${gradient}\">
+                                    <i class=\"${icon}\"></i>
+                                </div>
+                                <div class=\"course-content\">
+                                    <h3 class=\"course-title\" style=\"margin-bottom: 10px;\">${title}</h3>
+                                    <ul class=\"course-name-list\" style=\"list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;\">
+                                        ${items}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    };
+                    const html = [
+                        makeCard('كورسات الأساسيات في اللغة الإنجليزية', categoryConfigs[1].icon, categoryConfigs[1].gradient, basics),
+                        makeCard('كورسات المخاطبة – أكاديمية نور للتدريب', categoryConfigs[4].icon, categoryConfigs[4].gradient, speakingCourses),
+                        makeCard('قسم كورسات تقوية المهارات في اللغة الإنجليزية', categoryConfigs[5].icon, categoryConfigs[5].gradient, skillsCourses)
+                    ].join('');
+                    updateCoursesCount(basics.length + speakingCourses.length + skillsCourses.length);
+                    grid.innerHTML = html;
+                    showCourses();
                 } else {
-                    updateCoursesCount(finalCourses.length);
-                    displayCourses(finalCourses);
+                    const finalCourses = basics;
+                    allCourses = finalCourses;
+                    filteredCourses = [...finalCourses];
+                    if (finalCourses.length === 0) {
+                        showEmpty();
+                    } else {
+                        updateCoursesCount(finalCourses.length);
+                        displayCourses(finalCourses);
+                    }
                 }
             } catch (error) {
-                console.error('Error loading category courses:', error);
-                // لا تستخدم عينات محلية؛ اعرض حالة خطأ/فراغ حتى يعود الـ API
                 allCourses = [];
                 filteredCourses = [];
                 updateCoursesCount(0);
@@ -692,13 +726,10 @@
 
         function displayCourses(courses) {
             const grid = document.getElementById('coursesGrid');
-            
             if (courses.length === 0) {
                 showEmpty();
                 return;
             }
-
-            // عرض كارد واحد يحوي قائمة بأسماء الكورسات تحت بعضها
             const listItems = courses.map(course => `
                 <li class="course-name-item">
                     <button class="course-name-btn" onclick="viewCourseDetails(${course.id})" title="${course.title}">
@@ -707,20 +738,19 @@
                     </button>
                 </li>
             `).join('');
-
+            const titleText = (String(categoryId) === '1') ? 'كورسات الأساسيات في اللغة الإنجليزية' : 'أسماء المقررات المتاحة';
             const coursesHTML = `
                 <div class="course-card" style="cursor: default;">
                     <div class="course-image" style="background: ${currentCategory.gradient}">
                         <i class="${currentCategory.icon}"></i>
                     </div>
                     <div class="course-content">
-                        <h3 class="course-title" style="margin-bottom: 10px;">أسماء المقررات المتاحة</h3>
+                        <h3 class="course-title" style="margin-bottom: 10px;">${titleText}</h3>
                         <ul class="course-name-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
                             ${listItems}
                         </ul>
                     </div>
                 </div>`;
-
             grid.innerHTML = coursesHTML;
             showCourses();
         }
