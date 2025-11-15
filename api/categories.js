@@ -148,6 +148,27 @@ async function getCoursesByCategory(req, res) {
         
         // Then, get courses for this category
         // Support both relational category_id and legacy textual category
+        const categoryName = categoryRows[0].category_name;
+        const categoryNameAr = categoryRows[0].category_name_ar;
+
+        // Build synonym list for legacy textual matching (handles common variants)
+        const synonyms = [categoryName, categoryNameAr];
+        const cnLower = String(categoryName).toLowerCase();
+        switch (cnLower) {
+            case 'hr_diploma':
+                // Accept common English variants used in admin/inputs
+                synonyms.push('hr diplomas', 'hr_diplomas');
+                break;
+            case 'hr_short':
+                // Accept common English variants used in admin/inputs
+                synonyms.push('hr short', 'hr_short');
+                break;
+            default:
+                // No additional synonyms for other categories for now
+                break;
+        }
+        const inPlaceholders = synonyms.map(() => 'LOWER(?)').join(', ');
+
         const coursesQuery = `
             SELECT 
                 c.id,
@@ -173,15 +194,12 @@ async function getCoursesByCategory(req, res) {
             LEFT JOIN enrollments e ON c.id = e.course_id AND e.status = 'enrolled'
             WHERE (
                 c.category_id = ? 
-                OR LOWER(c.category) IN (LOWER(?), LOWER(?))
+                OR LOWER(c.category) IN (${inPlaceholders})
             ) AND c.status = 'active'
             GROUP BY c.id
             ORDER BY course_name ASC
         `;
-        
-        const categoryName = categoryRows[0].category_name;
-        const categoryNameAr = categoryRows[0].category_name_ar;
-        const [coursesRows] = await connection.execute(coursesQuery, [categoryId, categoryName, categoryNameAr]);
+        const [coursesRows] = await connection.execute(coursesQuery, [categoryId, ...synonyms]);
         
         res.json({
             success: true,
