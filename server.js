@@ -373,6 +373,7 @@ runMigrations()
         // تشغيل الخادم بعد إنشاء قاعدة البيانات
         app.listen(PORT, () => {
             console.log(`الخادم يعمل على المنفذ ${PORT}`);
+            console.log(`Preview URL: http://localhost:${PORT}/`);
         });
     })
     .catch(err => {
@@ -381,5 +382,6 @@ runMigrations()
         // تشغيل الخادم حتى في حالة فشل إنشاء قاعدة البيانات
         app.listen(PORT, () => {
             console.log(`الخادم يعمل على المنفذ ${PORT} (بدون إنشاء قاعدة البيانات)`);
+            console.log(`Preview URL: http://localhost:${PORT}/`);
         });
     });

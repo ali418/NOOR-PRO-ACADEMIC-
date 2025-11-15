@@ -618,7 +618,23 @@
         async function loadCourses() {
             showLoading();
             try {
-                const response = await fetch(`/api/categories/${categoryId}/courses`);
+                let fetchCategoryId = categoryId;
+                if (String(categoryId) === '1') {
+                    try {
+                        const catsResp = await fetch('/api/categories');
+                        const catsJson = await catsResp.json();
+                        if (catsJson && catsJson.success && Array.isArray(catsJson.data)) {
+                            const lowerEq = (val, target) => String(val || '').toLowerCase() === String(target || '').toLowerCase();
+                            const englishCat = catsJson.data.find(cc => 
+                                lowerEq(cc.category_name, 'english') || lowerEq(cc.category_name_ar, 'اللغة الإنجليزية')
+                            );
+                            if (englishCat && englishCat.id) fetchCategoryId = englishCat.id;
+                        }
+                    } catch (e) {
+                        // تجاهل أي أخطاء، سنستخدم المعرف من الرابط
+                    }
+                }
+                const response = await fetch(`/api/categories/${fetchCategoryId}/courses`);
                 const data = await response.json();
                 const apiCourses = (data && data.success && data.data && data.data.courses)
                     ? data.data.courses
@@ -661,9 +677,28 @@
                 });
                 const basics = normalize(apiCourses);
                 if (String(categoryId) === '1') {
+                    let speakingId = 4;
+                    let grammarId = 5;
+                    try {
+                        const catsResp = await fetch('/api/categories');
+                        const catsJson = await catsResp.json();
+                        if (catsJson && catsJson.success && Array.isArray(catsJson.data)) {
+                            const lowerEq = (val, target) => String(val || '').toLowerCase() === String(target || '').toLowerCase();
+                            const speakingCat = catsJson.data.find(cc => 
+                                lowerEq(cc.category_name, 'speaking') || lowerEq(cc.category_name_ar, 'المخاطبة')
+                            );
+                            const grammarCat = catsJson.data.find(cc => 
+                                lowerEq(cc.category_name, 'grammar') || lowerEq(cc.category_name_ar, 'القواعد')
+                            );
+                            if (speakingCat && speakingCat.id) speakingId = speakingCat.id;
+                            if (grammarCat && grammarCat.id) grammarId = grammarCat.id;
+                        }
+                    } catch (e) {
+                        // تجاهل أي أخطاء، سنستخدم القيم الافتراضية 4 و 5
+                    }
                     const [speakingResp, skillsResp] = await Promise.all([
-                        fetch(`/api/categories/4/courses`),
-                        fetch(`/api/categories/5/courses`)
+                        fetch(`/api/categories/${speakingId}/courses`),
+                        fetch(`/api/categories/${grammarId}/courses`)
                     ]);
                     const speakingData = await speakingResp.json().catch(() => ({}));
                     const skillsData = await skillsResp.json().catch(() => ({}));
@@ -677,25 +712,9 @@
                     const makeCard = (title, icon, gradient, coursesArr) => {
                         const items = coursesArr.map(course => `
                             <li class=\"course-name-item\">
-                                <button class=\"course-name-btn\" onclick=\"viewCourseDetails(${course.id})\" title=\"${course.title}\">
-                                    <i class=\"fas fa-book\"></i>
-                                    <span>${course.title}</span>
-                                </button>
-                            </li>
-                        `).join('');
+                                <button class=\"course-name-btn\" onclick=\"viewCourseDetails(${course.id})\" title=\"${course.title}\">\n                                    <i class=\"fas fa-book\"></i>\n                                    <span>${course.title}</span>\n                                </button>\n                            </li>\n                        `).join('');
                         return `
-                            <div class=\"course-card\" style=\"cursor: default;\">
-                                <div class=\"course-image\" style=\"background: ${gradient}\">
-                                    <i class=\"${icon}\"></i>
-                                </div>
-                                <div class=\"course-content\">
-                                    <h3 class=\"course-title\" style=\"margin-bottom: 10px;\">${title}</h3>
-                                    <ul class=\"course-name-list\" style=\"list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;\">
-                                        ${items}
-                                    </ul>
-                                </div>
-                            </div>
-                        `;
+                            <div class=\"course-card\" style=\"cursor: default;\">\n                                <div class=\"course-image\" style=\"background: ${gradient}\">\n                                    <i class=\"${icon}\"></i>\n                                </div>\n                                <div class=\"course-content\">\n                                    <h3 class=\"course-title\" style=\"margin-bottom: 10px;\">${title}</h3>\n                                    <ul class=\"course-name-list\" style=\"list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;\">\n                                        ${items}\n                                    </ul>\n                                </div>\n                            </div>\n                        `;
                     };
                     const html = [
                         makeCard('كورسات الأساسيات في اللغة الإنجليزية', categoryConfigs[1].icon, categoryConfigs[1].gradient, basics),

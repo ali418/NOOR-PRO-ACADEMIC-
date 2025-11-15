@@ -781,7 +781,7 @@ class CoursesManager {
             description: (document.getElementById('addDescription')?.value || '').trim(),
             category: document.getElementById('addCategory')?.value || '',
             level: document.getElementById('addLevel')?.value || '',
-            status: 'draft',
+            status: 'active',
             duration: document.getElementById('addDuration')?.value || '',
             price: parseFloat(document.getElementById('addPrice')?.value) || 0,
             price_sdg: (() => {

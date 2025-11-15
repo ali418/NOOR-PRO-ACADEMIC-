@@ -367,19 +367,33 @@
     <script src="js/theme.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Debug: Check localStorage state
+            console.log('showFeaturedCourses value:', localStorage.getItem('showFeaturedCourses'));
+            console.log('Admin logged in:', localStorage.getItem('adminLoggedIn'));
+            
+            var show = localStorage.getItem('showFeaturedCourses') === 'true';
             var featuredSection = document.getElementById('featuredCategoriesSection');
             var disabledMessage = document.getElementById('featuredDisabledMessage');
-
-            // Always attempt to load and show featured courses section
-            if (featuredSection) {
-                featuredSection.style.display = 'block';
+            
+            console.log('Show featured courses:', show);
+            console.log('Featured section element:', featuredSection);
+            console.log('Disabled message element:', disabledMessage);
+            
+            if (featuredSection && disabledMessage) {
+                if (show) {
+                    // Load dynamic category names
+                    loadFeaturedCategories();
+                    featuredSection.style.display = 'block';
+                    disabledMessage.style.display = 'none';
+                    console.log('Featured courses ENABLED - showing cards');
+                } else {
+                    featuredSection.style.display = 'none';
+                    disabledMessage.style.display = 'block';
+                    console.log('Featured courses DISABLED - showing message');
+                }
+            } else {
+                console.error('Could not find featured section or disabled message elements');
             }
-            if (disabledMessage) {
-                disabledMessage.style.display = 'none';
-            }
-
-            // Load featured courses from API and show them if available
-            loadFeaturedCategories();
         });
 
         // Function to load featured courses (admin-selected)
