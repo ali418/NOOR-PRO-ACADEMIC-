@@ -253,7 +253,25 @@
         </div>
     </main>
     
-    <section class="featured-categories" style="margin: 30px 0;">
+    <!-- Featured Courses Disabled Message -->
+    <section id="featuredDisabledMessage" class="featured-disabled-message" style="margin: 30px 0; display: none;">
+        <div class="container">
+            <div class="disabled-message" style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 15px; border: 2px dashed #dee2e6;">
+                <i class="fas fa-eye-slash" style="font-size: 48px; color: #6c757d; margin-bottom: 20px;"></i>
+                <h3 style="color: #495057; margin-bottom: 15px;">الكورسات المميزة مخفية</h3>
+                <p style="color: #6c757d; margin-bottom: 25px; font-size: 16px;">
+                    يمكنك تفعيل عرض الكورسات المميزة للطلاب من لوحة التحكم
+                </p>
+                <a href="admin-dashboard.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-cog"></i>
+                    الذهاب إلى لوحة التحكم
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Featured Courses Section -->
+    <section id="featuredCategoriesSection" class="featured-categories" style="margin: 30px 0; display: none;">
         <div class="container">
             <div class="dashboard-grid">
                 <div class="dashboard-card courses-card" onclick="window.location.href='/category/1'" style="cursor: pointer;">
@@ -377,5 +395,58 @@
     <script src="js/script.js"></script>
     <script src="js/students.js"></script>
     <script src="js/theme.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var show = localStorage.getItem('showFeaturedCourses') === 'true';
+            var featuredSection = document.getElementById('featuredCategoriesSection');
+            var disabledMessage = document.getElementById('featuredDisabledMessage');
+            
+            if (featuredSection && disabledMessage) {
+                if (show) {
+                    // Load dynamic category names
+                    loadFeaturedCategories();
+                    featuredSection.style.display = 'block';
+                    disabledMessage.style.display = 'none';
+                } else {
+                    featuredSection.style.display = 'none';
+                    disabledMessage.style.display = 'block';
+                }
+            }
+        });
+
+        // Function to load featured category names dynamically
+        function loadFeaturedCategories() {
+            // Featured category IDs and their default names
+            var featuredCategories = [
+                { id: 1, defaultName: 'كورسات الأساسيات في اللغة الإنجليزية', defaultIcon: 'fas fa-language', defaultColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+                { id: 6, defaultName: '🎓 الدبلوم المهني في إدارة الأعمال', defaultIcon: 'fas fa-graduation-cap', defaultColor: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+                { id: 3, defaultName: '💻 قسم كورسات الحاسوب', defaultIcon: 'fas fa-laptop-code', defaultColor: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)' }
+            ];
+
+            // Fetch categories from API
+            fetch('/api/categories')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        // Update card titles with actual category names
+                        featuredCategories.forEach(function(category) {
+                            var categoryData = data.data.find(cat => cat.id === category.id);
+                            var cardElement = document.querySelector('[onclick*="/category/' + category.id + '"]');
+                            if (cardElement) {
+                                var titleElement = cardElement.querySelector('.card-title');
+                                if (titleElement && categoryData) {
+                                    // Use Arabic name if available, otherwise use default
+                                    titleElement.textContent = categoryData.category_name_ar || category.defaultName;
+                                }
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.log('Could not load dynamic category names, using defaults:', error);
+                    // Keep default names if API fails
+                });
+        }
+    </script>
 </body>
 </html>
