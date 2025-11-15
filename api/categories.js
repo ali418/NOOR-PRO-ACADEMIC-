@@ -63,7 +63,7 @@ async function getCategories(req, res) {
                     WHERE c.status = 'active'
                       AND (
                         c.category_id = cc.id
-                        OR LOWER(c.category) IN (LOWER(cc.category_name), LOWER(cc.category_name_ar))
+                        OR (c.category_id IS NULL AND LOWER(c.category) IN (LOWER(cc.category_name), LOWER(cc.category_name_ar)))
                       )
                 ) AS courses_count
             FROM course_categories cc
@@ -194,7 +194,7 @@ async function getCoursesByCategory(req, res) {
             LEFT JOIN enrollments e ON c.id = e.course_id AND e.status = 'enrolled'
             WHERE (
                 c.category_id = ? 
-                OR LOWER(c.category) IN (${inPlaceholders})
+                OR (c.category_id IS NULL AND LOWER(c.category) IN (${inPlaceholders}))
             ) AND c.status = 'active'
             GROUP BY c.id
             ORDER BY course_name ASC
