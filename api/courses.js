@@ -262,8 +262,8 @@ async function addCourse(req, res) {
             query = `INSERT INTO courses (
                 course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, status, youtube_link, category, 
-                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text, category_id
-            ) VALUES (${Array.from({length: hasPriceSDG ? 20 : 19}).map(() => '?').join(', ')})`;
+                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text, is_featured, category_id
+            ) VALUES (${Array.from({length: hasPriceSDG ? 21 : 20}).map(() => '?').join(', ')})`;
             params = [
                 course_code,
                 courseTitle, // course_name
@@ -284,6 +284,7 @@ async function addCourse(req, res) {
                 end_date || null,
                 course_icon || 'fas fa-book',
                 badge_text || null,
+                (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? 1 : 0,
                 resolvedCategoryId || null
             ];
         } else {
@@ -291,8 +292,8 @@ async function addCourse(req, res) {
             query = `INSERT INTO courses (
                 course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, status, youtube_link, category, 
-                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text
-            ) VALUES (${Array.from({length: hasPriceSDG ? 18 : 17}).map(() => '?').join(', ')})`;
+                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text, is_featured
+            ) VALUES (${Array.from({length: hasPriceSDG ? 19 : 18}).map(() => '?').join(', ')})`;
             params = [
                 course_code,
                 courseTitle, // course_name
@@ -312,7 +313,8 @@ async function addCourse(req, res) {
                 start_date || null,
                 end_date || null,
                 course_icon || 'fas fa-book',
-                badge_text || null
+                badge_text || null,
+                (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? 1 : 0
             ];
         }
         
@@ -363,7 +365,8 @@ async function addCourse(req, res) {
                 course_icon: course_icon || 'fas fa-book',
                 badge_text: badge_text || null,
                 youtube_link: youtube_link || '',
-                end_date: end_date || null
+                end_date: end_date || null,
+                is_featured: (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? true : false
             };
             sampleCourses.push(courseToAdd);
             fs.writeFileSync(samplePath, JSON.stringify(sampleCourses, null, 2));
@@ -457,7 +460,7 @@ async function updateCourse(req, res) {
                 course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
                 instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
                 category = ?, price = ?${hasPriceSDG ? ', price_sdg = ?' : ''}, level_name = ?, start_date = ?, end_date = ?,
-                course_icon = ?, badge_text = ?, category_id = ?
+                course_icon = ?, badge_text = ?, is_featured = ?, category_id = ?
                 WHERE id = ?`;
             params = [
                 courseTitle, // course_name
@@ -478,6 +481,7 @@ async function updateCourse(req, res) {
                 end_date || null,
                 course_icon || 'fas fa-book',
                 badge_text || null,
+                (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? 1 : 0,
                 resolvedCategoryId,
                 id
             ];
@@ -486,7 +490,7 @@ async function updateCourse(req, res) {
                 course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
                 instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
                 category = ?, price = ?${hasPriceSDG ? ', price_sdg = ?' : ''}, level_name = ?, start_date = ?, end_date = ?,
-                course_icon = ?, badge_text = ?
+                course_icon = ?, badge_text = ?, is_featured = ?
                 WHERE id = ?`;
             params = [
                 courseTitle, // course_name
@@ -507,6 +511,7 @@ async function updateCourse(req, res) {
                 end_date || null,
                 course_icon || 'fas fa-book',
                 badge_text || null,
+                (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? 1 : 0,
                 id
             ];
         }
@@ -561,7 +566,8 @@ async function updateCourse(req, res) {
                 start_date: start_date ?? sampleCourses[idx].start_date,
                 end_date: end_date ?? sampleCourses[idx].end_date,
                 course_icon: course_icon ?? sampleCourses[idx].course_icon,
-                badge_text: badge_text ?? sampleCourses[idx].badge_text
+                badge_text: badge_text ?? sampleCourses[idx].badge_text,
+                is_featured: typeof req.body.is_featured !== 'undefined' ? ((req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? true : false) : sampleCourses[idx].is_featured
             };
             fs.writeFileSync(samplePath, JSON.stringify(sampleCourses, null, 2));
             res.json({ success: true, message: 'تم تحديث بيانات المقرر (بيانات تجريبية)' });
