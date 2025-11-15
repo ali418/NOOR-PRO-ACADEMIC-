@@ -134,9 +134,38 @@
         <div class="container">
             <h2 data-ar="المقررات المتاحة" data-en="Available Courses">المقررات المتاحة</h2>
             
+            <!-- إضافة بطاقات التصنيفات الرئيسية المطلوبة -->
+            <div class="categories-highlight" style="margin: 16px 0 24px 0;">
+                <div class="categories-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+                    <!-- كورسات الأساسيات في اللغة الإنجليزية -->
+                    <div class="category-card" onclick="navigateToCategory(1)" style="cursor: pointer;">
+                        <div class="category-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3 class="category-title">كورسات الأساسيات في اللغة الإنجليزية</h3>
+                        <p class="category-description">ابدأ من الصفر وتعلم الأساسيات خطوة بخطوة</p>
+                    </div>
+
+                    <!-- 🎓 الدبلوم المهني في إدارة الأعمال -->
+                    <div class="category-card" onclick="navigateToCategory(6)" style="cursor: pointer;">
+                        <div class="category-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 class="category-title">🎓 الدبلوم المهني في إدارة الأعمال</h3>
+                        <p class="category-description">برنامج مهني شامل في إدارة الأعمال</p>
+                    </div>
+
+                    <!-- 💻 قسم كورسات الحاسوب -->
+                    <div class="category-card" onclick="navigateToCategory(3)" style="cursor: pointer;">
+                        <div class="category-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h3 class="category-title">💻 قسم كورسات الحاسوب</h3>
+                        <p class="category-description">تعلم مهارات الحاسوب والتقنية والبرمجة</p>
+                    </div>
+                </div>
+            </div>
             
-
-
             <!-- Courses List for Homepage -->
             <div class="homepage-courses">
                 <!-- Loading indicator for courses -->
