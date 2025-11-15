@@ -1630,6 +1630,78 @@ h1, h2, h3 {
     background: white;
 }
 
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.dashboard-grid .card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-grid .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-grid .card-header {
+    padding: 30px;
+    text-align: center;
+    color: white;
+    font-size: 48px;
+}
+
+.dashboard-grid .card-header i {
+    opacity: 0.9;
+}
+
+.dashboard-grid .card-body {
+    padding: 30px;
+}
+
+.dashboard-grid .card-body h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.dashboard-grid .card-body p {
+    color: #718096;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.dashboard-grid .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: #718096;
+}
+
+.dashboard-grid .card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dashboard-grid .card-footer {
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.dashboard-grid .card-footer .btn {
+    width: 100%;
+}
+
 .course-card {
     background: var(--white);
     border-radius: var(--border-radius-lg);

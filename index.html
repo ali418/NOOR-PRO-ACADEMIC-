@@ -117,6 +117,18 @@
         </div>
     </section>
 
+    <!-- Featured Courses Section -->
+    <section id="featuredCourses" class="featured-courses-section">
+        <div class="container">
+            <h2 data-ar="كورسات مميزة" data-en="Featured Courses">كورسات مميزة</h2>
+            <div class="dashboard-section" id="featuredCategoriesSection">
+                <div class="dashboard-grid">
+                    <!-- Featured course cards will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Courses Section -->
     <section id="courses" class="courses">
         <div class="container">
@@ -323,5 +335,106 @@
     <script src="js/video-modal.js"></script>
     <script src="js/search-functionality.js"></script>
     <script src="js/theme.js"></script>
+    
+    <script>
+        // Load featured courses on homepage
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Homepage loaded, loading featured courses...');
+            loadFeaturedCoursesForHomepage();
+        });
+
+        async function loadFeaturedCoursesForHomepage() {
+            try {
+                console.log('Fetching featured courses for homepage...');
+                const response = await fetch('/api/courses');
+                const data = await response.json();
+                
+                console.log('All courses received:', data.courses.length);
+                console.log('First few courses:', data.courses.slice(0, 3));
+                
+                // Filter only featured courses
+                const featuredCourses = data.courses.filter(course => {
+                    console.log(`Course "${course.title}" featured status:`, course.is_featured);
+                    return course.is_featured === true;
+                });
+                
+                console.log('Featured courses found:', featuredCourses.length);
+                console.log('Featured courses details:', featuredCourses);
+                
+                // Display featured courses
+                displayFeaturedCoursesOnHomepage(featuredCourses);
+                
+            } catch (error) {
+                console.error('Error loading featured courses for homepage:', error);
+            }
+        }
+
+        function displayFeaturedCoursesOnHomepage(courses) {
+            console.log('Displaying featured courses on homepage...');
+            const container = document.querySelector('#featuredCourses .dashboard-grid');
+            
+            if (!container) {
+                console.error('Featured courses container not found!');
+                return;
+            }
+            
+            // Clear existing content
+            container.innerHTML = '';
+            
+            if (courses.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #718096; padding: 40px;">لا توجد كورسات مميزة حالياً</p>';
+                console.log('No featured courses to display');
+                return;
+            }
+            
+            // Take only up to 3 courses
+            const displayCourses = courses.slice(0, 3);
+            console.log('Displaying', displayCourses.length, 'featured courses');
+            
+            // Default styles for cards (similar to students page)
+            const defaultStyles = [
+                {
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    icon: 'fas fa-graduation-cap'
+                },
+                {
+                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    icon: 'fas fa-book'
+                },
+                {
+                    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                    icon: 'fas fa-laptop-code'
+                }
+            ];
+            
+            displayCourses.forEach((course, index) => {
+                const style = defaultStyles[index % defaultStyles.length];
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header" style="background: ${style.background}">
+                        <i class="${style.icon}"></i>
+                    </div>
+                    <div class="card-body">
+                        <h3>${course.title}</h3>
+                        <p>${course.description || 'لا يوجد وصف'}</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> ${course.duration || 'غير محدد'}</span>
+                            <span><i class="fas fa-user"></i> ${course.instructor || 'غير محدد'}</span>
+                        </div>
+                        <div class="card-footer">
+                            <a href="courses.html#course-${course.id}" class="btn btn-primary">
+                                <span data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+                console.log('Added featured course card:', course.title);
+            });
+            
+            console.log('Featured courses display completed');
+        }
+    </script>
 </body>
 </html>
