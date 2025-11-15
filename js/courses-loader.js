@@ -69,15 +69,28 @@ class CourseLoader {
                 const isHomepage = currentPath === '/' || currentPath === '/index.html';
                 const isStudentsPage = currentPath === '/students.html' || currentPath.includes('students');
                 
+                console.log('=== Course Loading Debug Info ===');
                 console.log('Current path:', currentPath);
                 console.log('Is homepage:', isHomepage);
                 console.log('Is students page:', isStudentsPage);
-                console.log('Total courses:', data.courses?.length);
-                console.log('Featured courses:', data.courses?.filter(c => c.is_featured === true).length);
+                console.log('Total courses from API:', data.courses?.length);
+                
+                if (data.courses && data.courses.length > 0) {
+                    data.courses.forEach((course, index) => {
+                        console.log(`Course ${index + 1}:`, {
+                            id: course.id,
+                            title: course.title || course.course_name,
+                            is_featured: course.is_featured,
+                            category: course.category
+                        });
+                    });
+                }
+                
+                const featuredCourses = data.courses?.filter(course => course.is_featured === true) || [];
+                console.log('Featured courses count:', featuredCourses.length);
                 
                 if (isHomepage || isStudentsPage) {
                     // On homepage and students page, show only featured courses
-                    const featuredCourses = data.courses.filter(course => course.is_featured === true);
                     console.log('Showing featured courses only:', featuredCourses.length);
                     this.renderCourses(featuredCourses);
                 } else {
@@ -86,6 +99,8 @@ class CourseLoader {
                     console.log('Showing regular courses only:', regularCourses.length);
                     this.renderCourses(regularCourses);
                 }
+                
+                console.log('=== End Debug Info ===');
             } else {
                 this.showError('فشل في تحميل المقررات: ' + (data.message || 'خطأ غير معروف'));
             }
