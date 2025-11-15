@@ -66,8 +66,7 @@ app.get('/api/courses-sample', (req, res) => {
           price: course.price,
           youtube_link: course.youtube_link,
           start_date: course.start_date || null,
-          end_date: course.end_date || null,
-          is_featured: !!course.is_featured
+          end_date: course.end_date || null
         }))
       });
     } else {
@@ -118,8 +117,7 @@ app.post('/api/courses-sample', (req, res) => {
       end_date: newCourse.end_date || null,
       course_icon: 'fas fa-book',
       badge_text: 'جديد',
-      youtube_link: newCourse.youtube_link || '',
-      is_featured: (newCourse.is_featured === true || newCourse.is_featured === 'true' || newCourse.is_featured === 1 || newCourse.is_featured === '1') ? true : false
+      youtube_link: newCourse.youtube_link || ''
     };
     
     // إضافة الدورة إلى المصفوفة
@@ -183,8 +181,7 @@ app.put('/api/courses-sample', (req, res) => {
       instructor_name: updatedCourse.instructor,
       youtube_link: typeof updatedCourse.youtube_link !== 'undefined' ? updatedCourse.youtube_link : sampleCourses[courseIndex].youtube_link,
       start_date: typeof updatedCourse.start_date !== 'undefined' ? updatedCourse.start_date : sampleCourses[courseIndex].start_date,
-      end_date: typeof updatedCourse.end_date !== 'undefined' ? updatedCourse.end_date : sampleCourses[courseIndex].end_date,
-      is_featured: typeof updatedCourse.is_featured !== 'undefined' ? ((updatedCourse.is_featured === true || updatedCourse.is_featured === 'true' || updatedCourse.is_featured === 1 || updatedCourse.is_featured === '1') ? true : false) : sampleCourses[courseIndex].is_featured
+      end_date: typeof updatedCourse.end_date !== 'undefined' ? updatedCourse.end_date : sampleCourses[courseIndex].end_date
     };
     
     // حفظ التغييرات في الملف
@@ -201,8 +198,7 @@ app.put('/api/courses-sample', (req, res) => {
       status: "active",
       duration: sampleCourses[courseIndex].duration_weeks,
       instructor: sampleCourses[courseIndex].instructor_name,
-      price: sampleCourses[courseIndex].price,
-      is_featured: !!sampleCourses[courseIndex].is_featured
+      price: sampleCourses[courseIndex].price
     };
     
     res.json({

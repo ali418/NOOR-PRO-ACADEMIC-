@@ -367,33 +367,19 @@
     <script src="js/theme.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Debug: Check localStorage state
-            console.log('showFeaturedCourses value:', localStorage.getItem('showFeaturedCourses'));
-            console.log('Admin logged in:', localStorage.getItem('adminLoggedIn'));
-            
-            var show = localStorage.getItem('showFeaturedCourses') === 'true';
             var featuredSection = document.getElementById('featuredCategoriesSection');
             var disabledMessage = document.getElementById('featuredDisabledMessage');
-            
-            console.log('Show featured courses:', show);
-            console.log('Featured section element:', featuredSection);
-            console.log('Disabled message element:', disabledMessage);
-            
-            if (featuredSection && disabledMessage) {
-                if (show) {
-                    // Load dynamic category names
-                    loadFeaturedCategories();
-                    featuredSection.style.display = 'block';
-                    disabledMessage.style.display = 'none';
-                    console.log('Featured courses ENABLED - showing cards');
-                } else {
-                    featuredSection.style.display = 'none';
-                    disabledMessage.style.display = 'block';
-                    console.log('Featured courses DISABLED - showing message');
-                }
-            } else {
-                console.error('Could not find featured section or disabled message elements');
+
+            // Always attempt to load and show featured courses section
+            if (featuredSection) {
+                featuredSection.style.display = 'block';
             }
+            if (disabledMessage) {
+                disabledMessage.style.display = 'none';
+            }
+
+            // Load featured courses from API and show them if available
+            loadFeaturedCategories();
         });
 
         // Function to load featured courses (admin-selected)
@@ -404,8 +390,10 @@
             fetch('/api/courses')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success && data.data) {
-                        var featuredCourses = data.data.filter(course => course.is_featured === true);
+                    // Use the correct payload key: courses
+                    const coursesArray = Array.isArray(data.courses) ? data.courses : [];
+                    if (data.success && coursesArray.length >= 0) {
+                        var featuredCourses = coursesArray.filter(course => course.is_featured === true);
                         console.log('Found featured courses:', featuredCourses.length);
                         
                         if (featuredCourses.length === 0) {
@@ -418,10 +406,20 @@
                         } else {
                             displayFeaturedCourses(featuredCourses);
                         }
+                    } else {
+                        console.warn('Unexpected courses API payload:', data);
+                        var container = document.querySelector('#featuredCategoriesSection .dashboard-grid');
+                        if (container) {
+                            container.innerHTML = '<div class="col-12 text-center text-muted">لا توجد كورسات مميزة حالياً</div>';
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Could not load featured courses:', error);
+                    var container = document.querySelector('#featuredCategoriesSection .dashboard-grid');
+                    if (container) {
+                        container.innerHTML = '<div class="col-12 text-center text-danger">حدث خطأ أثناء تحميل الكورسات المميزة</div>';
+                    }
                 });
         }
 

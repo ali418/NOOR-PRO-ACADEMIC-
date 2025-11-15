@@ -1,6 +1,16 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+// Helper to normalize boolean-like values sent from frontend or DB
+function toBoolean(val) {
+  if (typeof val === 'boolean') return val;
+  if (typeof val === 'number') return val === 1;
+  if (typeof val === 'string') {
+    const v = val.trim().toLowerCase();
+    return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+  }
+  return false;
+}
 
 // Resolve database configuration from env vars or DATABASE_URL
 function resolveDbConfig() {
@@ -70,6 +80,9 @@ async function getCourseById(req, res) {
         await connection.end();
         
         if (rows.length > 0) {
+            if ('is_featured' in rows[0]) {
+                rows[0].is_featured = toBoolean(rows[0].is_featured);
+            }
             res.json({
                 success: true,
                 message: 'تم جلب بيانات الدورة بنجاح',
@@ -137,10 +150,15 @@ async function getCourses(req, res) {
         const [rows] = await connection.execute(query, params);
         await connection.end();
         
+        const normalized = rows.map(c => ({
+            ...c,
+            is_featured: toBoolean(c.is_featured)
+        }));
+        
         res.json({
             success: true,
             message: 'تم جلب البيانات بنجاح',
-            courses: rows
+            courses: normalized
         });
         
     } catch (error) {
@@ -160,7 +178,7 @@ async function getCourses(req, res) {
                     (c.instructor_name || '').toLowerCase().includes(term)
                 );
             }
-            res.json({ success: true, message: 'استخدام بيانات تجريبية', courses: result });
+            res.json({ success: true, message: 'استخدام بيانات تجريبية', courses: result.map(c => ({...c, is_featured: toBoolean(c.is_featured)})) });
         } catch (fallbackErr) {
             console.error('Error fetching courses (and fallback failed):', fallbackErr);
             res.status(500).json({
@@ -256,14 +274,16 @@ async function addCourse(req, res) {
 
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
         const hasPriceSDG = await columnExists(connection, 'courses', 'price_sdg');
+        const hasIsFeatured = await columnExists(connection, 'courses', 'is_featured');
+        const isFeatured = toBoolean(req.body.is_featured);
         let query, params;
         if (hasCategoryId) {
-            // تضمين course_name لتفادي قيود NOT NULL في بعض المخططات
+            const valuesCount = (hasPriceSDG ? 20 : 19) + (hasIsFeatured ? 1 : 0);
             query = `INSERT INTO courses (
                 course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, status, youtube_link, category, 
-                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text, is_featured, category_id
-            ) VALUES (${Array.from({length: hasPriceSDG ? 21 : 20}).map(() => '?').join(', ')})`;
+                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text, category_id${hasIsFeatured ? ', is_featured' : ''}
+            ) VALUES (${Array.from({length: valuesCount}).map(() => '?').join(', ')})`;
             params = [
                 course_code,
                 courseTitle, // course_name
@@ -284,16 +304,16 @@ async function addCourse(req, res) {
                 end_date || null,
                 course_icon || 'fas fa-book',
                 badge_text || null,
-                (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? 1 : 0,
-                resolvedCategoryId || null
+                resolvedCategoryId || null,
+                ...(hasIsFeatured ? [isFeatured ? 1 : 0] : [])
             ];
         } else {
-            // Fallback for databases without category_id column
+            const valuesCount = (hasPriceSDG ? 18 : 17) + (hasIsFeatured ? 1 : 0);
             query = `INSERT INTO courses (
                 course_code, course_name, title, description, credits, duration_weeks, duration,
                 instructor_name, max_students, status, youtube_link, category, 
-                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text, is_featured
-            ) VALUES (${Array.from({length: hasPriceSDG ? 19 : 18}).map(() => '?').join(', ')})`;
+                price${hasPriceSDG ? ', price_sdg' : ''}, level_name, start_date, end_date, course_icon, badge_text${hasIsFeatured ? ', is_featured' : ''}
+            ) VALUES (${Array.from({length: valuesCount}).map(() => '?').join(', ')})`;
             params = [
                 course_code,
                 courseTitle, // course_name
@@ -314,7 +334,7 @@ async function addCourse(req, res) {
                 end_date || null,
                 course_icon || 'fas fa-book',
                 badge_text || null,
-                (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? 1 : 0
+                ...(hasIsFeatured ? [isFeatured ? 1 : 0] : [])
             ];
         }
         
@@ -344,8 +364,10 @@ async function addCourse(req, res) {
                 price,
                 level_name,
                 start_date,
+                end_date,
                 course_icon,
-                badge_text
+                badge_text,
+                is_featured
             } = req.body;
             const newId = sampleCourses.length > 0 ? Math.max(...sampleCourses.map(c => parseInt(c.id))) + 1 : 1;
             const code = course_code || `CRS-${newId.toString().padStart(3, '0')}`;
@@ -366,7 +388,7 @@ async function addCourse(req, res) {
                 badge_text: badge_text || null,
                 youtube_link: youtube_link || '',
                 end_date: end_date || null,
-                is_featured: (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? true : false
+                is_featured: toBoolean(is_featured)
             };
             sampleCourses.push(courseToAdd);
             fs.writeFileSync(samplePath, JSON.stringify(sampleCourses, null, 2));
@@ -401,7 +423,8 @@ async function updateCourse(req, res) {
             start_date,
             end_date,
             course_icon,
-            badge_text
+            badge_text,
+            is_featured
         } = req.body;
         
         if (!id) {
@@ -412,7 +435,6 @@ async function updateCourse(req, res) {
             });
         }
         
-        // Use title or course_name for backward compatibility
         const courseTitle = title || course_name || '';
         
         if (!courseTitle) {
@@ -440,7 +462,6 @@ async function updateCourse(req, res) {
         // Sanitize price to extract only the numerical value
         let sanitizedPrice = '0';
         if (price) {
-            // This regex extracts the first number (integer or decimal) from the string
             const priceMatch = String(price).match(/(\d+(\.\d+)?)/);
             if (priceMatch) {
                 sanitizedPrice = priceMatch[1];
@@ -449,18 +470,18 @@ async function updateCourse(req, res) {
 
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
         const hasPriceSDG = await columnExists(connection, 'courses', 'price_sdg');
-        // Resolve category_id safely (use provided value if numeric, else null)
+        const hasIsFeatured = await columnExists(connection, 'courses', 'is_featured');
+        const isFeatured = toBoolean(is_featured);
         const resolvedCategoryId = (category_id !== undefined && category_id !== null && !isNaN(parseInt(category_id)))
             ? parseInt(category_id)
             : null;
         let query, params;
         if (hasCategoryId) {
-            // تحديث course_name بالإضافة إلى title
             query = `UPDATE courses SET 
                 course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
                 instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
                 category = ?, price = ?${hasPriceSDG ? ', price_sdg = ?' : ''}, level_name = ?, start_date = ?, end_date = ?,
-                course_icon = ?, badge_text = ?, is_featured = ?, category_id = ?
+                course_icon = ?, badge_text = ?, category_id = ?${hasIsFeatured ? ', is_featured = ?' : ''}
                 WHERE id = ?`;
             params = [
                 courseTitle, // course_name
@@ -481,8 +502,8 @@ async function updateCourse(req, res) {
                 end_date || null,
                 course_icon || 'fas fa-book',
                 badge_text || null,
-                (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? 1 : 0,
                 resolvedCategoryId,
+                ...(hasIsFeatured ? [isFeatured ? 1 : 0] : []),
                 id
             ];
         } else {
@@ -490,7 +511,7 @@ async function updateCourse(req, res) {
                 course_name = ?, title = ?, description = ?, credits = ?, duration_weeks = ?, duration = ?,
                 instructor_name = ?, max_students = ?, status = ?, youtube_link = ?,
                 category = ?, price = ?${hasPriceSDG ? ', price_sdg = ?' : ''}, level_name = ?, start_date = ?, end_date = ?,
-                course_icon = ?, badge_text = ?, is_featured = ?
+                course_icon = ?, badge_text = ?${hasIsFeatured ? ', is_featured = ?' : ''}
                 WHERE id = ?`;
             params = [
                 courseTitle, // course_name
@@ -511,7 +532,7 @@ async function updateCourse(req, res) {
                 end_date || null,
                 course_icon || 'fas fa-book',
                 badge_text || null,
-                (req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? 1 : 0,
+                ...(hasIsFeatured ? [isFeatured ? 1 : 0] : []),
                 id
             ];
         }
@@ -544,8 +565,10 @@ async function updateCourse(req, res) {
                 price,
                 level_name,
                 start_date,
+                end_date,
                 course_icon,
-                badge_text
+                badge_text,
+                is_featured
             } = req.body;
             if (!id) return res.status(400).json({ success: false, message: 'معرف المقرر مطلوب' });
             const idx = sampleCourses.findIndex(c => String(c.id) === String(id));
@@ -567,7 +590,7 @@ async function updateCourse(req, res) {
                 end_date: end_date ?? sampleCourses[idx].end_date,
                 course_icon: course_icon ?? sampleCourses[idx].course_icon,
                 badge_text: badge_text ?? sampleCourses[idx].badge_text,
-                is_featured: typeof req.body.is_featured !== 'undefined' ? ((req.body.is_featured === true || req.body.is_featured === 'true' || req.body.is_featured === 1 || req.body.is_featured === '1') ? true : false) : sampleCourses[idx].is_featured
+                is_featured: (typeof is_featured !== 'undefined') ? toBoolean(is_featured) : sampleCourses[idx].is_featured
             };
             fs.writeFileSync(samplePath, JSON.stringify(sampleCourses, null, 2));
             res.json({ success: true, message: 'تم تحديث بيانات المقرر (بيانات تجريبية)' });

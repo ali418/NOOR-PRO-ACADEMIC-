@@ -374,7 +374,7 @@ class CourseLoader {
                     price_sdg: priceSdgNum !== null ? priceSdgNum : (priceSdgRaw || undefined),
                     course_icon: courseIcon || undefined,
                     badge_text: badgeText || undefined,
-                    is_featured: isFeatured || false
+                    is_featured: isFeatured || false,
                 };
 
                 try {
@@ -457,8 +457,7 @@ class CourseLoader {
                     price: priceNum !== null ? priceNum : (priceRaw || undefined),
                     price_sdg: priceSdgNum !== null ? priceSdgNum : (priceSdgRaw || undefined),
                     course_icon: courseIcon || undefined,
-                    badge_text: badgeText || undefined,
-                    is_featured: isFeatured || false
+                    badge_text: badgeText || undefined
                 };
 
                 try {
@@ -485,8 +484,7 @@ class CourseLoader {
                             instructor: instructor,
                             youtube_link: youtube || undefined,
                             start_date: startDate || undefined,
-                            end_date: endDate || undefined,
-                            is_featured: isFeatured || false
+                            end_date: endDate || undefined
                         };
                         const respSample = await fetch(`/api/courses-sample`, {
                             method: 'PUT',
