@@ -227,48 +227,35 @@
     <section id="about" class="about-section" style="background: var(--gray-50); padding: 60px 0;">
         <div class="container">
             <div class="section-header" style="text-align: center; margin-bottom: 30px;">
-                <h2 data-ar="✨ من نحن؟ أكاديمية نور للتدريب" data-en="About Noor Academy">✨ من نحن؟ أكاديمية نور للتدريب</h2>
+                <h2 data-ar="عن نور أكاديمي" data-en="About the Center">✨ من نحن؟ أكاديمية نور للتدريب</h2>
             </div>
 
             <div class="about-content" style="display: grid; grid-template-columns: 1fr; gap: 24px; max-width: 900px; margin: 0 auto;">
                 <div class="about-card" style="background: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow-md); padding: 24px;">
-                    <p>
+                    <p style="font-family: 'Cairo', sans-serif; color: #555; line-height: 1.8;">
                         نحن أكاديمية نور للتدريب، واحدة من أقوى المؤسسات التعليمية المعتمدة في السودان وكمبالا، ونمتلك مركزين رسميين:
-                        <br><br>
-                        🇸🇩 مركز نور للتدريب – فرع السودان
-                        <br>
-                        شهادات معتمدة وقابلة للتوثيق من الجهات الرسمية.
-                        <br><br>
-                        🇺🇬 أكاديمية نور للتدريب المتقدم – فرع كمبالا
-                        <br>
-                        نقدّم شهادات دولية ومحلية معترف بها داخل أو خارج الدولة..
-                        <br><br>
-                        🎓 ماذا نقدّم؟
-                        <br>
+                    </p>
+                    <ul class="list-unstyled" style="padding-right: 20px;">
+                        <li style="margin-bottom: 10px;">🇸🇩 <strong>مركز نور للتدريب – فرع السودان</strong><br> شهادات معتمدة وقابلة للتوثيق من الجهات الرسمية.</li>
+                        <li>🇺🇬 <strong>أكاديمية نور للتدريب المتقدم – فرع كمبالا</strong><br> نقدّم شهادات دولية ومحلية معترف بها داخل أو خارج الدولة..</li>
+                    </ul>
+                </div>
+                <div class="about-card" style="background: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow-md); padding: 24px;">
+                    <h3 style="font-family: 'Cairo', sans-serif; font-weight: 600; color: #007bff;">🎓 ماذا نقدّم؟</h3>
+                    <p style="font-family: 'Cairo', sans-serif; color: #555; line-height: 1.8;">
                         نقدّم كورسات Online & Offline في مختلف المجالات التعليمية والمهنية، بأسلوب بسيط وسهل ومناسب لكل المستويات.
-                        <br>
-                        💻 الدورات القصيرة:
-                        <br>
-                        تقدَّم عبر الواتساب والتليجرام بطريقة عملية وبسيطة.
-                        <br>
-                        🎥 الدورات الكبيرة (دبلومات – كورسات اللغة الإنجليزية – برامج احترافية):
-                        <br>
-                        تقدَّم عبر المنصّات المباشرة مثل:
-                        <br>
-                        Google Meet
-                        <br>
-                        Telegram بث مباشر
-                        <br>
-                        منصّات وتطبيقات خاصة بالمركز
-                        <br><br>
-                        🏅 الشهادات
-                        <br>
-                        في نهاية أي ورشة—سواء كانت مجانية أو مدفوعة—
-                        <br>
-                        سيحصل المتدرب على شهادة معتمدة
-                        <br>
-                        يمكن استلامها مباشرة من مقر الأكاديمية في فرع كمبالا
-                        <br>
+                    </p>
+                    <ul class="list-unstyled" style="padding-right: 20px;">
+                        <li style="margin-bottom: 10px;">💻 <strong>الدورات القصيرة:</strong><br>تقدَّم عبر الواتساب والتليجرام بطريقة عملية وبسيطة.</li>
+                        <li>🎥 <strong>الدورات الكبيرة (دبلومات – كورسات اللغة الإنجليزية – برامج احترافية):</strong><br>تقدَّم عبر المنصّات المباشرة مثل:<br>Google Meet<br>Telegram بث مباشر<br>منصّات وتطبيقات خاصة بالمركز</li>
+                    </ul>
+                </div>
+                <div class="about-card" style="background: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow-md); padding: 24px;">
+                    <h3 style="font-family: 'Cairo', sans-serif; font-weight: 600; color: #007bff;">🏅 الشهادات</h3>
+                    <p style="font-family: 'Cairo', sans-serif; color: #555; line-height: 1.8;">
+                        في نهاية أي ورشة—سواء كانت مجانية أو مدفوعة—<br>
+                        سيحصل المتدرب على شهادة معتمدة<br>
+                        يمكن استلامها مباشرة من مقر الأكاديمية في فرع كمبالا<br>
                         أو استلام النسخة الإلكترونية PDF عبر الأونلاين
                     </p>
                 </div>
@@ -276,13 +263,53 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="contact-section">
+    <!-- About Modal (Learn More) -->
+    <div id="aboutModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:800px;">
+            <span class="close">&times;</span>
+            <h3 data-ar="📚 طريقة التدريس يا شباب 👇" data-en="📚 Teaching Methods">📚 طريقة التدريس يا شباب 👇</h3>
+            <ul class="about-list">
+                <li data-ar="1️⃣ لازم يكون عندك تطبيق وحساب تيليجرام ✨" data-en="1️⃣ You need a Telegram app and account ✨">1️⃣ لازم يكون عندك تطبيق وحساب تيليجرام ✨</li>
+                <li data-ar="2️⃣ لازم يكون عندك واتساب، وبعد التسجيل بنضيفك في الجروب 🤝" data-en="2️⃣ WhatsApp required; after registering, we add you to the group 🤝">2️⃣ لازم يكون عندك واتساب، وبعد التسجيل بنضيفك في الجروب 🤝</li>
+                <li data-ar="3️⃣ المحاضرات مباشرة + مسجلة 🎥" data-en="3️⃣ Lectures are live and recorded 🎥">3️⃣ المحاضرات مباشرة + مسجلة 🎥</li>
+                <li data-ar="4️⃣ في جروب خاص للمناقشة والنقاشات 👥" data-en="4️⃣ Dedicated discussion group 👥">4️⃣ في جروب خاص للمناقشة والنقاشات 👥</li>
+            </ul>
+            <h4 data-ar="🎓 الشهادات الممنوحة" data-en="🎓 Awarded Certificates">🎓 الشهادات الممنوحة</h4>
+            <p data-ar="عند نهاية الكورس، كل المشاركين بيحصلوا على شهادة معتمدة. خاصةً كورس المخاطبة من الصفر + كورس المخاطبة المتقدم: بتاخد شهادة دبلوم دولي ومحلي." data-en="At the end of the course, all participants receive an accredited certificate. Especially the Speaking from Zero and Advanced Speaking courses: you receive an international and local diploma.">عند نهاية الكورس، كل المشاركين بيحصلوا على شهادة معتمدة. خاصةً كورس المخاطبة من الصفر + كورس المخاطبة المتقدم: بتاخد شهادة دبلوم دولي ومحلي.</p>
+            <p data-ar="📽️ شاهد مثال الفيديو الموضح أعلاه" data-en="📽️ See the example video above">📽️ شاهد مثال الفيديو الموضح أعلاه</p>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <section class="stats">
         <div class="container">
-            <h2 data-ar="اتصال" data-en="Contact">اتصال</h2>
-            <div class="contact-content">
-                <div class="contact-section">
-                    <div class="contact-logo">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalStudents">0</div>
+                    <div class="stat-label" data-ar="طالب مسجل" data-en="Enrolled Students">طالب مسجل</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalTeachers">0</div>
+                    <div class="stat-label" data-ar="معلم خبير" data-en="Expert Teachers">معلم خبير</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalCourses">0</div>
+                    <div class="stat-label" data-ar="مقرر متاح" data-en="Available Courses">مقرر متاح</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="successRate">95</div>
+                    <div class="stat-label" data-ar="معدل النجاح" data-en="Success Rate">معدل النجاح</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
                         <img src="logo/nor-01.jpg" alt="Noor Pro Academic Center">
                         <h3 data-ar="نور أكاديمي" data-en="Noor Academy">نور أكاديمي</h3>
                     </div>
