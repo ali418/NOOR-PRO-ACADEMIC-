@@ -54,8 +54,17 @@ class CourseLoader {
     async loadCourses() {
         try {
             this.showLoading();
-            // Use sample data for testing while database is being set up
-            const response = await fetch('/api/courses');
+            
+            // Check for category ID in the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryId = urlParams.get('category_id');
+            
+            let url = '/api/courses';
+            if (categoryId) {
+                url = `/api/categories/${categoryId}/courses`;
+            }
+
+            const response = await fetch(url);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -365,7 +374,7 @@ class CourseLoader {
                     max_students: maxStudents ? parseInt(maxStudents) : undefined,
                     status: 'active',
                     youtube_link: youtube || undefined,
-                    category: categoryText || undefined,
+                    category_id: categoryText || undefined,
                     level_name: level || undefined,
                     duration: duration || undefined,
                     start_date: startDate || undefined,

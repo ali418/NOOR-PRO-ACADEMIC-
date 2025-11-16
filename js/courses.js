@@ -101,236 +101,43 @@ class CoursesManager {
 
     async addCourseToAPI(courseData) {
         try {
-            // Map frontend fields to API schema (supports title/course_name, instructor_name, level_name, category/category_id)
-            const payload = {
-                course_code: courseData.course_code,
-                title: courseData.course_name,
-                course_name: courseData.course_name,
-                description: courseData.description,
-                instructor_name: courseData.instructor,
-                max_students: courseData.max_students,
-                status: courseData.status,
-                youtube_link: courseData.youtube_link,
-                // Prefer numeric category_id if present, else textual category
-                category_id: courseData.category_id || null,
-                category: courseData.category || null,
-                // Level naming normalization
-                level_name: courseData.level,
-                // Duration and dates (optional)
-                duration: courseData.duration || null,
-                start_date: courseData.start_date || null,
-                end_date: courseData.end_date || null,
-                // Price as string (server sanitizes)
-                price: String(courseData.price ?? '0'),
-                price_sdg: courseData.price_sdg !== null && courseData.price_sdg !== undefined ? String(courseData.price_sdg) : null,
-                course_icon: courseData.course_icon || null,
-                badge_text: courseData.badge_text || null
-            };
-
-            const response = await fetch(this.apiUrl, {
+            const response = await fetch('/api/courses', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(courseData)
             });
-            
-            const result = await response.json();
-            return result;
+            return await response.json();
         } catch (error) {
             console.error('Error adding course:', error);
-            return { success: false, message: 'خطأ في الاتصال بالخادم' };
-        }
-    }
-
-    async updateCourseInAPI(courseData) {
-        try {
-            // Map to API expected keys
-            const payload = {
-                id: courseData.id,
-                title: courseData.course_name,
-                course_name: courseData.course_name,
-                description: courseData.description,
-                instructor_name: courseData.instructor,
-                max_students: courseData.max_students || 30,
-                status: courseData.status,
-                youtube_link: courseData.youtube_link,
-                // Include both to support relational linkage and legacy text
-                category_id: courseData.category_id ?? null,
-                category: courseData.category,
-                level_name: courseData.level,
-                duration: courseData.duration || null,
-                start_date: courseData.start_date || null,
-                end_date: courseData.end_date || null,
-                price: String(courseData.price ?? '0'),
-                price_sdg: String(courseData.price_sdg ?? '')
-            };
-
-            const response = await fetch(`${this.apiUrl}?id=${courseData.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            const result = await response.json();
-            return result;
-        } catch (error) {
-            console.error('Error updating course:', error);
-            return { success: false, message: 'خطأ في الاتصال بالخادم' };
-        }
-    }
-
-    async deleteCourseFromAPI(dbId) {
-        try {
-            const response = await fetch(`${this.apiUrl}?id=${dbId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: dbId })
-            });
-            
-            // Check if response is ok
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Non-JSON response:', text);
-                throw new Error('الاستجابة ليست بصيغة JSON صحيحة');
-            }
-            
-            const result = await response.json();
-            return result;
-        } catch (error) {
-            console.error('Error deleting course:', error);
-            return { success: false, message: 'خطأ في الاتصال بالخادم: ' + error.message };
-        }
-    }
-
-    showLoading(show) {
-        const loadingElement = document.getElementById('loading');
-        if (loadingElement) {
-            loadingElement.style.display = show ? 'block' : 'none';
-        }
-    }
-
-    getRandomColor() {
-        const colors = ['4F46E5', 'EC4899', '10B981', 'F59E0B', '6B7280', '8B5CF6', 'EF4444', '06B6D4', '84CC16'];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }
-
-    bindEvents() {
-        // Search functionality
-        const searchInput = document.getElementById('courseSearch');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.filters.search = e.target.value;
-                this.applyFilters();
-            });
-        }
-
-        // Filter dropdowns
-        const categoryFilter = document.getElementById('categoryFilter');
-        const levelFilter = document.getElementById('levelFilter');
-        const statusFilter = document.getElementById('statusFilter');
-        const sortBy = document.getElementById('sortBy');
-
-        if (categoryFilter) {
-            categoryFilter.addEventListener('change', (e) => {
-                this.filters.category = e.target.value;
-                this.applyFilters();
-            });
-        }
-
-        if (levelFilter) {
-            levelFilter.addEventListener('change', (e) => {
-                this.filters.level = e.target.value;
-                this.applyFilters();
-            });
-        }
-
-        if (statusFilter) {
-            statusFilter.addEventListener('change', (e) => {
-                this.filters.status = e.target.value;
-                this.applyFilters();
-            });
-        }
-
-        if (sortBy) {
-            sortBy.addEventListener('change', (e) => {
-                this.sortBy = e.target.value;
-                this.applyFilters();
-            });
-        }
-
-        // View toggle buttons
-        const viewButtons = document.querySelectorAll('.view-btn');
-        viewButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const viewMode = e.target.closest('.view-btn').dataset.view;
-                this.switchView(viewMode);
-            });
-        });
-
-        // Add course button
-        const addCourseBtn = document.getElementById('addCourseBtn');
-        if (addCourseBtn) {
-            addCourseBtn.addEventListener('click', () => this.openAddCourseModal());
-        }
-
-        // Add course form
-        const addCourseForm = document.getElementById('addCourseForm');
-        if (addCourseForm) {
-            addCourseForm.addEventListener('submit', (e) => this.handleAddCourse(e));
-        }
-
-        // Tab buttons
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const tabName = e.target.closest('.tab-btn').dataset.tab;
-                this.switchTab(tabName);
-            });
-        });
-
-        // Add lesson button
-        const addLessonBtn = document.getElementById('addLessonBtn');
-        if (addLessonBtn) {
-            addLessonBtn.addEventListener('click', () => this.openAddLessonModal());
-        }
-
-        // Add lesson form
-        const addLessonForm = document.getElementById('addLessonForm');
-        if (addLessonForm) {
-            addLessonForm.addEventListener('submit', (e) => this.handleAddLesson(e));
-        }
-
-        // Refresh button
-        const refreshBtn = document.getElementById('refreshCourses');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => this.refreshData());
-        }
-
-        // Export/Import buttons
-        const exportBtn = document.getElementById('exportCoursesBtn');
-        const importBtn = document.getElementById('importCoursesBtn');
-        
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => this.exportCourses());
-        }
-        
-        if (importBtn) {
-            importBtn.addEventListener('click', () => this.importCourses());
+            return { success: false, message: 'Client-side error' };
         }
     }
 
     applyFilters() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        const categoryFilter = document.getElementById('category-filter').value;
+        const levelFilter = document.getElementById('level-filter').value;
+        const statusFilter = document.getElementById('status-filter').value;
+
+        this.filteredCourses = this.courses.filter(course => {
+            const matchesSearch = !searchTerm ||
+                course.name.toLowerCase().includes(searchTerm) ||
+                (course.id && course.id.toString().toLowerCase().includes(searchTerm));
+            
+            const matchesCategory = !categoryFilter || course.category_id == categoryFilter;
+            const matchesLevel = !levelFilter || course.level === levelFilter;
+            const matchesStatus = !statusFilter || course.status === statusFilter;
+
+            return matchesSearch && matchesCategory && matchesLevel && matchesStatus;
+        });
+
+        this.sortCourses();
+        this.currentPage = 1;
+        this.renderCourses();
+        this.updatePagination();
+    }
+
+    sortCourses() {
         let filtered = [...this.courses];
 
         // Apply search filter
@@ -737,7 +544,7 @@ class CoursesManager {
             this.renderLessonsList();
             
             // Populate categories
-            this.populateCategories('addCourseCategory');
+            this.populateCategories('addCategory');
 
             // Focus first input
             const firstInput = modal.querySelector('input');

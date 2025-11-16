@@ -320,7 +320,7 @@ if (coursesAPI && typeof coursesAPI.addCourse === 'function') {
 }
 
 if (coursesAPI && typeof coursesAPI.updateCourse === 'function') {
-  app.put('/api/courses', coursesAPI.updateCourse);
+  app.put('/api/courses/:id', coursesAPI.updateCourse);
 } else {
   console.error('coursesAPI.updateCourse is undefined; skipping route PUT /api/courses');
 }
