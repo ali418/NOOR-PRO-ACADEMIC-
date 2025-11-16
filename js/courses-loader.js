@@ -471,7 +471,7 @@ class CourseLoader {
 
                 try {
                     // Primary attempt: Node API
-                    const resp = await fetch(`/api/courses`, {
+                    const resp = await fetch(`/api/courses/${id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
@@ -495,7 +495,7 @@ class CourseLoader {
                             start_date: startDate || undefined,
                             end_date: endDate || undefined
                         };
-                        const respSample = await fetch(`/api/courses-sample`, {
+                        const respSample = await fetch(`/api/courses-sample/${id}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(samplePayload)

@@ -131,43 +131,15 @@ class CoursesManager {
             return matchesSearch && matchesCategory && matchesLevel && matchesStatus;
         });
 
-        this.sortCourses();
+        this.sortCourses(); // Sort the already filtered list
         this.currentPage = 1;
         this.renderCourses();
         this.updatePagination();
     }
 
     sortCourses() {
-        let filtered = [...this.courses];
-
-        // Apply search filter
-        if (this.filters.search) {
-            const searchTerm = this.filters.search.toLowerCase();
-            filtered = filtered.filter(course => 
-                course.name.toLowerCase().includes(searchTerm) ||
-                course.description.toLowerCase().includes(searchTerm) ||
-                course.instructor.toLowerCase().includes(searchTerm) ||
-                course.id.toLowerCase().includes(searchTerm)
-            );
-        }
-
-        // Apply category filter
-        if (this.filters.category) {
-            filtered = filtered.filter(course => course.category === this.filters.category);
-        }
-
-        // Apply level filter
-        if (this.filters.level) {
-            filtered = filtered.filter(course => course.level === this.filters.level);
-        }
-
-        // Apply status filter
-        if (this.filters.status) {
-            filtered = filtered.filter(course => course.status === this.filters.status);
-        }
-
-        // Apply sorting
-        filtered.sort((a, b) => {
+        // No re-filtering, just sort the existing `filteredCourses`
+        this.filteredCourses.sort((a, b) => {
             let aValue, bValue;
             
             switch (this.sortBy) {
