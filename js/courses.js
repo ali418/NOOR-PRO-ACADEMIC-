@@ -65,6 +65,8 @@ class CoursesManager {
                         db_id: course.id,
                         name: title,
                         description: course.description || '',
+                        // Preserve both relational id and legacy text
+                        category_id: course.category_id || null,
                         category: course.category || 'general',
                         level: course.level || course.level_name || 'beginner',
                         status: course.status || 'active',
@@ -153,6 +155,8 @@ class CoursesManager {
                 max_students: courseData.max_students || 30,
                 status: courseData.status,
                 youtube_link: courseData.youtube_link,
+                // Include both to support relational linkage and legacy text
+                category_id: courseData.category_id ?? null,
                 category: courseData.category,
                 level_name: courseData.level,
                 duration: courseData.duration || null,
@@ -741,8 +745,7 @@ class CoursesManager {
                 setTimeout(() => firstInput.focus(), 100);
             }
         }
-    }
-
+    
     async populateCategories(selectId) {
         try {
             const response = await fetch('/api/categories');
@@ -754,8 +757,10 @@ class CoursesManager {
                     select.innerHTML = '<option value="">اختر الفئة</option>'; // Default option
                     data.data.forEach(category => {
                         const option = document.createElement('option');
-                        option.value = category.id;
-                        option.textContent = category.name;
+                        option.value = category.id; // relational id
+                        // Prefer Arabic display name; fallback to English key
+                        option.textContent = (category.category_name_ar || category.category_name || '').trim();
+                        option.dataset.name = category.category_name || '';
                         select.appendChild(option);
                     });
                 }
@@ -774,12 +779,28 @@ class CoursesManager {
         // Show loading
         this.showLoading(true);
         
++        // Resolve selected category id and text from the populated select
++        const categorySelectEl = document.getElementById('addCategory');
++        const categoryIdVal = categorySelectEl?.value;
++        const categoryId = (categoryIdVal !== undefined && categoryIdVal !== null && categoryIdVal !== '')
++            ? parseInt(categoryIdVal, 10)
++            : null;
++        const categoryText = (() => {
++            if (categorySelectEl && categorySelectEl.selectedIndex >= 0) {
++                const opt = categorySelectEl.options[categorySelectEl.selectedIndex];
++                return (opt?.textContent || '').trim();
++            }
++            return '';
++        })();
++        
         // Create new course object for API (read values by element IDs)
         const courseData = {
             course_code: `CRS${(this.courses.length + 1).toString().padStart(3, '0')}`,
             course_name: (document.getElementById('addTitle')?.value || '').trim(),
             description: (document.getElementById('addDescription')?.value || '').trim(),
-            category: document.getElementById('addCategory')?.value || '',
+            // Preserve both: relational id and textual name (for legacy courses)
+            category_id: Number.isNaN(categoryId) ? null : categoryId,
+            category: categoryText,
             level: document.getElementById('addLevel')?.value || '',
             status: 'active',
             duration: document.getElementById('addDuration')?.value || '',
@@ -1103,6 +1124,21 @@ class CoursesManager {
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
 
+        // After rendering, populate categories dynamically and preselect current
+        this.populateCategories('edit-course-category').then(() => {
+            const editSelect = document.getElementById('edit-course-category');
+            if (editSelect) {
+                // Try to select by category_id first
+                if (course.category_id) {
+                    editSelect.value = String(course.category_id);
+                } else {
+                    // Fallback: match by text (legacy courses)
+                    const match = Array.from(editSelect.options).find(opt => (opt.textContent || '').trim() === (course.category || '').trim());
+                    if (match) editSelect.value = match.value;
+                }
+            }
+        });
+
         // Close button restores body scroll
         const closeBtn = modal.querySelector('.close-btn');
         if (closeBtn) {
@@ -1130,7 +1166,19 @@ class CoursesManager {
                     course_code: document.getElementById('edit-course-code').value,
                     course_name: document.getElementById('edit-course-name').value,
                     description: document.getElementById('edit-course-description').value,
-                    category: document.getElementById('edit-course-category').value,
+                    // Send both id and text for category
+                    category_id: (() => {
+                        const el = document.getElementById('edit-course-category');
+                        const val = el?.value;
+                        const num = val !== undefined && val !== null && val !== '' ? parseInt(val, 10) : null;
+                        return Number.isNaN(num) ? null : num;
+                    })(),
+                    category: (() => {
+                        const el = document.getElementById('edit-course-category');
+                        if (!el) return '';
+                        const opt = el.options[el.selectedIndex];
+                        return (opt?.textContent || '').trim();
+                    })(),
                     level: document.getElementById('edit-course-level').value,
                     duration: document.getElementById('edit-course-duration').value,
                     price: document.getElementById('edit-course-price').value,
