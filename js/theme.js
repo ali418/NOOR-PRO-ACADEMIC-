@@ -1,15 +1,9 @@
-// Dark mode disabled: force light theme and hide toggle if present
+// Theme toggle removed as requested; keep current theme behavior minimal
 document.addEventListener('DOMContentLoaded', () => {
-    const body = document.body;
-    const themeToggle = document.getElementById('theme-toggle');
-
-    // Ensure light mode
-    body.removeAttribute('data-theme');
     try { localStorage.removeItem('theme'); } catch (_) {}
-
-    // Hide any existing toggle button
-    if (themeToggle) {
-        themeToggle.style.display = 'none';
-        themeToggle.setAttribute('aria-hidden', 'true');
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.style.display = 'none';
+        btn.setAttribute('aria-hidden', 'true');
     }
 });

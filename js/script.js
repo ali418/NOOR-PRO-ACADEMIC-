@@ -824,32 +824,8 @@ class ThemeManager {
 
     init() {
         this.applyTheme(this.currentTheme);
-        this.createThemeToggle();
     }
 
-    createThemeToggle() {
-        const themeToggle = document.createElement('button');
-        themeToggle.className = 'theme-toggle';
-        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-        themeToggle.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            background: var(--primary-color);
-            color: white;
-            cursor: pointer;
-            box-shadow: var(--shadow-lg);
-            z-index: 1000;
-            transition: var(--transition);
-        `;
-
-        themeToggle.addEventListener('click', () => this.toggleTheme());
-        document.body.appendChild(themeToggle);
-    }
 
     toggleTheme() {
         this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
@@ -859,7 +835,6 @@ class ThemeManager {
 
     applyTheme(theme) {
         const root = document.documentElement;
-        const themeToggle = document.querySelector('.theme-toggle i');
         
         if (theme === 'dark') {
             root.style.setProperty('--white', '#1a1a1a');
@@ -868,8 +843,6 @@ class ThemeManager {
             root.style.setProperty('--gray-800', '#e5e5e5');
             root.style.setProperty('--gray-700', '#f0f0f0');
             root.style.setProperty('--gray-600', '#f5f5f5');
-            
-            if (themeToggle) themeToggle.className = 'fas fa-sun';
         } else {
             root.style.setProperty('--white', '#ffffff');
             root.style.setProperty('--gray-50', '#f8fafc');
@@ -877,8 +850,6 @@ class ThemeManager {
             root.style.setProperty('--gray-800', '#1f2937');
             root.style.setProperty('--gray-700', '#374151');
             root.style.setProperty('--gray-600', '#4b5563');
-            
-            if (themeToggle) themeToggle.className = 'fas fa-moon';
         }
     }
 }
