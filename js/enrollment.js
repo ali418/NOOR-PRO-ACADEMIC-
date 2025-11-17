@@ -391,13 +391,28 @@ class EnrollmentSystem {
 
         const courseTitle = this.courseData?.title || this.enrollmentData.courseName || '';
         const courseDesc = this.courseData?.description || '';
-        // Build stacked prices (USD + SDG)
-        const CONVERSION_RATE = 1500;
-        const sdgRaw = (this.courseData?.price_sdg ?? this.courseData?.priceSdg ?? this.courseData?.price);
-        const usdRaw = (this.courseData?.price_usd ?? this.courseData?.priceUsd ?? (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '' ? (Number(sdgRaw) / CONVERSION_RATE) : undefined));
-        const formattedUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '') ? `${Number(usdRaw).toLocaleString('en-US')} USD` : '';
-        const formattedSDG = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '') ? `${Number(sdgRaw).toLocaleString('en-US')} SDG` : '';
-        const priceHtml = (formattedUSD && formattedSDG) ? `${formattedUSD}<br>${formattedSDG}` : (formattedUSD || formattedSDG || 'مجاني');
+        // عرض الأسعار كسطرين بدون تحويل: نستخدم نفس القيمة عند غياب أحد الحقول
+        const usdRaw = (course.price_usd ?? course.priceUsd ?? course.price);
+        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? course.price);
+
+        const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
+            ? `${Number(usdRaw).toLocaleString('en-US')} USD`
+            : undefined;
+
+        const formattedPriceSDG = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '')
+            ? `${Number(sdgRaw).toLocaleString('en-US')} SDG`
+            : undefined;
+
+        let priceDisplay = '';
+        if (formattedPriceUSD && formattedPriceSDG) {
+            priceDisplay = `${formattedPriceUSD}<br>${formattedPriceSDG}`;
+        } else if (formattedPriceUSD) {
+            priceDisplay = `${formattedPriceUSD}<br>${Number(usdRaw).toLocaleString('en-US')} SDG`;
+        } else if (formattedPriceSDG) {
+            priceDisplay = `${Number(sdgRaw).toLocaleString('en-US')} USD<br>${formattedPriceSDG}`;
+        } else {
+            priceDisplay = 'مجاني';
+        }
 
         review.innerHTML = `
             <h4 style="margin:0 0 8px 0; color:#0d6efd;">بيانات الطالب</h4>
@@ -485,7 +500,10 @@ class EnrollmentSystem {
                         id: found.id,
                         title: found.title || found.course_name || 'دورة',
                         description: found.description || found.course_description || '',
+                        // احفظ كلا السعرين إن وُجدا، مع توفير fallback من نفس القيمة عند غياب أحدهما
                         price: found.price || found.course_price || 0,
+                        price_usd: (found.price_usd ?? found.priceUsd ?? found.priceUSD ?? (found.price || found.course_price || undefined)),
+                        price_sdg: (found.price_sdg ?? found.priceSdg ?? found.priceSDG ?? (found.price || found.course_price || undefined)),
                         duration: found.duration || found.course_duration || ''
                     };
                     this.courseData = normalized;
