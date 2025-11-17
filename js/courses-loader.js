@@ -364,6 +364,22 @@ class CourseLoader {
                 // Generate a course code
                 const courseCode = `CRS-${Date.now().toString().slice(-6)}`;
 
+                // Resolve selected category id and text
+                const categorySelectEl = document.getElementById('addCategory');
+                const categoryId = (() => {
+                    const val = categorySelectEl?.value;
+                    if (val === undefined || val === null || val === '') return undefined;
+                    const num = parseInt(val, 10);
+                    return Number.isNaN(num) ? undefined : num;
+                })();
+                const categoryDisplay = (() => {
+                    if (categorySelectEl && categorySelectEl.selectedIndex >= 0) {
+                        const opt = categorySelectEl.options[categorySelectEl.selectedIndex];
+                        return (opt?.textContent || '').trim();
+                    }
+                    return undefined;
+                })();
+
                 // Build payload compatible with /api/courses addCourse
                 const payload = {
                     course_code: courseCode,
@@ -374,7 +390,8 @@ class CourseLoader {
                     max_students: maxStudents ? parseInt(maxStudents) : undefined,
                     status: 'active',
                     youtube_link: youtube || undefined,
-                    category_id: categoryText || undefined,
+                    category_id: categoryId,
+                    category: categoryDisplay,
                     level_name: level || undefined,
                     duration: duration || undefined,
                     start_date: startDate || undefined,
