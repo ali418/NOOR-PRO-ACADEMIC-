@@ -117,7 +117,7 @@ class AdminDashboard {
                 this.enrollments = enrollmentData.map((enrollment, index) => ({
                     id: `REQ-${String(index + 1).padStart(3, '0')}`,
                     studentName: enrollment.fullName,
-                    email: enrollment.email,
+                    address: enrollment.address,
                     phone: enrollment.phone,
                     courseId: enrollment.courseId,
                     courseName: enrollment.courseName,
@@ -194,7 +194,7 @@ class AdminDashboard {
                 e.studentName.toLowerCase().includes(searchTerm) ||
                 e.id.toLowerCase().includes(searchTerm) ||
                 e.courseName.toLowerCase().includes(searchTerm) ||
-                e.email.toLowerCase().includes(searchTerm)
+                (e.address && e.address.toLowerCase().includes(searchTerm))
             );
         }
 
@@ -265,6 +265,10 @@ class AdminDashboard {
                         <div class="detail-item">
                             <span class="detail-label">البريد الإلكتروني:</span>
                             <span class="detail-value">${enrollment.email}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">عنوان السكن:</span>
+                            <span class="detail-value">${enrollment.address || 'غير متوفر'}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">رقم الهاتف:</span>
