@@ -393,8 +393,8 @@ class EnrollmentSystem {
         const courseDesc = this.courseData?.description || '';
         // Build stacked prices (USD + SDG)
         const CONVERSION_RATE = 1500;
-        const usdRaw = (this.courseData?.price_usd ?? this.courseData?.priceUsd ?? this.courseData?.price);
-        const sdgRaw = (this.courseData?.price_sdg ?? this.courseData?.priceSdg ?? (usdRaw !== undefined && usdRaw !== null && usdRaw !== '' ? (Number(usdRaw) * CONVERSION_RATE) : undefined));
+        const sdgRaw = (this.courseData?.price_sdg ?? this.courseData?.priceSdg ?? this.courseData?.price);
+        const usdRaw = (this.courseData?.price_usd ?? this.courseData?.priceUsd ?? (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '' ? (Number(sdgRaw) / CONVERSION_RATE) : undefined));
         const formattedUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '') ? `${Number(usdRaw).toLocaleString('en-US')} USD` : '';
         const formattedSDG = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '') ? `${Number(sdgRaw).toLocaleString('en-US')} SDG` : '';
         const priceHtml = (formattedUSD && formattedSDG) ? `${formattedUSD}<br>${formattedSDG}` : (formattedUSD || formattedSDG || 'مجاني');
@@ -664,10 +664,10 @@ class EnrollmentSystem {
         };
         // Conversion rate between USD and SDG (used when one price is missing)
         const CONVERSION_RATE = 1500;
-        // Prefer USD from price_usd/priceUsd, fallback to price
-        const usdRaw = (course.price_usd ?? course.priceUsd ?? course.price);
-        // Prefer SDG from price_sdg/priceSdg, fallback to convert from USD
-        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? (usdRaw !== undefined && usdRaw !== null && usdRaw !== '' ? (Number(usdRaw) * CONVERSION_RATE) : undefined));
+        // Prefer SDG from price_sdg/priceSdg, fallback to price
+        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? course.price);
+        // Prefer USD from price_usd/priceUsd, fallback to convert from SDG
+        const usdRaw = (course.price_usd ?? course.priceUsd ?? (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '' ? (Number(sdgRaw) / CONVERSION_RATE) : undefined));
 
         const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
             ? `${Number(usdRaw).toLocaleString('en-US')} USD`
