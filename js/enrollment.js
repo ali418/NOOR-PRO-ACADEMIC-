@@ -673,6 +673,17 @@ class EnrollmentSystem {
             ? `${Number(course.price_usd).toLocaleString('en-US')} USD`
             : undefined;
 
+        let priceDisplay = '';
+        if (formattedPriceUSD && formattedPrice) {
+            priceDisplay = `${formattedPriceUSD}<br>${formattedPrice}`;
+        } else if (formattedPriceUSD) {
+            priceDisplay = formattedPriceUSD;
+        } else if (formattedPrice) {
+            priceDisplay = formattedPrice;
+        } else {
+            priceDisplay = 'مجاني';
+        }
+
         addItem('fas fa-book', 'العنوان:', course.title);
         addItem('fas fa-align-left', 'الوصف:', course.description);
         addItem('fas fa-clock', 'المدة:', course.duration);
@@ -681,8 +692,7 @@ class EnrollmentSystem {
         addItem('fas fa-level-up-alt', 'المستوى:', course.level_name);
         addItem('fas fa-calendar-day', 'تاريخ البدء:', formatDate(course.start_date));
         addItem('fas fa-calendar-check', 'تاريخ الانتهاء:', formatDate(course.end_date));
-        addItem('fas fa-dollar-sign', 'السعر (SDG):', formattedPrice);
-        addItem('fas fa-dollar-sign', 'السعر (USD):', formattedPriceUSD);
+        addItem('fas fa-dollar-sign', 'السعر:', priceDisplay);
 
         // Clear and append
         infoEl.innerHTML = '';
