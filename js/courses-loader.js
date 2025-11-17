@@ -309,13 +309,43 @@ class CourseLoader {
             this.adminControls.style.display = this.isAdmin ? 'flex' : 'none';
         }
 
+        // Helper: populate categories from API into a select (id)
+        const populateCategoriesSelect = async (selectId) => {
+            try {
+                const resp = await fetch('/api/categories');
+                const data = await resp.json();
+                if (data && data.success && Array.isArray(data.data)) {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        const previous = select.value;
+                        select.innerHTML = '<option value="">اختر الفئة</option>';
+                        data.data.forEach(category => {
+                            const option = document.createElement('option');
+                            option.value = String(category.id);
+                            option.textContent = (category.category_name_ar || category.category_name || '').trim();
+                            option.dataset.name = category.category_name || '';
+                            select.appendChild(option);
+                        });
+                        // Try keep previous selection if still valid
+                        if (previous && Array.from(select.options).some(o => o.value === previous)) {
+                            select.value = previous;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to load categories for addCourseModal:', err);
+            }
+        };
+
         // Button to open modal
         if (this.addCourseBtn) {
-            this.addCourseBtn.addEventListener('click', () => {
+            this.addCourseBtn.addEventListener('click', async () => {
                 const modalEl = document.getElementById('addCourseModal');
                 if (!modalEl) return;
                 try {
                     const modal = new bootstrap.Modal(modalEl);
+                    // Populate categories dynamically (if API available)
+                    await populateCategoriesSelect('addCategory');
                     // Reset form
                     if (this.addCourseForm) this.addCourseForm.reset();
                     modal.show();
