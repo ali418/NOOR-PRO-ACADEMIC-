@@ -262,7 +262,7 @@ class EnrollmentSystem {
             const phone = (phoneEl?.value || '').trim();
             const address = (addressEl?.value || '').trim();
 
-            // اجعل الانتقال يتطلب الاسم والهاتف فقط، العنوان اختياري
+            // اجعل الانتقال يتطلب الاسم والهاتف قفطة فقط، العنوان اختياري
             if (!fullName || !phone) {
                 this.showToast('يرجى إدخال الاسم ورقم الهاتف أولاً', 'error');
                 return;
@@ -650,7 +650,12 @@ class EnrollmentSystem {
             const strong = document.createElement('strong');
             strong.textContent = label;
             const span = document.createElement('span');
-            span.textContent = String(value);
+            // Allow HTML (like <br>) only for our controlled price display; otherwise use textContent
+            if (typeof value === 'string' && value.includes('<br>')) {
+                span.innerHTML = value;
+            } else {
+                span.textContent = String(value);
+            }
             div.appendChild(icon);
             div.appendChild(strong);
             div.appendChild(span);
@@ -671,15 +676,31 @@ class EnrollmentSystem {
 
         const formattedPriceUSD = (course.price_usd !== undefined && course.price_usd !== null && course.price_usd !== '')
             ? `${Number(course.price_usd).toLocaleString('en-US')} USD`
+            : (course.priceUsd !== undefined && course.priceUsd !== null && course.priceUsd !== '')
+                ? `${Number(course.priceUsd).toLocaleString('en-US')} USD`
+                : undefined;
+
+        // Fallbacks for different field names of SDG price
+        const sdgRaw = (course.price !== undefined && course.price !== null && course.price !== '')
+            ? course.price
+            : (course.price_sdg !== undefined && course.price_sdg !== null && course.price_sdg !== '')
+                ? course.price_sdg
+                : (course.priceSdg !== undefined && course.priceSdg !== null && course.priceSdg !== '')
+                    ? course.priceSdg
+                    : undefined;
+        const formattedPriceSDG = (sdgRaw !== undefined)
+            ? `${Number(sdgRaw).toLocaleString('en-US')} SDG`
             : undefined;
 
         let priceDisplay = '';
-        if (formattedPriceUSD && formattedPrice) {
-            priceDisplay = `${formattedPriceUSD}<br>${formattedPrice}`;
-        } else if (formattedPriceUSD) {
-            priceDisplay = formattedPriceUSD;
-        } else if (formattedPrice) {
-            priceDisplay = formattedPrice;
+        const usdStr = formattedPriceUSD || undefined;
+        const sdgStr = formattedPriceSDG || formattedPrice || undefined;
+        if (usdStr && sdgStr) {
+            priceDisplay = `${usdStr}<br>${sdgStr}`;
+        } else if (usdStr) {
+            priceDisplay = usdStr;
+        } else if (sdgStr) {
+            priceDisplay = sdgStr;
         } else {
             priceDisplay = 'مجاني';
         }
