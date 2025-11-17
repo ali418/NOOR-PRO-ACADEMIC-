@@ -262,7 +262,7 @@ class EnrollmentSystem {
             const phone = (phoneEl?.value || '').trim();
             const address = (addressEl?.value || '').trim();
 
-            // اجعل الانتقال يتطلب الاسم والهاتف قفطة فقط، العنوان اختياري
+            // اجعل الانتقال يتطلب الاسم والهاتف قفطة فقطة، العنوان اختياري
             if (!fullName || !phone) {
                 this.showToast('يرجى إدخال الاسم ورقم الهاتف أولاً', 'error');
                 return;
@@ -380,32 +380,24 @@ class EnrollmentSystem {
     updateReviewBlock() {
         const review = document.getElementById('reviewBlock');
         if (!review) return;
-
-        const methodText = {
-            'mobile-money': 'موبايل موني',
-            'bank': 'بنكك',
-            'areeba': 'أريبا',
-            'amteen': 'أمتين',
-            'bank-transfer': 'تحويل بنكي',
-            'in-person': 'دفع مباشر'
-        }[this.selectedPaymentMethod] || this.selectedPaymentMethod || 'غير محدد';
-
-        // اقرأ القيم مباشرة من الحقول لضمان الظهور حتى لو لم تُحفظ بعد
-        const fullName = (document.getElementById('fullName')?.value || this.enrollmentData.fullName || '').trim();
-        const phone = (document.getElementById('phone')?.value || this.enrollmentData.phone || '').trim();
-        const address = (document.getElementById('address')?.value || this.enrollmentData.address || '').trim();
-
-        const amountInput = parseFloat(document.getElementById('paymentAmount')?.value || '');
-        const amount = !isNaN(amountInput) ? amountInput : (this.enrollmentData.paymentDetails?.amount || 0);
-        const txField = document.getElementById('transactionId');
-        const tx = txField && txField.style.display !== 'none' ? (txField.value || this.enrollmentData.paymentDetails?.transactionId || '') : '';
-        const notes = document.getElementById('studentNotes')?.value || '';
-        const receiptInput = document.getElementById('receiptFile');
-        const receiptName = receiptInput && receiptInput.files && receiptInput.files[0] ? receiptInput.files[0].name : '';
+        const fullName = document.getElementById('fullName')?.value || '';
+        const phone = document.getElementById('phone')?.value || '';
+        const address = document.getElementById('address')?.value || '';
+        const methodText = this.selectedPaymentMethod ? this.selectedPaymentMethod.label : '—';
+        const amount = document.getElementById('txAmount')?.value || '';
+        const tx = document.getElementById('txNumber')?.value || '';
+        const receiptName = document.getElementById('receiptFile')?.files?.[0]?.name || '';
+        const notes = document.getElementById('notes')?.value || '';
 
         const courseTitle = this.courseData?.title || this.enrollmentData.courseName || '';
         const courseDesc = this.courseData?.description || '';
-        const coursePrice = (this.courseData?.price !== undefined && this.courseData?.price !== null) ? this.courseData.price : '';
+        // Build stacked prices (USD + SDG)
+        const CONVERSION_RATE = 1500;
+        const usdRaw = (this.courseData?.price_usd ?? this.courseData?.priceUsd ?? this.courseData?.price);
+        const sdgRaw = (this.courseData?.price_sdg ?? this.courseData?.priceSdg ?? (usdRaw !== undefined && usdRaw !== null && usdRaw !== '' ? (Number(usdRaw) * CONVERSION_RATE) : undefined));
+        const formattedUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '') ? `${Number(usdRaw).toLocaleString('en-US')} USD` : '';
+        const formattedSDG = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '') ? `${Number(sdgRaw).toLocaleString('en-US')} SDG` : '';
+        const priceHtml = (formattedUSD && formattedSDG) ? `${formattedUSD}<br>${formattedSDG}` : (formattedUSD || formattedSDG || 'مجاني');
 
         review.innerHTML = `
             <h4 style="margin:0 0 8px 0; color:#0d6efd;">بيانات الطالب</h4>
@@ -416,7 +408,7 @@ class EnrollmentSystem {
             <h4 style="margin:0 0 8px 0; color:#0d6efd;">بيانات الكورس</h4>
             <div class="detail-item"><span class="detail-label">اسم الدورة:</span> ${courseTitle}</div>
             ${courseDesc ? `<div class=\"detail-item\"><span class=\"detail-label\">وصف مختصر:</span> ${courseDesc}</div>` : ''}
-            ${coursePrice !== '' ? `<div class=\"detail-item\"><span class=\"detail-label\">سعر الدورة:</span> ${coursePrice} SDG</div>` : ''}
+            <div class=\"detail-item\"><span class=\"detail-label\">سعر الدورة:</span> ${priceHtml}</div>
             <hr style="margin:10px 0;">
             <h4 style="margin:0 0 8px 0; color:#0d6efd;">تفاصيل الدفع</h4>
             <div class="detail-item"><span class="detail-label">طريقة الدفع:</span> ${methodText}</div>
@@ -670,37 +662,28 @@ class EnrollmentSystem {
             } catch (e) {}
             return String(d);
         };
-        const formattedPrice = (course.price !== undefined && course.price !== null && course.price !== '')
-            ? `${Number(course.price).toLocaleString('en-US')} SDG`
+        // Conversion rate between USD and SDG (used when one price is missing)
+        const CONVERSION_RATE = 1500;
+        // Prefer USD from price_usd/priceUsd, fallback to price
+        const usdRaw = (course.price_usd ?? course.priceUsd ?? course.price);
+        // Prefer SDG from price_sdg/priceSdg, fallback to convert from USD
+        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? (usdRaw !== undefined && usdRaw !== null && usdRaw !== '' ? (Number(usdRaw) * CONVERSION_RATE) : undefined));
+
+        const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
+            ? `${Number(usdRaw).toLocaleString('en-US')} USD`
             : undefined;
 
-        const formattedPriceUSD = (course.price_usd !== undefined && course.price_usd !== null && course.price_usd !== '')
-            ? `${Number(course.price_usd).toLocaleString('en-US')} USD`
-            : (course.priceUsd !== undefined && course.priceUsd !== null && course.priceUsd !== '')
-                ? `${Number(course.priceUsd).toLocaleString('en-US')} USD`
-                : undefined;
-
-        // Fallbacks for different field names of SDG price
-        const sdgRaw = (course.price !== undefined && course.price !== null && course.price !== '')
-            ? course.price
-            : (course.price_sdg !== undefined && course.price_sdg !== null && course.price_sdg !== '')
-                ? course.price_sdg
-                : (course.priceSdg !== undefined && course.priceSdg !== null && course.priceSdg !== '')
-                    ? course.priceSdg
-                    : undefined;
-        const formattedPriceSDG = (sdgRaw !== undefined)
+        const formattedPriceSDG = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '')
             ? `${Number(sdgRaw).toLocaleString('en-US')} SDG`
             : undefined;
 
         let priceDisplay = '';
-        const usdStr = formattedPriceUSD || undefined;
-        const sdgStr = formattedPriceSDG || formattedPrice || undefined;
-        if (usdStr && sdgStr) {
-            priceDisplay = `${usdStr}<br>${sdgStr}`;
-        } else if (usdStr) {
-            priceDisplay = usdStr;
-        } else if (sdgStr) {
-            priceDisplay = sdgStr;
+        if (formattedPriceUSD && formattedPriceSDG) {
+            priceDisplay = `${formattedPriceUSD}<br>${formattedPriceSDG}`;
+        } else if (formattedPriceUSD) {
+            priceDisplay = formattedPriceUSD;
+        } else if (formattedPriceSDG) {
+            priceDisplay = formattedPriceSDG;
         } else {
             priceDisplay = 'مجاني';
         }
