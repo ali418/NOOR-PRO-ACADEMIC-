@@ -229,7 +229,7 @@ class CourseLoader {
                     <div class="course-meta">
                         <span class="duration" data-ar="${durationAr}" data-en="${durationEn}">${lang === 'en' ? durationEn : durationAr}</span>
                         <span class="level" data-ar="${levelAr}" data-en="${levelEn}">${lang === 'en' ? levelEn : levelAr}</span>
-                        <span class="price" data-ar="{priceDisplay}" data-en="{priceDisplay}">${priceDisplay}</span>
+                        <span class="price" data-ar="${priceDisplay}" data-en="${priceDisplay}">${priceDisplay}</span>
                     </div>
                     ${startDateObj ? `
                             <div class="course-dates">
