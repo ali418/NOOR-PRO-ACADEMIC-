@@ -181,7 +181,7 @@ class CourseLoader {
     const startDateAr = startDateObj ? startDateObj.toLocaleDateString('en-GB') : '';
         const startDateEn = startDateObj ? startDateObj.toLocaleDateString('en-US') : '';
         
-        // معالجة السعر بشكل صحيح
+        // معالة السعر بشكل صحيح
         let priceDisplay = '';
             const priceUsd = course.price;
             const priceSdg = course.price_sdg;
@@ -473,7 +473,20 @@ class CourseLoader {
                 e.preventDefault();
                 const id = document.getElementById('editId')?.value;
                 const title = document.getElementById('editTitle')?.value?.trim() || '';
-                const categoryText = document.getElementById('editCategory')?.value || '';
+                const categorySelectEl = document.getElementById('editCategory');
+                const categoryId = (() => {
+                    const val = categorySelectEl?.value;
+                    if (val === undefined || val === null || val === '') return undefined;
+                    const num = parseInt(val, 10);
+                    return Number.isNaN(num) ? undefined : num;
+                })();
+                const categoryDisplay = (() => {
+                    if (categorySelectEl && categorySelectEl.selectedIndex >= 0) {
+                        const opt = categorySelectEl.options[categorySelectEl.selectedIndex];
+                        return (opt?.textContent || '').trim();
+                    }
+                    return undefined;
+                })();
                 const description = document.getElementById('editDescription')?.value?.trim() || '';
                 const level = document.getElementById('editLevel')?.value || '';
                 const duration = document.getElementById('editDuration')?.value?.trim() || '';
@@ -505,7 +518,8 @@ class CourseLoader {
                     max_students: maxStudents ? parseInt(maxStudents) : undefined,
                     status: 'active',
                     youtube_link: youtube || undefined,
-                    category: categoryText || undefined,
+                    category_id: categoryId,
+                    category: categoryDisplay,
                     level_name: level || undefined,
                     duration: duration || undefined,
                     start_date: startDate || undefined,
@@ -575,7 +589,7 @@ class CourseLoader {
     }
 
     // Open edit modal and prefill values
-    editCourse(dbId) {
+    async editCourse(dbId) {
         const course = (this.courses || []).find(c => String(c.id) === String(dbId));
         if (!course) { alert('لم يتم العثور على المقرر'); return; }
 
@@ -583,10 +597,57 @@ class CourseLoader {
         if (!modalEl) { alert('نموذج التعديل غير متاح'); return; }
         try {
             const modal = new bootstrap.Modal(modalEl);
+            // Populate categories dynamically in edit modal
+            try {
+                const resp = await fetch('/api/categories');
+                const data = await resp.json();
+                if (data && data.success && Array.isArray(data.data)) {
+                    const select = document.getElementById('editCategory');
+                    if (select) {
+                        const previous = select.value;
+                        select.innerHTML = '<option value="">اختر الفئة</option>';
+                        data.data.forEach(category => {
+                            const option = document.createElement('option');
+                            option.value = String(category.id);
+                            option.textContent = (category.category_name_ar || category.category_name || '').trim();
+                            option.dataset.name = category.category_name || '';
+                            select.appendChild(option);
+                        });
+                        if (previous && Array.from(select.options).some(o => o.value === previous)) {
+                            select.value = previous;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to load categories for editCourseModal:', err);
+            }
             // Prefill fields
             document.getElementById('editId') && (document.getElementById('editId').value = course.id);
             document.getElementById('editTitle') && (document.getElementById('editTitle').value = course.title || course.course_name || '');
-            document.getElementById('editCategory') && (document.getElementById('editCategory').value = course.category || '');
+            // Ensure category select is populated and set by id if available; fall back to matching by text
+            const editCatEl = document.getElementById('editCategory');
+            if (editCatEl) {
+                let assigned = false;
+                const catId = course.category_id || course.categoryId;
+                if (catId !== undefined && catId !== null) {
+                    const val = String(catId);
+                    if (Array.from(editCatEl.options).some(o => o.value === val)) {
+                        editCatEl.value = val;
+                        assigned = true;
+                    }
+                }
+                if (!assigned) {
+                    const catText = (course.category || '').trim().toLowerCase();
+                    if (catText) {
+                        const match = Array.from(editCatEl.options).find(o => (o.textContent || '').trim().toLowerCase() === catText);
+                        if (match) {
+                            editCatEl.value = match.value;
+                            assigned = true;
+                        }
+                    }
+                }
+                // If still not assigned, leave default (empty)
+            }
             document.getElementById('editDescription') && (document.getElementById('editDescription').value = course.description || '');
             document.getElementById('editLevel') && (document.getElementById('editLevel').value = course.level_name || course.level || '');
             document.getElementById('editDuration') && (document.getElementById('editDuration').value = course.duration || course.duration_weeks || '');

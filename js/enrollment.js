@@ -391,9 +391,10 @@ class EnrollmentSystem {
 
         const courseTitle = this.courseData?.title || this.enrollmentData.courseName || '';
         const courseDesc = this.courseData?.description || '';
-        // عرض الأسعار كسطرين بدون تحويل: نستخدم نفس القيمة عند غياب أحد الحقول
-        const usdRaw = (course.price_usd ?? course.priceUsd ?? course.price);
-        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? course.price);
+        // عرض السعر كما أدخله الأدمن بدون أي تحويل
+        const course = this.courseData || {};
+        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? course.priceSDG);
+        const usdRaw = (course.price_usd ?? course.priceUsd ?? course.priceUSD);
 
         const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
             ? `${Number(usdRaw).toLocaleString('en-US')} USD`
@@ -407,9 +408,9 @@ class EnrollmentSystem {
         if (formattedPriceUSD && formattedPriceSDG) {
             priceDisplay = `${formattedPriceUSD}<br>${formattedPriceSDG}`;
         } else if (formattedPriceUSD) {
-            priceDisplay = `${formattedPriceUSD}<br>${Number(usdRaw).toLocaleString('en-US')} SDG`;
+            priceDisplay = formattedPriceUSD;
         } else if (formattedPriceSDG) {
-            priceDisplay = `${Number(sdgRaw).toLocaleString('en-US')} USD<br>${formattedPriceSDG}`;
+            priceDisplay = formattedPriceSDG;
         } else {
             priceDisplay = 'مجاني';
         }
@@ -423,7 +424,7 @@ class EnrollmentSystem {
             <h4 style="margin:0 0 8px 0; color:#0d6efd;">بيانات الكورس</h4>
             <div class="detail-item"><span class="detail-label">اسم الدورة:</span> ${courseTitle}</div>
             ${courseDesc ? `<div class=\"detail-item\"><span class=\"detail-label\">وصف مختصر:</span> ${courseDesc}</div>` : ''}
-            <div class=\"detail-item\"><span class=\"detail-label\">سعر الدورة:</span> ${priceHtml}</div>
+            <div class=\"detail-item\"><span class=\"detail-label\">سعر الدورة:</span> ${priceDisplay}</div>
             <hr style="margin:10px 0;">
             <h4 style="margin:0 0 8px 0; color:#0d6efd;">تفاصيل الدفع</h4>
             <div class="detail-item"><span class="detail-label">طريقة الدفع:</span> ${methodText}</div>
@@ -680,12 +681,10 @@ class EnrollmentSystem {
             } catch (e) {}
             return String(d);
         };
-        // Conversion rate between USD and SDG (used when one price is missing)
-        const CONVERSION_RATE = 1500;
-        // Prefer SDG from price_sdg/priceSdg, fallback to price
-        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? course.price);
-        // Prefer USD from price_usd/priceUsd, fallback to convert from SDG
-        const usdRaw = (course.price_usd ?? course.priceUsd ?? (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '' ? (Number(sdgRaw) / CONVERSION_RATE) : undefined));
+        // عرض السعر كما أدخله الأدمن بدون أي تحويل
+        const course = this.courseData || {};
+        const usdRaw = (course.price_usd ?? course.priceUsd ?? course.priceUSD);
+        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? course.priceSDG);
 
         const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
             ? `${Number(usdRaw).toLocaleString('en-US')} USD`
@@ -796,7 +795,7 @@ class EnrollmentSystem {
         // يجب اختيار دورة قبل الإرسال
         if (!this.enrollmentData.courseId) {
             this.showToast('يرجى اختيار دورة أولاً قبل تأكيد التسجيل', 'error');
-            // إن لم تكن تفاصيل الدورة ظاهرة، أعد إظهار المحدد
+            // إن لم تفاصيل الدورة ظاهرة، أعد إظهار المحدد
             if (!this.courseData) this.renderNotFound('يرجى اختيار دورة من القائمة لإتمام التسجيل.');
             return;
         }
