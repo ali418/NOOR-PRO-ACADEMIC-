@@ -774,7 +774,7 @@
             infoEl.appendChild(div);
           }
           infoEl.innerHTML='';
-          var usdRaw = (c.price_usd ?? c.priceUsd ?? c.priceUSD);
+          var usdRaw = (c.price_usd ?? c.priceUsd ?? c.priceUSD ?? c.price);
           var sdgRaw = (c.price_sdg ?? c.priceSdg ?? c.priceSDG);
           var formattedPriceUSD = (usdRaw!==undefined && usdRaw!==null && usdRaw!=='') ? (Number(usdRaw).toLocaleString('en-US')+' USD') : undefined;
           var formattedPriceSDG = (sdgRaw!==undefined && sdgRaw!==null && sdgRaw!=='') ? (Number(sdgRaw).toLocaleString('en-US')+' SDG') : undefined;

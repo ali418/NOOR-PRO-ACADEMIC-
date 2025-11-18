@@ -696,7 +696,7 @@ class EnrollmentSystem {
         };
         // عرض السعر كما أدخله الأدمن بدون أي تحويل
         const c = course || this.courseData || {};
-        const usdRaw = (c.price_usd ?? c.priceUsd ?? c.priceUSD);
+        const usdRaw = (c.price_usd ?? c.priceUsd ?? c.priceUSD ?? c.price);
         const sdgRaw = (c.price_sdg ?? c.priceSdg ?? c.priceSDG);
 
         const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
