@@ -34,6 +34,9 @@ const dbConfig = resolveDbConfig();
 
 async function createConnection() {
   const connection = await mysql.createConnection(dbConfig);
+  try {
+    await connection.query("SET NAMES utf8mb4");
+  } catch (_) {}
   return connection;
 }
 
@@ -151,35 +154,52 @@ async function getEnrollments(req, res) {
 }
 
 // Helper to insert into DB
+function isDeadlockError(e) {
+  const msg = String(e && e.message || '').toLowerCase();
+  return (e && (e.code === 'ER_LOCK_DEADLOCK' || e.errno === 1213)) || msg.includes('deadlock found');
+}
+
 async function insertEnrollment(conn, payload) {
   const requestNumber = 'REQ-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
   const submissionDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
   const notes = payload.notes ? JSON.stringify(payload.notes) : null;
   const paymentDetails = payload.payment_details ? JSON.stringify(payload.payment_details) : null;
 
-  const [result] = await conn.execute(
-    `INSERT INTO enrollment_requests (
-        student_name, email, phone, course_id, course_name,
-        course_price, payment_method, payment_details, receipt_file,
-        status, request_number, submission_date, notes
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      payload.student_name,
-      payload.email,
-      payload.phone,
-      String(payload.course_id),
-      payload.course_name,
-      payload.course_price || null,
-      payload.payment_method || null,
-      paymentDetails,
-      payload.receipt_file || null,
-      payload.status || 'pending',
-      requestNumber,
-      submissionDate,
-      notes
-    ]
-  );
-  return { id: result.insertId, request_number: requestNumber };
+  const sql = `INSERT INTO enrollment_requests (
+    student_name, email, phone, course_id, course_name,
+    course_price, payment_method, payment_details, receipt_file,
+    status, request_number, submission_date, notes
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  const params = [
+    payload.student_name,
+    payload.email,
+    payload.phone,
+    String(payload.course_id),
+    payload.course_name,
+    payload.course_price || null,
+    payload.payment_method || null,
+    paymentDetails,
+    payload.receipt_file || null,
+    payload.status || 'pending',
+    requestNumber,
+    submissionDate,
+    notes
+  ];
+
+  const maxRetries = 3;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const [result] = await conn.execute(sql, params);
+      return { id: result.insertId, request_number: requestNumber };
+    } catch (e) {
+      if (isDeadlockError(e) && attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 50 * (attempt + 1)));
+        continue;
+      }
+      throw e;
+    }
+  }
 }
 
 // POST /api/enrollments
