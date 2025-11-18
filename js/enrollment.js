@@ -461,6 +461,19 @@ class EnrollmentSystem {
                     } catch (_) {
                         this.showToast('لم يتم العثور على المقرر المطلوب', 'error');
                     }
+                    // حاول استخدام واجهة الاستعلام كنسخة احتياطية قبل إعلان عدم الوجود
+                    try {
+                        const queryResp = await fetch(`${this.apiBase}/api/courses?id=${encodeURIComponent(courseId)}`);
+                        const ct2 = queryResp.headers.get('content-type') || '';
+                        if (queryResp.ok && ct2.includes('application/json')) {
+                            const d2 = await queryResp.json();
+                            const arr = Array.isArray(d2.courses) ? d2.courses : [];
+                            const found = arr.find(c => String(c.id) === String(courseId));
+                            if (found) {
+                                return { course: found };
+                            }
+                        }
+                    } catch (_) {}
                     this.renderNotFound('عذراً، هذا الكورس غير متوفر حالياً. يمكنك اختيار دورة أخرى من قائمة الدورات.');
                     return null;
                 }
@@ -474,7 +487,7 @@ class EnrollmentSystem {
                 if (!data) return;
                 this.courseData = data.course;
                 this.enrollmentData.courseId = data.course.id;
-                this.enrollmentData.courseName = data.course.title;
+                this.enrollmentData.courseName = data.course.title || data.course.course_name || '';
                 this.displayCourseDetails(data.course);
             })
             .catch(async (error) => {
@@ -605,7 +618,7 @@ class EnrollmentSystem {
                 const course = data.course || data.data || data;
                 this.courseData = course;
                 this.enrollmentData.courseId = course.id;
-                this.enrollmentData.courseName = course.title;
+                this.enrollmentData.courseName = course.title || course.course_name || '';
                 this.displayCourseDetails(course);
                 this.showToast('تم اختيار الدورة بنجاح', 'success');
                 return;
@@ -705,10 +718,10 @@ class EnrollmentSystem {
             priceDisplay = 'مجاني';
         }
 
-        addItem('fas fa-book', 'العنوان:', course.title);
+        addItem('fas fa-book', 'العنوان:', course.title || course.course_name);
         addItem('fas fa-align-left', 'الوصف:', course.description);
         addItem('fas fa-clock', 'المدة:', course.duration);
-        addItem('fas fa-chalkboard-teacher', 'المُدرّس:', course.instructor_name);
+        addItem('fas fa-chalkboard-teacher', 'المُدرّس:', course.instructor_name || course.instructor);
         addItem('fas fa-tags', 'الفئة:', course.category);
         addItem('fas fa-level-up-alt', 'المستوى:', course.level_name);
         addItem('fas fa-calendar-day', 'تاريخ البدء:', formatDate(course.start_date));
