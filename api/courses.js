@@ -274,8 +274,14 @@ async function addCourse(req, res) {
 
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
         const hasPriceSDG = await columnExists(connection, 'courses', 'price_sdg');
-        const hasIsFeatured = await columnExists(connection, 'courses', 'is_featured');
+        let hasIsFeatured = await columnExists(connection, 'courses', 'is_featured');
         const isFeatured = toBoolean(req.body.is_featured);
+        if (!hasIsFeatured) {
+            try {
+                await connection.execute('ALTER TABLE courses ADD COLUMN is_featured TINYINT(1) DEFAULT 0');
+                hasIsFeatured = true;
+            } catch (_) {}
+        }
         let query, params;
         if (hasCategoryId) {
             const valuesCount = (hasPriceSDG ? 20 : 19) + (hasIsFeatured ? 1 : 0);
@@ -471,8 +477,14 @@ async function updateCourse(req, res) {
 
         const hasCategoryId = await columnExists(connection, 'courses', 'category_id');
         const hasPriceSDG = await columnExists(connection, 'courses', 'price_sdg');
-        const hasIsFeatured = await columnExists(connection, 'courses', 'is_featured');
+        let hasIsFeatured = await columnExists(connection, 'courses', 'is_featured');
         const isFeatured = toBoolean(is_featured);
+        if (!hasIsFeatured) {
+            try {
+                await connection.execute('ALTER TABLE courses ADD COLUMN is_featured TINYINT(1) DEFAULT 0');
+                hasIsFeatured = true;
+            } catch (_) {}
+        }
         const resolvedCategoryId = (category_id !== undefined && category_id !== null && !isNaN(parseInt(category_id)))
             ? parseInt(category_id)
             : null;
