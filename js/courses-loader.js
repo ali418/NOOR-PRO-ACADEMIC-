@@ -77,12 +77,13 @@ class CourseLoader {
                 const currentPath = window.location.pathname;
                 const isHomepage = currentPath === '/' || currentPath === '/index.html';
                 const isStudentsPage = currentPath === '/students.html' || currentPath.includes('students');
-                const isCertificatesPage = currentPath === '/certificates.html' || currentPath.includes('certificates');
+                const isCoursesPage = currentPath === '/courses.html' || currentPath.includes('courses.html');
                 
                 console.log('=== Course Loading Debug Info ===');
                 console.log('Current path:', currentPath);
                 console.log('Is homepage:', isHomepage);
                 console.log('Is students page:', isStudentsPage);
+                console.log('Is courses page:', isCoursesPage);
                 console.log('Total courses from API:', data.courses?.length);
                 
                 if (data.courses && data.courses.length > 0) {
@@ -103,11 +104,12 @@ class CourseLoader {
                     // On homepage and students page, show only featured courses
                     console.log('Showing featured courses only:', featuredCourses.length);
                     this.renderCourses(featuredCourses);
-                } else if (isCertificatesPage) {
-                    console.log('Showing all courses on certificates page:', data.courses.length);
+                } else if (isCoursesPage) {
+                    // Show all courses on the courses admin page
+                    console.log('Showing ALL courses on courses page:', data.courses.length);
                     this.renderCourses(data.courses);
                 } else {
-                    // On other pages (like courses.html), show only non-featured courses
+                    // On other pages, show only non-featured courses
                     const regularCourses = data.courses.filter(course => !course.is_featured);
                     console.log('Showing regular courses only:', regularCourses.length);
                     this.renderCourses(regularCourses);
