@@ -751,6 +751,93 @@
 
     <script src="js/script.js?v=20251118"></script>
     <script src="js/enrollment.js?v=20251118"></script>
+    <script>
+      (function(){
+        function formatDate(d){
+          if(!d) return undefined;
+          try { var dt = new Date(d); if(!isNaN(dt)) return dt.toLocaleDateString('en-GB'); } catch(e) {}
+          return String(d);
+        }
+        function fillCourseDetails(c){
+          var infoEl = document.getElementById('courseInfo');
+          var featuresEl = document.getElementById('courseFeatures');
+          var audienceEl = document.getElementById('courseAudience');
+          if(!infoEl) return;
+          function addItem(iconClass,label,value){
+            if(value===undefined||value===null||value==='') return;
+            var div=document.createElement('div');div.className='course-info-item';
+            var icon=document.createElement('i');icon.className=iconClass;
+            var strong=document.createElement('strong');strong.textContent=label;
+            var span=document.createElement('span');
+            if(typeof value==='string' && value.indexOf('<br>')!==-1){ span.innerHTML=value; } else { span.textContent=String(value); }
+            div.appendChild(icon);div.appendChild(strong);div.appendChild(span);
+            infoEl.appendChild(div);
+          }
+          infoEl.innerHTML='';
+          var usdRaw = (c.price_usd ?? c.priceUsd ?? c.priceUSD);
+          var sdgRaw = (c.price_sdg ?? c.priceSdg ?? c.priceSDG);
+          var formattedPriceUSD = (usdRaw!==undefined && usdRaw!==null && usdRaw!=='') ? (Number(usdRaw).toLocaleString('en-US')+' USD') : undefined;
+          var formattedPriceSDG = (sdgRaw!==undefined && sdgRaw!==null && sdgRaw!=='') ? (Number(sdgRaw).toLocaleString('en-US')+' SDG') : undefined;
+          var priceDisplay = (formattedPriceUSD && formattedPriceSDG) ? (formattedPriceUSD+'<br>'+formattedPriceSDG) : (formattedPriceUSD || formattedPriceSDG || 'مجاني');
+          addItem('fas fa-book','العنوان:', c.title || c.course_name);
+          addItem('fas fa-align-left','الوصف:', c.description);
+          addItem('fas fa-clock','المدة:', c.duration);
+          addItem('fas fa-chalkboard-teacher','المُدرّس:', c.instructor_name || c.instructor);
+          addItem('fas fa-tags','الفئة:', c.category);
+          addItem('fas fa-level-up-alt','المستوى:', c.level_name);
+          addItem('fas fa-calendar-day','تاريخ البدء:', formatDate(c.start_date));
+          addItem('fas fa-calendar-check','تاريخ الانتهاء:', formatDate(c.end_date));
+          addItem('fas fa-dollar-sign','السعر:', priceDisplay);
+
+          if(featuresEl){
+            featuresEl.innerHTML='';
+            var features = Array.isArray(c.features) ? c.features : [];
+            features.slice(0,8).forEach(function(f){ var li=document.createElement('li'); li.textContent=String(f); featuresEl.appendChild(li); });
+          }
+          if(audienceEl){
+            audienceEl.innerHTML='';
+            var audience = c.target_audience || c.audience || c.targetAudience;
+            if(Array.isArray(audience)){
+              audience.slice(0,8).forEach(function(item){ var li=document.createElement('li'); li.textContent=String(item); audienceEl.appendChild(li); });
+            } else if (typeof audience==='string' && audience.trim()){
+              var li=document.createElement('li'); li.textContent=audience.trim(); audienceEl.appendChild(li);
+            } else {
+              var fallback=[]; if(c.level_name) fallback.push('مناسب لمستوى '+c.level_name); if(c.category) fallback.push('مفيد لطلاب '+c.category); if(!fallback.length) fallback.push('مناسب للطلاب المهتمين بهذا المجال');
+              fallback.forEach(function(text){ var li=document.createElement('li'); li.textContent=text; audienceEl.appendChild(li); });
+            }
+          }
+        }
+        function tryFetchAndFill(){
+          var params=new URLSearchParams(window.location.search);
+          var rawId=params.get('courseId')||params.get('course')||'';
+          var courseId=String(rawId).trim().replace(/\.+$/,'');
+          if(!courseId) return;
+          var isLocal = /localhost|127\.0\.0\.1/i.test(window.location.hostname);
+          var base = isLocal ? '' : 'https://nooracademic.up.railway.app';
+          var url = base + '/api/courses/' + courseId;
+          fetch(url).then(function(resp){
+            var ct = resp.headers.get('content-type')||'';
+            if(resp.ok && ct.indexOf('application/json')!==-1){ return resp.json(); }
+            return Promise.reject(new Error('bad response'));
+          }).then(function(data){ if(data && data.course) fillCourseDetails(data.course); })
+          .catch(function(){
+            var q = base + '/api/courses?id=' + encodeURIComponent(courseId);
+            fetch(q).then(function(r){ return r.json(); }).then(function(d){
+              var arr = Array.isArray(d.courses)? d.courses : [];
+              var found = arr.find(function(c){ return String(c.id)===String(courseId); });
+              if(found) fillCourseDetails(found);
+            }).catch(function(){});
+          });
+        }
+        window.addEventListener('DOMContentLoaded', function(){
+          setTimeout(function(){
+            var infoEl = document.getElementById('courseInfo');
+            var hasContent = infoEl && infoEl.children && infoEl.children.length>0;
+            if(!hasContent) tryFetchAndFill();
+          }, 0);
+        });
+      })();
+    </script>
     <script src="js/theme.js"></script>
 </body>
 </html>

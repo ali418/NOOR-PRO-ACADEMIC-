@@ -695,9 +695,9 @@ class EnrollmentSystem {
             return String(d);
         };
         // عرض السعر كما أدخله الأدمن بدون أي تحويل
-        const course = this.courseData || {};
-        const usdRaw = (course.price_usd ?? course.priceUsd ?? course.priceUSD);
-        const sdgRaw = (course.price_sdg ?? course.priceSdg ?? course.priceSDG);
+        const c = course || this.courseData || {};
+        const usdRaw = (c.price_usd ?? c.priceUsd ?? c.priceUSD);
+        const sdgRaw = (c.price_sdg ?? c.priceSdg ?? c.priceSDG);
 
         const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
             ? `${Number(usdRaw).toLocaleString('en-US')} USD`
@@ -718,14 +718,14 @@ class EnrollmentSystem {
             priceDisplay = 'مجاني';
         }
 
-        addItem('fas fa-book', 'العنوان:', course.title || course.course_name);
-        addItem('fas fa-align-left', 'الوصف:', course.description);
-        addItem('fas fa-clock', 'المدة:', course.duration);
-        addItem('fas fa-chalkboard-teacher', 'المُدرّس:', course.instructor_name || course.instructor);
-        addItem('fas fa-tags', 'الفئة:', course.category);
-        addItem('fas fa-level-up-alt', 'المستوى:', course.level_name);
-        addItem('fas fa-calendar-day', 'تاريخ البدء:', formatDate(course.start_date));
-        addItem('fas fa-calendar-check', 'تاريخ الانتهاء:', formatDate(course.end_date));
+        addItem('fas fa-book', 'العنوان:', c.title || c.course_name);
+        addItem('fas fa-align-left', 'الوصف:', c.description);
+        addItem('fas fa-clock', 'المدة:', c.duration);
+        addItem('fas fa-chalkboard-teacher', 'المُدرّس:', c.instructor_name || c.instructor);
+        addItem('fas fa-tags', 'الفئة:', c.category);
+        addItem('fas fa-level-up-alt', 'المستوى:', c.level_name);
+        addItem('fas fa-calendar-day', 'تاريخ البدء:', formatDate(c.start_date));
+        addItem('fas fa-calendar-check', 'تاريخ الانتهاء:', formatDate(c.end_date));
         addItem('fas fa-dollar-sign', 'السعر:', priceDisplay);
 
         // Clear and append
@@ -735,7 +735,7 @@ class EnrollmentSystem {
         // Optional features list
         if (featuresEl) {
             featuresEl.innerHTML = '';
-            const features = Array.isArray(course.features) ? course.features : [];
+            const features = Array.isArray(c.features) ? c.features : [];
             features.slice(0, 8).forEach(f => {
                 const li = document.createElement('li');
                 li.textContent = String(f);
@@ -747,7 +747,7 @@ class EnrollmentSystem {
         const audienceEl = document.getElementById('courseAudience');
         if (audienceEl) {
             audienceEl.innerHTML = '';
-            let audience = course.target_audience || course.audience || course.targetAudience;
+            let audience = c.target_audience || c.audience || c.targetAudience;
             if (Array.isArray(audience)) {
                 audience.slice(0, 8).forEach(item => {
                     const li = document.createElement('li');
@@ -760,8 +760,8 @@ class EnrollmentSystem {
                 audienceEl.appendChild(li);
             } else {
                 const fallback = [];
-                if (course.level_name) fallback.push(`مناسب لمستوى ${course.level_name}`);
-                if (course.category) fallback.push(`مفيد لطلاب ${course.category}`);
+                if (c.level_name) fallback.push(`مناسب لمستوى ${c.level_name}`);
+                if (c.category) fallback.push(`مفيد لطلاب ${c.category}`);
                 if (fallback.length === 0) fallback.push('مناسب للطلاب المهتمين بهذا المجال');
                 fallback.forEach(text => {
                     const li = document.createElement('li');
