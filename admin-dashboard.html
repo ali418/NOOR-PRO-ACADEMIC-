@@ -916,9 +916,10 @@
             try {
                 const response = await fetch('/api/courses');
                 const result = await response.json();
-                
-                if (result.success && result.data) {
-                    displayCoursesForSelection(result.data);
+                const courses = Array.isArray(result.courses) ? result.courses : (Array.isArray(result.data) ? result.data : []);
+                if (result.success && courses.length >= 0) {
+                    window.loadedCoursesForSelection = courses;
+                    displayCoursesForSelection(courses);
                 } else {
                     console.error('Failed to load courses:', result.message);
                     document.getElementById('featuredCoursesList').innerHTML = 
@@ -984,19 +985,57 @@
         }
 
         // Function to save featured courses selection
-        function saveFeaturedCoursesSelection() {
+        async function saveFeaturedCoursesSelection() {
             const checkboxes = document.querySelectorAll('.course-checkbox:checked');
             const selectedCourses = Array.from(checkboxes).map(cb => parseInt(cb.dataset.courseId));
-            
             if (selectedCourses.length === 0) {
                 alert('يرجى اختيار كورس واحد على الأقل');
                 return;
             }
-            
+            if (selectedCourses.length > 3) {
+                alert('يمكنك اختيار 3 كورسات كحد أقصى');
+                return;
+            }
             localStorage.setItem('featuredCourses', JSON.stringify(selectedCourses));
-            alert('تم حفظ التحديد بنجاح!');
-            
-            console.log('Saved featured courses:', selectedCourses);
+            const allCourses = window.loadedCoursesForSelection || [];
+            try {
+                const tasks = allCourses.map(course => {
+                    const id = course.id;
+                    const payload = {
+                        id: id,
+                        title: course.title || course.course_name || '',
+                        course_name: course.title || course.course_name || '',
+                        description: course.description ?? null,
+                        credits: course.credits ?? 3,
+                        duration_weeks: course.duration_weeks ?? 16,
+                        duration: course.duration ?? null,
+                        instructor_name: course.instructor_name || null,
+                        max_students: course.max_students ?? 30,
+                        status: course.status || 'active',
+                        youtube_link: course.youtube_link || null,
+                        category: course.category || 'general',
+                        category_id: course.category_id ?? null,
+                        price: course.price ?? '0',
+                        level_name: course.level_name || 'مبتدئ',
+                        start_date: course.start_date || null,
+                        end_date: course.end_date || null,
+                        course_icon: course.course_icon || 'fas fa-book',
+                        badge_text: course.badge_text || null,
+                        is_featured: selectedCourses.includes(Number(id))
+                    };
+                    return fetch(`/api/courses/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }).then(r => { try { return r.json(); } catch(_) { return { success: false }; } }).catch(_ => ({ success: false }));
+                });
+                const results = await Promise.all(tasks);
+                const okCount = results.filter(r => r && r.success).length;
+                alert(okCount > 0 ? 'تم حفظ التحديد بنجاح!' : 'تعذر حفظ التحديد. تحقق من الاتصال بالخادم.');
+                console.log('Saved featured courses:', selectedCourses);
+            } catch (e) {
+                alert('حدث خطأ أثناء حفظ التحديد');
+            }
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
