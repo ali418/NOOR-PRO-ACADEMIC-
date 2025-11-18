@@ -19,68 +19,16 @@
         </button>
     </div>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="header-background"></div>
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <div class="logo-wrapper">
-                        <img src="logo/nor-01.jpg" alt="Noor Academy" class="logo-img">
-                        <div class="logo-glow"></div>
-                    </div>
-                    <div class="logo-text">
-                        <h1 data-ar="نور أكاديمي" data-en="Noor Academy">نور أكاديمي</h1>
-                        <p data-ar="التميز في التعليم" data-en="Excellence in Education">التميز في التعليم</p>
-                    </div>
-                </div>
-                
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="index.html" class="nav-link" data-ar="الرئيسية" data-en="Home">
-                            <i class="fas fa-home"></i>
-                            <span>الرئيسية</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="teachers.html" class="nav-link" data-ar="المعلمون" data-en="Teachers">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                            <span>المعلمون</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="index.html#about" class="nav-link" data-ar="عن المركز" data-en="About">
-                            <i class="fas fa-info-circle"></i>
-                            <span>عن المركز</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#contact" class="nav-link" data-ar="اتصل بنا" data-en="Contact">
-                            <i class="fas fa-envelope"></i>
-                            <span>اتصل بنا</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <div class="header-actions">
-                    <div class="search-box">
-                        <input type="text" placeholder="البحث..." class="search-input">
-                        <button class="search-btn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                    
-                </div>
-                </div>
-
-                <div class="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
+    <section class="courses-header">
+        <div class="container">
+            <div class="header-nav">
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للرئيسية
+                </a>
             </div>
-        </nav>
-    </header>
+        </div>
+    </section>
 
     <!-- Certificates Section -->
     <section id="certificates" class="certificates-section" style="padding: 60px 0;">
@@ -125,6 +73,19 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="courses" style="padding: 40px 0;">
+        <div class="container">
+            <h2 data-ar="المقررات المتاحة" data-en="Available Courses">المقررات المتاحة</h2>
+            <div id="loadingState" style="display:none; text-align:center; padding:20px;">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <div id="emptyState" style="display:none; text-align:center; padding:20px; color:#6c757d;">
+                لا توجد مقررات متاحة حالياً
+            </div>
+            <div id="coursesGrid" class="courses-grid"></div>
         </div>
     </section>
 
@@ -178,6 +139,7 @@
     </footer>
 
     <script src="js/script.js"></script>
+    <script src="js/courses-loader.js"></script>
     <script src="js/theme.js"></script>
 </body>
 </html>

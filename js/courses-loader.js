@@ -77,6 +77,7 @@ class CourseLoader {
                 const currentPath = window.location.pathname;
                 const isHomepage = currentPath === '/' || currentPath === '/index.html';
                 const isStudentsPage = currentPath === '/students.html' || currentPath.includes('students');
+                const isCertificatesPage = currentPath === '/certificates.html' || currentPath.includes('certificates');
                 
                 console.log('=== Course Loading Debug Info ===');
                 console.log('Current path:', currentPath);
@@ -102,6 +103,9 @@ class CourseLoader {
                     // On homepage and students page, show only featured courses
                     console.log('Showing featured courses only:', featuredCourses.length);
                     this.renderCourses(featuredCourses);
+                } else if (isCertificatesPage) {
+                    console.log('Showing all courses on certificates page:', data.courses.length);
+                    this.renderCourses(data.courses);
                 } else {
                     // On other pages (like courses.html), show only non-featured courses
                     const regularCourses = data.courses.filter(course => !course.is_featured);
