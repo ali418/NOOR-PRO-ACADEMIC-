@@ -106,13 +106,20 @@ function mapRowToEnrollment(row) {
   try {
     if (row.payment_details) {
       paymentDetails = JSON.parse(row.payment_details);
-    } else if (row.notes) {
-      // try parse notes as JSON
-      paymentDetails = JSON.parse(row.notes);
     }
   } catch (_) {
     paymentDetails = {};
   }
+  let notesObj = null;
+  try {
+    if (row.notes) {
+      notesObj = JSON.parse(row.notes);
+    }
+  } catch (_) {
+    notesObj = null;
+  }
+
+  const address = (notesObj && notesObj.address) || null;
 
   return {
     id: String(row.id),
@@ -130,7 +137,8 @@ function mapRowToEnrollment(row) {
     approvalDate: row.approval_date || null,
     welcomeMessage: row.welcome_message || null,
     whatsappLink: row.whatsapp_link || null,
-    notes: row.notes || null
+    address,
+    notes: notesObj
   };
 }
 
@@ -375,7 +383,8 @@ function normalizeIncomingEnrollment(body) {
     education: body.education || null,
     experience: body.experience || null,
     paymentMethod: body.paymentMethod || null,
-    coursePrice: body.coursePrice || null
+    coursePrice: body.coursePrice || null,
+    studentNotes: body.notes || null
   };
   // الحقول المطلوبة: الاسم، الهاتف، ومعرّف الكورس فقط
   if (!student_name || !phone || !course_id) {

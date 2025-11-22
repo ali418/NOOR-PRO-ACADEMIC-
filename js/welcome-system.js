@@ -253,11 +253,20 @@ ${whatsappLink ? `📱 للانضمام إلى مجموعة الواتساب ا�
         });
     }
 
+    ensureLinkInMessage(message, link) {
+        const m = String(message || '').trim();
+        const l = String(link || '').trim();
+        if (!l) return m;
+        if (m.includes(l)) return m;
+        const suffix = `\n\n📱 للانضمام إلى مجموعة الواتساب الخاصة بالكورس:\n${l}\n`;
+        return (m + suffix).trim();
+    }
+
     async sendWelcomeNotifications(enrollment, customMessage = null, customWhatsappLink = null) {
         try {
             // Generate welcome message
             const welcomeData = customMessage ? 
-                { message: customMessage, whatsappLink: customWhatsappLink } :
+                { message: this.ensureLinkInMessage(customMessage, customWhatsappLink), whatsappLink: customWhatsappLink } :
                 this.generateWelcomeMessage(enrollment.courseId, enrollment.studentName, customWhatsappLink);
 
             const results = {

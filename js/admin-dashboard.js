@@ -248,6 +248,12 @@ class AdminDashboard {
             'in-person': 'دفع مباشر'
         }[paymentMethod] || paymentMethod || 'غير محدد';
 
+        const addr = enrollment.address || (enrollment.notes && enrollment.notes.address) || 'غير متوفر';
+        const receiptUrl = enrollment.receiptFile || '';
+        const ext = receiptUrl.split('.').pop()?.toLowerCase();
+        const isImage = ['jpg','jpeg','png','gif','webp'].includes(ext || '');
+        const isPdf = (ext === 'pdf');
+
         return `
             <div class="enrollment-card">
                 <div class="enrollment-header">
@@ -268,7 +274,7 @@ class AdminDashboard {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">عنوان السكن:</span>
-                            <span class="detail-value">${enrollment.address || 'غير متوفر'}</span>
+                            <span class="detail-value">${addr}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">رقم الهاتف:</span>
@@ -307,12 +313,18 @@ class AdminDashboard {
                     </div>
                 </div>
 
-                ${enrollment.receiptFile ? `
+                ${receiptUrl ? `
                 <div class="receipt-preview">
                     <h4><i class="fas fa-receipt"></i> إيصال الدفع</h4>
-                    <img src="${enrollment.receiptFile}" alt="إيصال الدفع" class="receipt-image" 
-                         onclick="adminDashboard.showReceiptModal('${enrollment.receiptFile}')">
-                    <p style="margin-top: 10px; color: #666; font-size: 0.9rem;">اضغط على الصورة لعرضها بحجم أكبر</p>
+                    ${isImage ? `
+                        <img src="${receiptUrl}" alt="إيصال الدفع" class="receipt-image" onclick="adminDashboard.showReceiptModal('${receiptUrl}')">
+                        <p style="margin-top: 10px; color: #666; font-size: 0.9rem;">اضغط على الصورة لعرضها بحجم أكبر</p>
+                    ` : isPdf ? `
+                        <a href="${receiptUrl}" target="_blank" class="btn-view-details" style="display:inline-block;margin-bottom:8px;">فتح الإيصال (PDF)</a>
+                        <object data="${receiptUrl}" type="application/pdf" style="width:100%;height:420px;"></object>
+                    ` : `
+                        <a href="${receiptUrl}" target="_blank" class="btn-view-details">عرض الإيصال</a>
+                    `}
                 </div>
                 ` : ''}
 
@@ -766,6 +778,7 @@ class AdminDashboard {
         }
 
         const welcomeMessageText = document.getElementById('welcomeMessage')?.value || '';
+        const whatsappLinkText = document.getElementById('whatsappLink')?.value || this.currentEnrollment.whatsappLink || '';
         const studentName = this.currentEnrollment.studentName;
         const studentPhone = this.currentEnrollment.phone;
 
@@ -793,6 +806,9 @@ class AdminDashboard {
         // Replace placeholder for student name if not already done
         const baseMessage = (welcomeMessageText || `مرحباً ${studentName}! تم قبول طلبك في ${this.currentEnrollment.courseName}.`).replace(/\[STUDENT_NAME\]|undefined/gi, studentName);
         let finalMessage = `${baseMessage}\n\n${listHeader}\n${listBody}${listFooter}`;
+        if (whatsappLinkText && !finalMessage.includes(whatsappLinkText)) {
+            finalMessage += `\n\n📱 رابط مجموعة الواتساب:\n${whatsappLinkText}`;
+        }
         // Limit very long messages to avoid browser URL length issues
         if (finalMessage.length > 1800) {
             finalMessage = finalMessage.slice(0, 1780) + '...';
