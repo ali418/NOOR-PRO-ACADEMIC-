@@ -776,8 +776,9 @@
           infoEl.innerHTML='';
           var usdRaw = (c.price_usd ?? c.priceUsd ?? c.priceUSD ?? c.price);
           var sdgRaw = (c.price_sdg ?? c.priceSdg ?? c.priceSDG);
+          var sdgRawFinal = (sdgRaw!==undefined && sdgRaw!==null && sdgRaw!=='') ? sdgRaw : ((usdRaw!==undefined && usdRaw!==null && usdRaw!=='') ? Math.round(Number(usdRaw)*3500) : undefined);
           var formattedPriceUSD = (usdRaw!==undefined && usdRaw!==null && usdRaw!=='') ? (Number(usdRaw).toLocaleString('en-US')+' USD') : undefined;
-          var formattedPriceSDG = (sdgRaw!==undefined && sdgRaw!==null && sdgRaw!=='') ? (Number(sdgRaw).toLocaleString('en-US')+' SDG') : undefined;
+          var formattedPriceSDG = (sdgRawFinal!==undefined && sdgRawFinal!==null && sdgRawFinal!=='') ? (Number(sdgRawFinal).toLocaleString('en-US')+' SDG') : undefined;
           var priceDisplay = (formattedPriceUSD && formattedPriceSDG) ? (formattedPriceUSD+'<br>'+formattedPriceSDG) : (formattedPriceUSD || formattedPriceSDG || 'مجاني');
           addItem('fas fa-book','العنوان:', c.title || c.course_name);
           addItem('fas fa-align-left','الوصف:', c.description);

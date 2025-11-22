@@ -193,6 +193,17 @@ class EnrollmentSystem {
         return `00256${digits}`;
     }
 
+    getSdgRate() {
+        const v = Number(localStorage.getItem('sdgRate') || '3500');
+        return Number.isFinite(v) && v > 0 ? v : 3500;
+    }
+
+    convertUsdToSdg(amount) {
+        const n = Number(amount);
+        if (!Number.isFinite(n) || n <= 0) return undefined;
+        return Math.round(n * this.getSdgRate());
+    }
+
     showStep(step) {
         const steps = document.querySelectorAll('.form-step');
         steps.forEach(s => {
@@ -396,12 +407,16 @@ class EnrollmentSystem {
         const sdgRaw = (course.price_sdg ?? course.priceSdg ?? course.priceSDG);
         const usdRaw = (course.price_usd ?? course.priceUsd ?? course.priceUSD);
 
+        const sdgRawFinal = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '')
+            ? sdgRaw
+            : ((usdRaw !== undefined && usdRaw !== null && usdRaw !== '') ? this.convertUsdToSdg(usdRaw) : undefined);
+
         const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
             ? `${Number(usdRaw).toLocaleString('en-US')} USD`
             : undefined;
 
-        const formattedPriceSDG = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '')
-            ? `${Number(sdgRaw).toLocaleString('en-US')} SDG`
+        const formattedPriceSDG = (sdgRawFinal !== undefined && sdgRawFinal !== null && sdgRawFinal !== '')
+            ? `${Number(sdgRawFinal).toLocaleString('en-US')} SDG`
             : undefined;
 
         let priceDisplay = '';
@@ -699,12 +714,16 @@ class EnrollmentSystem {
         const usdRaw = (c.price_usd ?? c.priceUsd ?? c.priceUSD ?? c.price);
         const sdgRaw = (c.price_sdg ?? c.priceSdg ?? c.priceSDG);
 
+        const sdgRawFinal = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '')
+            ? sdgRaw
+            : ((usdRaw !== undefined && usdRaw !== null && usdRaw !== '') ? this.convertUsdToSdg(usdRaw) : undefined);
+
         const formattedPriceUSD = (usdRaw !== undefined && usdRaw !== null && usdRaw !== '')
             ? `${Number(usdRaw).toLocaleString('en-US')} USD`
             : undefined;
 
-        const formattedPriceSDG = (sdgRaw !== undefined && sdgRaw !== null && sdgRaw !== '')
-            ? `${Number(sdgRaw).toLocaleString('en-US')} SDG`
+        const formattedPriceSDG = (sdgRawFinal !== undefined && sdgRawFinal !== null && sdgRawFinal !== '')
+            ? `${Number(sdgRawFinal).toLocaleString('en-US')} SDG`
             : undefined;
 
         let priceDisplay = '';
